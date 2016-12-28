@@ -59,6 +59,12 @@
       <ImportLibrary>$(IntDir)$(TargetName).lib</ImportLibrary>
       <AdditionalDependencies>$(BWAPI_DIR)\lib\BWAPId.lib;$(BWTA_DIR)\lib\BWTAd.lib;$(BWTA_DIR)\lib\libboost_filesystem-vc120-mt-1_56.lib;$(BWTA_DIR)\lib\libboost_filesystem-vc120-mt-gd-1_56.lib;$(BWTA_DIR)\lib\libboost_system-vc120-mt-1_56.lib;$(BWTA_DIR)\lib\libboost_system-vc120-mt-gd-1_56.lib;$(BWTA_DIR)\lib\libboost_thread-vc120-mt-1_56.lib;$(BWTA_DIR)\lib\libboost_thread-vc120-mt-gd-1_56.lib;$(BWTA_DIR)\lib\libCGAL-vc120-mt-4.4.lib;$(BWTA_DIR)\lib\libCGAL-vc120-mt-gd-4.4.lib;$(BWTA_DIR)\lib\libgmp-10.lib;$(BWTA_DIR)\lib\libmpfr-4.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <PostBuildEvent>
+      <Command>"C:\Program Files\7-Zip\7z" a -tzip "$(SolutionDir)Source\Source.zip" "$(SolutionDir)Source\*.cpp" "$(SolutionDir)Source\*.h"</Command>
+    </PostBuildEvent>
+    <PostBuildEvent>
+      <Message>Zip up Source files</Message>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -78,6 +84,12 @@
       <ImportLibrary>$(IntDir)$(TargetName).lib</ImportLibrary>
       <AdditionalDependencies>$(BWAPI_DIR)\lib\BWAPI.lib;$(BWTA_DIR)\lib\BWTA.lib;$(BWTA_DIR)\lib\libboost_filesystem-vc120-mt-1_56.lib;$(BWTA_DIR)\lib\libboost_filesystem-vc120-mt-gd-1_56.lib;$(BWTA_DIR)\lib\libboost_system-vc120-mt-1_56.lib;$(BWTA_DIR)\lib\libboost_system-vc120-mt-gd-1_56.lib;$(BWTA_DIR)\lib\libboost_thread-vc120-mt-1_56.lib;$(BWTA_DIR)\lib\libboost_thread-vc120-mt-gd-1_56.lib;$(BWTA_DIR)\lib\libCGAL-vc120-mt-4.4.lib;$(BWTA_DIR)\lib\libCGAL-vc120-mt-gd-4.4.lib;$(BWTA_DIR)\lib\libgmp-10.lib;$(BWTA_DIR)\lib\libmpfr-4.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <PostBuildEvent>
+      <Command>"C:\Program Files\7-Zip\7z" a -tzip "$(SolutionDir)Source\Source.zip" "$(SolutionDir)Source\*.cpp" "$(SolutionDir)Source\*.h"</Command>
+    </PostBuildEvent>
+    <PostBuildEvent>
+      <Message>Zip up Source files</Message>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\Source\PeregrineBot.cpp" />
