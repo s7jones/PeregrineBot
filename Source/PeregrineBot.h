@@ -34,6 +34,7 @@ public:
   virtual void onUnitComplete(BWAPI::Unit unit);
   // Everything below this line is safe to modify.
 
+  void drawAdditionalInformation();
   void drawTerrainData();
   void drawExtendedInterface();
   //void scout(BWAPI::Unit* u);

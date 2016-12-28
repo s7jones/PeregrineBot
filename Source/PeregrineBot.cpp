@@ -67,6 +67,38 @@ std::set<Unit> enemyBuildings;
 
 bool DrawUnitHealthBars = true;
 
+void PeregrineBot::drawAdditionalInformation(){
+	// Display the game frame rate as text in the upper left area of the screen
+	Broodwar->drawTextScreen(200, 0, "FPS: %d", Broodwar->getFPS());
+	Broodwar->drawTextScreen(200, 20, "Average FPS: %f", Broodwar->getAverageFPS());
+
+	Broodwar->drawTextScreen(1, 0, "Supply: %i / %i", Broodwar->self()->supplyUsed(), Broodwar->self()->supplyTotal());
+	Broodwar->drawTextScreen(1, 20, "Framecount: %i", Broodwar->getFrameCount());
+	Broodwar->drawTextScreen(1, 30, "lasterror: %i", lastError);
+
+	Broodwar->drawTextScreen(100, 0, "bo indx: %i", indx);
+	Broodwar->drawTextScreen(100, 20, "pool: %i", pool);
+
+	Broodwar->drawTextScreen(1, 40, "enemy buildings: %i", enemyBuildings.size());
+
+	//BWTA draw
+	//if (analyzed)	drawTerrainData();
+	//else if (!analyzing) {
+	//	CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)AnalyzeThread, NULL, 0, NULL);
+	//	analyzing = true;
+	//}
+
+	if (analyzed)
+		drawTerrainData();
+
+	drawExtendedInterface();
+
+	if (analysis_just_finished) {
+		Broodwar << "Finished analyzing map." << std::endl;
+		analysis_just_finished = false;
+	}
+}
+
 void PeregrineBot::drawTerrainData()
 {
 	//we will iterate through all the base locations, and draw their outlines.
@@ -521,41 +553,11 @@ void PeregrineBot::onFrame()
 {
 	// Called once every game frame
 
-	// Display the game frame rate as text in the upper left area of the screen
-	Broodwar->drawTextScreen(200, 0, "FPS: %d", Broodwar->getFPS());
-	Broodwar->drawTextScreen(200, 20, "Average FPS: %f", Broodwar->getAverageFPS());
-
 	// Return if the game is a replay or is paused
 	if (Broodwar->isReplay() || Broodwar->isPaused() || !Broodwar->self())
 		return;
 
-	Broodwar->drawTextScreen(1, 0, "Supply: %i / %i", Broodwar->self()->supplyUsed(), Broodwar->self()->supplyTotal());
-	Broodwar->drawTextScreen(1, 20, "Framecount: %i", Broodwar->getFrameCount());
-	Broodwar->drawTextScreen(1, 30, "lasterror: %i", lastError);
-
-	Broodwar->drawTextScreen(100, 0, "bo indx: %i", indx);
-	Broodwar->drawTextScreen(100, 20, "pool: %i", pool);
-
-	Broodwar->drawTextScreen(1, 40, "enemy buildings: %i", enemyBuildings.size());
-
-
-	//BWTA draw
-	//if (analyzed)	drawTerrainData();
-	//else if (!analyzing) {
-	//	CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)AnalyzeThread, NULL, 0, NULL);
-	//	analyzing = true;
-	//}
-
-	if (analyzed)
-		drawTerrainData();
-
-	drawExtendedInterface();
-
-
-	if (analysis_just_finished) {
-		Broodwar << "Finished analyzing map." << std::endl;
-		analysis_just_finished = false;
-	}
+	drawAdditionalInformation();
 
 	// Prevent spamming by only running our onFrame once every number of latency frames.
 	// Latency frames are the number of frames before commands are processed.
