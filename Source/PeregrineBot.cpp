@@ -10,6 +10,9 @@ Beats the vanilla AI consistently on the SSCAI maps.
 With thanks to Chris Coxe's ZZZKbot @ https://github.com/chriscoxe/ZZZKBot
 for his getPos function and some useful UnitFilters.
 
+With thanks to Dave Churchill's UAlbertaBot @ https://github.com/davechurchill/ualbertabot
+for drawExtendedInterface function.
+
 Also thanks to BWAPI, BWTA2, and Teamliquid tutorials:
 https://bwapi.github.io/
 https://bitbucket.org/auriarte/bwta2
@@ -62,6 +65,8 @@ Error lastError = Errors::None;
 
 std::set<Unit> enemyBuildings;
 
+bool DrawUnitHealthBars = true;
+
 void PeregrineBot::drawTerrainData()
 {
 	//we will iterate through all the base locations, and draw their outlines.
@@ -106,6 +111,180 @@ void PeregrineBot::drawTerrainData()
 			Position point1 = chokepoint->getSides().first;
 			Position point2 = chokepoint->getSides().second;
 			Broodwar->drawLineMap(point1, point2, Colors::Red);
+		}
+	}
+}
+
+void PeregrineBot::drawExtendedInterface()
+{
+	if (DrawUnitHealthBars)
+	{
+		return;
+	}
+
+	int verticalOffset = -10;
+
+	// draw enemy units
+	//for (const auto & kv : getUnitData(BWAPI::Broodwar->enemy()).getUnits())
+	for (auto & unit : BWAPI::Broodwar->enemy()->getUnits())
+	{
+		//const UnitInfo & ui(kv.second);
+		//BWAPI::UnitType type(ui.type);
+		BWAPI::UnitType type = unit->getType();
+		if (type == UnitTypes::Unknown)
+			continue;
+
+		//int hitPoints = ui.lastHealth;
+		//int shields = ui.lastShields;
+
+		//const BWAPI::Position & pos = ui.lastPosition;
+		const BWAPI::Position pos = unit->getPosition();
+
+		if (pos == Positions::Unknown)
+			continue;
+
+
+
+		int left = pos.x - type.dimensionLeft();
+		int right = pos.x + type.dimensionRight();
+		int top = pos.y - type.dimensionUp();
+		int bottom = pos.y + type.dimensionDown();
+
+		int hitPoints = unit->getHitPoints();
+		int shields = unit->getShields();
+
+		if (!BWAPI::Broodwar->isVisible(BWAPI::TilePosition(pos)))
+		{
+			BWAPI::Broodwar->drawBoxMap(BWAPI::Position(left, top), BWAPI::Position(right, bottom), BWAPI::Colors::Grey, false);
+			BWAPI::Broodwar->drawTextMap(BWAPI::Position(left + 3, top + 4), "%s", type.getName().c_str());
+		}
+
+		if (!type.isResourceContainer() && type.maxHitPoints() > 0)
+		{
+			double hpRatio = (double)hitPoints / (double)type.maxHitPoints();
+
+			BWAPI::Color hpColor = BWAPI::Colors::Green;
+			if (hpRatio < 0.66) hpColor = BWAPI::Colors::Orange;
+			if (hpRatio < 0.33) hpColor = BWAPI::Colors::Red;
+
+			int ratioRight = left + (int)((right - left) * hpRatio);
+			int hpTop = top + verticalOffset;
+			int hpBottom = top + 4 + verticalOffset;
+
+			BWAPI::Broodwar->drawBoxMap(BWAPI::Position(left, hpTop), BWAPI::Position(right, hpBottom), BWAPI::Colors::Grey, true);
+			BWAPI::Broodwar->drawBoxMap(BWAPI::Position(left, hpTop), BWAPI::Position(ratioRight, hpBottom), hpColor, true);
+			BWAPI::Broodwar->drawBoxMap(BWAPI::Position(left, hpTop), BWAPI::Position(right, hpBottom), BWAPI::Colors::Black, false);
+
+			int ticWidth = 3;
+
+			for (int i(left); i < right - 1; i += ticWidth)
+			{
+				BWAPI::Broodwar->drawLineMap(BWAPI::Position(i, hpTop), BWAPI::Position(i, hpBottom), BWAPI::Colors::Black);
+			}
+		}
+
+		if (!type.isResourceContainer() && type.maxShields() > 0)
+		{
+			double shieldRatio = (double)shields / (double)type.maxShields();
+
+			int ratioRight = left + (int)((right - left) * shieldRatio);
+			int hpTop = top - 3 + verticalOffset;
+			int hpBottom = top + 1 + verticalOffset;
+
+			BWAPI::Broodwar->drawBoxMap(BWAPI::Position(left, hpTop), BWAPI::Position(right, hpBottom), BWAPI::Colors::Grey, true);
+			BWAPI::Broodwar->drawBoxMap(BWAPI::Position(left, hpTop), BWAPI::Position(ratioRight, hpBottom), BWAPI::Colors::Blue, true);
+			BWAPI::Broodwar->drawBoxMap(BWAPI::Position(left, hpTop), BWAPI::Position(right, hpBottom), BWAPI::Colors::Black, false);
+
+			int ticWidth = 3;
+
+			for (int i(left); i < right - 1; i += ticWidth)
+			{
+				BWAPI::Broodwar->drawLineMap(BWAPI::Position(i, hpTop), BWAPI::Position(i, hpBottom), BWAPI::Colors::Black);
+			}
+		}
+
+	}
+
+	// draw neutral units and our units
+	for (auto & unit : BWAPI::Broodwar->getAllUnits())
+	{
+		if (unit->getPlayer() == BWAPI::Broodwar->enemy())
+		{
+			continue;
+		}
+
+		const BWAPI::Position & pos = unit->getPosition();
+
+		int left = pos.x - unit->getType().dimensionLeft();
+		int right = pos.x + unit->getType().dimensionRight();
+		int top = pos.y - unit->getType().dimensionUp();
+		int bottom = pos.y + unit->getType().dimensionDown();
+
+		//BWAPI::Broodwar->drawBoxMap(BWAPI::Position(left, top), BWAPI::Position(right, bottom), BWAPI::Colors::Grey, false);
+
+		if (!unit->getType().isResourceContainer() && unit->getType().maxHitPoints() > 0)
+		{
+			double hpRatio = (double)unit->getHitPoints() / (double)unit->getType().maxHitPoints();
+
+			BWAPI::Color hpColor = BWAPI::Colors::Green;
+			if (hpRatio < 0.66) hpColor = BWAPI::Colors::Orange;
+			if (hpRatio < 0.33) hpColor = BWAPI::Colors::Red;
+
+			int ratioRight = left + (int)((right - left) * hpRatio);
+			int hpTop = top + verticalOffset;
+			int hpBottom = top + 4 + verticalOffset;
+
+			BWAPI::Broodwar->drawBoxMap(BWAPI::Position(left, hpTop), BWAPI::Position(right, hpBottom), BWAPI::Colors::Grey, true);
+			BWAPI::Broodwar->drawBoxMap(BWAPI::Position(left, hpTop), BWAPI::Position(ratioRight, hpBottom), hpColor, true);
+			BWAPI::Broodwar->drawBoxMap(BWAPI::Position(left, hpTop), BWAPI::Position(right, hpBottom), BWAPI::Colors::Black, false);
+
+			int ticWidth = 3;
+
+			for (int i(left); i < right - 1; i += ticWidth)
+			{
+				BWAPI::Broodwar->drawLineMap(BWAPI::Position(i, hpTop), BWAPI::Position(i, hpBottom), BWAPI::Colors::Black);
+			}
+		}
+
+		if (!unit->getType().isResourceContainer() && unit->getType().maxShields() > 0)
+		{
+			double shieldRatio = (double)unit->getShields() / (double)unit->getType().maxShields();
+
+			int ratioRight = left + (int)((right - left) * shieldRatio);
+			int hpTop = top - 3 + verticalOffset;
+			int hpBottom = top + 1 + verticalOffset;
+
+			BWAPI::Broodwar->drawBoxMap(BWAPI::Position(left, hpTop), BWAPI::Position(right, hpBottom), BWAPI::Colors::Grey, true);
+			BWAPI::Broodwar->drawBoxMap(BWAPI::Position(left, hpTop), BWAPI::Position(ratioRight, hpBottom), BWAPI::Colors::Blue, true);
+			BWAPI::Broodwar->drawBoxMap(BWAPI::Position(left, hpTop), BWAPI::Position(right, hpBottom), BWAPI::Colors::Black, false);
+
+			int ticWidth = 3;
+
+			for (int i(left); i < right - 1; i += ticWidth)
+			{
+				BWAPI::Broodwar->drawLineMap(BWAPI::Position(i, hpTop), BWAPI::Position(i, hpBottom), BWAPI::Colors::Black);
+			}
+		}
+
+		if (unit->getType().isResourceContainer() && unit->getInitialResources() > 0)
+		{
+
+			double mineralRatio = (double)unit->getResources() / (double)unit->getInitialResources();
+
+			int ratioRight = left + (int)((right - left) * mineralRatio);
+			int hpTop = top + verticalOffset;
+			int hpBottom = top + 4 + verticalOffset;
+
+			BWAPI::Broodwar->drawBoxMap(BWAPI::Position(left, hpTop), BWAPI::Position(right, hpBottom), BWAPI::Colors::Grey, true);
+			BWAPI::Broodwar->drawBoxMap(BWAPI::Position(left, hpTop), BWAPI::Position(ratioRight, hpBottom), BWAPI::Colors::Cyan, true);
+			BWAPI::Broodwar->drawBoxMap(BWAPI::Position(left, hpTop), BWAPI::Position(right, hpBottom), BWAPI::Colors::Black, false);
+
+			int ticWidth = 3;
+
+			for (int i(left); i < right - 1; i += ticWidth)
+			{
+				BWAPI::Broodwar->drawLineMap(BWAPI::Position(i, hpTop), BWAPI::Position(i, hpBottom), BWAPI::Colors::Black);
+			}
 		}
 	}
 }
@@ -190,7 +369,6 @@ void sendText(int key, char* msg) {
 	//msgList[key] == std::pair<msg, msgList[key].second
 	//msgList.insert_or_assign(key, );
 }
-
 
 void PeregrineBot::onStart()
 {
@@ -370,6 +548,8 @@ void PeregrineBot::onFrame()
 
 	if (analyzed)
 		drawTerrainData();
+
+	drawExtendedInterface();
 
 
 	if (analysis_just_finished) {

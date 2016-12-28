@@ -35,6 +35,7 @@ public:
   // Everything below this line is safe to modify.
 
   void drawTerrainData();
+  void drawExtendedInterface();
   //void scout(BWAPI::Unit* u);
   //void scoutOverlord(BWAPI::Unit* u);
   void move(BWAPI::Unit* u, const BWAPI::Position &pos);
