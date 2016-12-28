@@ -65,7 +65,8 @@ Error lastError = Errors::None;
 
 std::set<Unit> enemyBuildings;
 
-bool DrawUnitHealthBars = true;
+// not working for some reason
+//bool DrawUnitHealthBars = true;
 
 void PeregrineBot::drawAdditionalInformation(){
 	// Display the game frame rate as text in the upper left area of the screen
@@ -149,10 +150,10 @@ void PeregrineBot::drawTerrainData()
 
 void PeregrineBot::drawExtendedInterface()
 {
-	if (DrawUnitHealthBars)
-	{
-		return;
-	}
+	//if (DrawUnitHealthBars)
+	//{
+	//	return;
+	//}
 
 	int verticalOffset = -10;
 
