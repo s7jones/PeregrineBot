@@ -57,7 +57,7 @@ int i;
 
 Position enemyBase(0, 0);
 
-Race enemyRace;
+Race enemyRace = Races::Unknown;
 
 std::string Version = "v4";
 
@@ -565,7 +565,8 @@ void PeregrineBot::onFrame()
 	if (Broodwar->getFrameCount() % Broodwar->getLatencyFrames() != 0)
 		return;
 
-	enemyRace = Broodwar->enemy()->getRace();
+	if (enemyRace != Races::Terran || Races::Zerg || Races::Protoss)
+		enemyRace = Broodwar->enemy()->getRace();
 
 	static std::set<Position> startPositions;
 	static std::set<Position> otherPositions;
@@ -641,7 +642,8 @@ void PeregrineBot::onFrame()
 	}
 
 
-	if (indx > (bo.size() * 2))	indx = bo.size() * 2;
+	if (indx > (bo.size() * 2))
+		indx = bo.size() * 2;
 
 	// Iterate through all the units that we own
 	for (auto &u : Broodwar->self()->getUnits())
@@ -656,16 +658,8 @@ void PeregrineBot::onFrame()
 			continue;
 
 		// Ignore the unit if it is in one of the following states
-		//if (u->isLoaded() || !u->isPowered() || u->isStuck())
-		//	continue;
-
-		if (u->isLoaded() || !u->isPowered())
+		if (u->isLoaded() || !u->isPowered() || u->isStuck())
 			continue;
-
-		if (u->isStuck()) {
-			//Broodwar << u->getType() << " at x: " << u->getPosition().x << ", y: " << u->getPosition().y << ", is stuck!" << std::endl;
-			continue;
-		}
 
 		// Ignore the unit if it is incomplete or busy constructing
 		/* if ( !u->isCompleted() || u->isConstructing() )
@@ -673,8 +667,6 @@ void PeregrineBot::onFrame()
 
 
 		// Finally make the unit do some stuff!
-
-
 		// If the unit is a worker unit
 		if (u->getType().isWorker())
 		{
@@ -687,8 +679,10 @@ void PeregrineBot::onFrame()
 				{
 					u->returnCargo();
 				}
-				else if (!u->getPowerUp())  // The worker cannot harvest anything if it
-				{                             // is carrying a powerup such as a flag
+				// The worker cannot harvest anything if it
+				// is carrying a powerup such as a flag
+				else if (!u->getPowerUp())  
+				{
 					// Harvest from the nearest mineral patch or gas refinery
 					if (!u->gather(u->getClosestUnit(IsMineralField || IsRefinery)))
 					{
@@ -758,7 +752,11 @@ void PeregrineBot::onFrame()
 				}
 			}
 
-			if ((poolready) && (Broodwar->self()->minerals() >= UnitTypes::Zerg_Zergling.mineralPrice()) && (Broodwar->self()->supplyTotal() - Broodwar->self()->supplyUsed() > 0) && ((bo[indx] == UnitTypes::Zerg_Zergling) || (indx >= bo.size()))) {
+			if ((poolready) &&
+				(Broodwar->self()->minerals() >= UnitTypes::Zerg_Zergling.mineralPrice())
+				&& (Broodwar->self()->supplyTotal() - Broodwar->self()->supplyUsed() > 0)
+				&& ((bo[indx] == UnitTypes::Zerg_Zergling)
+				|| (indx >= bo.size()))) {
 				if (!u->getLarva().empty()) {
 					u->train(UnitTypes::Zerg_Zergling);
 					indx++;
@@ -885,82 +883,49 @@ void PeregrineBot::onFrame()
 								u->attack(PositionOrUnit(enemyBase));
 							else if (!Broodwar->getUnitsOnTile(TilePosition(enemyBase), IsEnemy && IsVisible && Exists && IsBuilding && !IsLifted).empty())
 								u->attack(PositionOrUnit(enemyBase));
-							else {
-								Broodwar << "Scouting!" << std::endl;
-								static std::vector<Position> zerglingScoutLocations;
-								if (zerglingScoutLocations.empty()) {
-									//TODO: add scouting of known existing buildings
-
-									for (const auto& region : BWTA::getRegions()) {
-										// if region isn't reachable then skip
-										if (!BWTA::getRegion(u->getPosition())->isReachable(region)) {
-											continue;
-										}
-										BWTA::Polygon poly = region->getPolygon();
-										auto it = zerglingScoutLocations.begin();
-										for (size_t j = 0; j < poly.size(); ++j) {
-											Position point1 = poly[j];
-											if (region == BWTA::getRegion(u->getPosition())) {
-												it = zerglingScoutLocations.insert(it, point1);
-												//it++;
-											}
-											else {
-												zerglingScoutLocations.push_back(point1);
-											}
-										}
-
-									}
-								}
-								else {
-									auto it = zerglingScoutLocations.begin();
-									Position perimeterPoint = (*it);
-									u->move(perimeterPoint, false);
-									zerglingScoutLocations.erase(it);
-								}
-							}
 						} // havent destroyed enemy base
-						else {
-							Broodwar << "Scouting!" << std::endl;
-							static std::vector<Position> zerglingScoutLocations;
-							if (zerglingScoutLocations.empty()) {
-								//TODO: add scouting of known existing buildings
-
-								for (const auto& region : BWTA::getRegions()) {
-									// if region isn't reachable then skip
-									if (!BWTA::getRegion(u->getPosition())->isReachable(region)) {
-										continue;
-									}
-									BWTA::Polygon poly = region->getPolygon();
-									auto it = zerglingScoutLocations.begin();
-									for (size_t j = 0; j < poly.size(); ++j) {
-										Position point1 = poly[j];
-										if (region == BWTA::getRegion(u->getPosition())) {
-											it = zerglingScoutLocations.insert(it, point1);
-											//it++;
-										}
-										else {
-											zerglingScoutLocations.push_back(point1);
-										}
-									}
-
-								}
-							}
-							else {
-								auto it = zerglingScoutLocations.begin();
-								Position perimeterPoint = (*it);
-								u->move(perimeterPoint, false);
-								zerglingScoutLocations.erase(it);
-							}
-
-						}	// have destroyed enemy base
 					}	// no enemy base
 					else
 					{
 						u->move((*unscoutedOtherPositions.begin()), false);
 						//move(u, (*unscoutedOtherPositions.begin()));
 						/*for (auto p : unscoutedOtherPositions) {
-							u->move(p, true);
-							}*/
+						u->move(p, true);
+						}*/
+					}
+
+					if (u->isIdle()) {
+						Broodwar << "Scouting!" << std::endl;
+						static std::vector<Position> zerglingScoutLocations;
+						if (zerglingScoutLocations.empty()) {
+							//TODO: add scouting of known existing buildings
+
+							for (const auto& region : BWTA::getRegions()) {
+								// if region isn't reachable then skip
+								if (!BWTA::getRegion(u->getPosition())->isReachable(region)) {
+									continue;
+								}
+								BWTA::Polygon poly = region->getPolygon();
+								auto it = zerglingScoutLocations.begin();
+								for (size_t j = 0; j < poly.size(); ++j) {
+									Position point1 = poly[j];
+									if (region == BWTA::getRegion(u->getPosition())) {
+										it = zerglingScoutLocations.insert(it, point1);
+										//it++;
+									}
+									else {
+										zerglingScoutLocations.push_back(point1);
+									}
+								}
+
+							}
+						}
+						else {
+							auto it = zerglingScoutLocations.begin();
+							Position perimeterPoint = (*it);
+							u->move(perimeterPoint, false);
+							zerglingScoutLocations.erase(it);
+						}
 					}
 				}
 			} // end if idle
