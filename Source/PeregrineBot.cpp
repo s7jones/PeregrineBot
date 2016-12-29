@@ -957,7 +957,6 @@ void PeregrineBot::onFrame()
 				}
 			} // end if idle
 			else if (u->isMoving()) {
-				// if (IsMoving)	TODO: look for ismoving and lastcommand to see if checking scouted 
 				UnitCommand lastCmd = u->getLastCommand();
 				if (lastCmd.getType() == UnitCommandTypes::Move) {
 					Position targetPos = lastCmd.getTargetPosition();
