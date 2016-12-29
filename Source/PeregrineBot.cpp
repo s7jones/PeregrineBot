@@ -360,6 +360,48 @@ auto getPos =
 std::map<Unit, std::pair<std::vector<TilePosition>, int>> movelists;
 
 
+void zerglingScout(const Unit& u) {
+	static std::vector<Position> zerglingScoutLocations;
+	if (zerglingScoutLocations.empty()) {
+		for (const auto& building : enemyBuildings) {
+			Position buildingPos = building->getPosition();
+			// if building isn't reachable then skip
+			if (!BWTA::getRegion(u->getPosition())->isReachable(BWTA::getRegion(buildingPos))){
+				Broodwar << "unaccessible building" << std::endl;
+				continue;
+			}
+			Broodwar << "scoutable building" << std::endl;
+			zerglingScoutLocations.push_back(buildingPos);
+		}
+		for (const auto& region : BWTA::getRegions()) {
+			// if region isn't reachable then skip
+			if (!BWTA::getRegion(u->getPosition())->isReachable(region)) {
+				continue;
+			}
+			BWTA::Polygon poly = region->getPolygon();
+			auto it = zerglingScoutLocations.begin();
+			for (size_t j = 0; j < poly.size(); ++j) {
+				Position point1 = poly[j];
+				if (region == BWTA::getRegion(u->getPosition())) {
+					it = zerglingScoutLocations.insert(it, point1);
+					//it++;
+				}
+				else {
+					zerglingScoutLocations.push_back(point1);
+				}
+			}
+
+		}
+	}
+	else {
+		Broodwar << "Zergling Scouting!" << std::endl;
+		auto it = zerglingScoutLocations.begin();
+		Position perimeterPoint = (*it);
+		u->move(perimeterPoint, false);
+		zerglingScoutLocations.erase(it);
+	}
+}
+
 void setMoveTo(BWAPI::Unit* u, const BWAPI::Position &pos) {
 	std::vector<TilePosition> movelist = BWTA::getShortestPath((*u)->getTilePosition(), (TilePosition)pos);
 	movelists.erase(*u);
@@ -883,7 +925,13 @@ void PeregrineBot::onFrame()
 								u->attack(PositionOrUnit(enemyBase));
 							else if (!Broodwar->getUnitsOnTile(TilePosition(enemyBase), IsEnemy && IsVisible && Exists && IsBuilding && !IsLifted).empty())
 								u->attack(PositionOrUnit(enemyBase));
+							else {
+								zerglingScout(u);
+							}
 						} // havent destroyed enemy base
+						else {
+							zerglingScout(u);
+						}
 					}	// no enemy base
 					else
 					{
@@ -892,48 +940,6 @@ void PeregrineBot::onFrame()
 						/*for (auto p : unscoutedOtherPositions) {
 						u->move(p, true);
 						}*/
-					}
-
-					if (u->isIdle()) {
-						static std::vector<Position> zerglingScoutLocations;
-						if (zerglingScoutLocations.empty()) {
-							for (const auto& building : enemyBuildings) {
-								Position buildingPos = building->getPosition();
-								// if building isn't reachable then skip
-								if (!BWTA::getRegion(u->getPosition())->isReachable(BWTA::getRegion(buildingPos))){
-									Broodwar << "unaccessible building" << std::endl;
-									continue;
-								}
-								Broodwar << "scoutable building" << std::endl;
-								zerglingScoutLocations.push_back(buildingPos);
-							}
-							for (const auto& region : BWTA::getRegions()) {
-								// if region isn't reachable then skip
-								if (!BWTA::getRegion(u->getPosition())->isReachable(region)) {
-									continue;
-								}
-								BWTA::Polygon poly = region->getPolygon();
-								auto it = zerglingScoutLocations.begin();
-								for (size_t j = 0; j < poly.size(); ++j) {
-									Position point1 = poly[j];
-									if (region == BWTA::getRegion(u->getPosition())) {
-										it = zerglingScoutLocations.insert(it, point1);
-										//it++;
-									}
-									else {
-										zerglingScoutLocations.push_back(point1);
-									}
-								}
-
-							}
-						}
-						else {
-							Broodwar << "Scouting!" << std::endl;
-							auto it = zerglingScoutLocations.begin();
-							Position perimeterPoint = (*it);
-							u->move(perimeterPoint, false);
-							zerglingScoutLocations.erase(it);
-						}
 					}
 				}
 			} // end if idle
