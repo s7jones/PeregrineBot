@@ -361,7 +361,7 @@ std::map<Unit, std::pair<std::vector<TilePosition>, int>> movelists;
 
 
 void zerglingScout(const Unit& u) {
-	static std::vector<Position> zerglingScoutLocations;
+	static std::deque<Position> zerglingScoutLocations;
 	if (zerglingScoutLocations.empty()) {
 		for (const auto& building : enemyBuildings) {
 			Position buildingPos = building->getPosition();
@@ -817,7 +817,7 @@ void PeregrineBot::onFrame()
 				else {
 					// Overlord scouting perimeter of all regions
 					Broodwar << "Overlord Scouting!" << std::endl;
-					static std::vector<Position> scoutLocations;
+					static std::deque<Position> scoutLocations;
 					if (scoutLocations.empty()) {
 						BWTA::Region* enemyRegion = BWTA::getRegion(enemyBase);
 						BWTA::Polygon poly = enemyRegion->getPolygon();
