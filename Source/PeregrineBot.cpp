@@ -11,7 +11,7 @@ With thanks to Chris Coxe's ZZZKbot @ https://github.com/chriscoxe/ZZZKBot
 for his getPos function and some useful UnitFilters.
 
 With thanks to Dave Churchill's UAlbertaBot @ https://github.com/davechurchill/ualbertabot
-for drawExtendedInterface function.
+for drawExtendedInterface function and useful onUnitDestroy,etc functions for workers.
 
 Also thanks to BWAPI, BWTA2, and Teamliquid tutorials:
 https://bwapi.github.io/
@@ -28,9 +28,6 @@ bool analysis_just_finished;
 bool analyzing;
 const bool analysis = true;
 
-bool pool = false;
-int workercount = 4;
-
 const std::vector<UnitType> bo = { UnitType(UnitTypes::Zerg_Drone),
 UnitType(UnitTypes::Zerg_Spawning_Pool),
 UnitType(UnitTypes::Zerg_Drone),
@@ -45,25 +42,22 @@ UnitType(UnitTypes::Zerg_Zergling) };
 
 int indx = 0;
 
+bool pool = false;
 bool poolready = false;
-
 int lastChecked = 0;
 int poolLastChecked = 0;
-
 bool reachEnemyBase = false;
 bool destroyEnemyBase = false;
 
 int i;
-
 Position enemyBase(0, 0);
-
 Race enemyRace = Races::Unknown;
-
 std::string Version = "v4";
-
 Error lastError = Errors::None;
-
 std::set<Unit> enemyBuildings;
+std::set<Unit> hatcheries;
+BWAPI::Unitset workerList;
+BWAPI::Unitset enemyArmy;
 
 // not working for some reason
 //bool DrawUnitHealthBars = true;
@@ -81,6 +75,7 @@ void PeregrineBot::drawAdditionalInformation(){
 	Broodwar->drawTextScreen(100, 20, "pool: %i", pool);
 
 	Broodwar->drawTextScreen(1, 40, "enemy buildings: %i", enemyBuildings.size());
+	Broodwar->drawTextScreen(1, 50, "enemy army: %i", enemyArmy.size());
 
 	//BWTA draw
 	//if (analyzed)	drawTerrainData();
@@ -773,11 +768,14 @@ void PeregrineBot::onFrame()
 		}
 
 		if (u->getType().isResourceDepot()) {
+			hatcheries.insert(u);
+			
 			/*UnitType type = bo[indx];
 			std::string msg = std::to_string(type);
 			Broodwar->sendText(msg.c_str());*/
 
-			if ((Broodwar->self()->minerals() >= UnitTypes::Zerg_Drone.mineralPrice()) && (bo[indx] == UnitTypes::Zerg_Drone)) {
+			if ((Broodwar->self()->minerals() >= UnitTypes::Zerg_Drone.mineralPrice()) &&
+				(bo[indx] == UnitTypes::Zerg_Drone)) {
 				if (!u->getLarva().empty()) {
 					u->train(UnitTypes::Zerg_Drone);
 					indx++;
@@ -791,6 +789,21 @@ void PeregrineBot::onFrame()
 				if (!u->getLarva().empty()) {
 					u->train(UnitTypes::Zerg_Overlord);
 					indx++;
+				}
+			}
+
+			for (auto &u2 : Broodwar->self()->getUnits())
+			{
+				if ((IsWorker)(u2))
+					workerList.insert(u2);
+			}
+
+			if ((workerList.size() < (hatcheries.size() * 3)) &&
+				(Broodwar->self()->minerals() >= UnitTypes::Zerg_Drone.mineralPrice()))
+			{
+				if (!u->getLarva().empty()) {
+					u->train(UnitTypes::Zerg_Drone);
+					Broodwar << "droning up from " << workerList.size() << " to " << (hatcheries.size() * 3) << std::endl;
 				}
 			}
 
@@ -1010,11 +1023,6 @@ void PeregrineBot::onNukeDetect(BWAPI::Position target)
 
 void PeregrineBot::onUnitDiscover(BWAPI::Unit unit)
 {
-	if ((IsEnemy)(unit)) {
-		if ((IsBuilding)(unit)){
-			enemyBuildings.insert(unit);
-		}
-	}
 }
 
 void PeregrineBot::onUnitEvade(BWAPI::Unit unit)
@@ -1023,6 +1031,20 @@ void PeregrineBot::onUnitEvade(BWAPI::Unit unit)
 
 void PeregrineBot::onUnitShow(BWAPI::Unit unit)
 {
+	if ((IsEnemy)(unit)) {
+		if ((IsBuilding)(unit)){
+			enemyBuildings.insert(unit);
+		}
+		else
+			enemyArmy.insert(unit);
+	}
+	
+	// if something morphs into a worker, add it
+	if (unit->getType().isWorker() && unit->getPlayer() == BWAPI::Broodwar->self() && unit->getHitPoints() >= 0)
+	{
+		//BWAPI::Broodwar->printf("A worker was shown %d", unit->getID());
+		workerList.insert(unit);
+	}
 }
 
 void PeregrineBot::onUnitHide(BWAPI::Unit unit)
@@ -1031,6 +1053,12 @@ void PeregrineBot::onUnitHide(BWAPI::Unit unit)
 
 void PeregrineBot::onUnitCreate(BWAPI::Unit unit)
 {
+	// if something morphs into a worker, add it
+	if (unit->getType().isWorker() && unit->getPlayer() == BWAPI::Broodwar->self() && unit->getHitPoints() >= 0)
+	{
+		workerList.insert(unit);
+	}
+
 	if (Broodwar->isReplay())
 	{
 		// if we are in a replay, then we will print out the build order of the structures
@@ -1046,6 +1074,24 @@ void PeregrineBot::onUnitCreate(BWAPI::Unit unit)
 
 void PeregrineBot::onUnitDestroy(BWAPI::Unit unit)
 {
+	if ((IsEnemy)(unit)) {
+		if ((IsBuilding)(unit)){
+			enemyBuildings.erase(unit);
+		}
+		else
+			enemyArmy.erase(unit);
+	}
+
+	if (unit->getType().isResourceDepot() && unit->getPlayer() == BWAPI::Broodwar->self())
+	{
+		hatcheries.erase(unit);
+	}
+
+	if (unit->getType().isWorker() && unit->getPlayer() == BWAPI::Broodwar->self())
+	{
+		workerList.erase(unit);
+	}
+
 	if (unit->getPosition() == enemyBase) {
 		destroyEnemyBase = true;
 		Broodwar << "destroyed enemy base: " << Broodwar->getFrameCount() << std::endl;
@@ -1055,6 +1101,18 @@ void PeregrineBot::onUnitDestroy(BWAPI::Unit unit)
 
 void PeregrineBot::onUnitMorph(BWAPI::Unit unit)
 {
+	// if something morphs into a worker, add it
+	if (unit->getType().isWorker() && unit->getPlayer() == BWAPI::Broodwar->self() && unit->getHitPoints() >= 0)
+	{
+		workerList.insert(unit);
+	}
+
+	// if something morphs into a building, it was a worker?
+	if (unit->getType().isBuilding() && unit->getPlayer() == BWAPI::Broodwar->self() && unit->getPlayer()->getRace() == BWAPI::Races::Zerg)
+	{
+		workerList.erase(unit);
+	}
+	
 	if (Broodwar->isReplay())
 	{
 		// if we are in a replay, then we will print out the build order of the structures
@@ -1070,6 +1128,12 @@ void PeregrineBot::onUnitMorph(BWAPI::Unit unit)
 
 void PeregrineBot::onUnitRenegade(BWAPI::Unit unit)
 {
+	Broodwar << unit->getType() << ", " << unit->getPlayer()->getName() << ": was renegaded!" << std::endl;
+	
+	if (unit->getType().isWorker() && unit->getPlayer() == BWAPI::Broodwar->self())
+	{
+		workerList.erase(unit);
+	}
 }
 
 void PeregrineBot::onSaveGame(std::string gameName)
