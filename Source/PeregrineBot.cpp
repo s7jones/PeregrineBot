@@ -58,24 +58,36 @@ std::set<Unit> enemyBuildings;
 std::set<Unit> hatcheries;
 BWAPI::Unitset workerList;
 BWAPI::Unitset enemyArmy;
+std::map <TilePosition, std::array<double, 6>> scoutingInfo;
 
 // not working for some reason
 //bool DrawUnitHealthBars = true;
 
 void PeregrineBot::drawAdditionalInformation(){
 	// Display the game frame rate as text in the upper left area of the screen
-	Broodwar->drawTextScreen(200, 0, "FPS: %d", Broodwar->getFPS());
-	Broodwar->drawTextScreen(200, 20, "Average FPS: %f", Broodwar->getAverageFPS());
-
-	Broodwar->drawTextScreen(1, 0, "Supply: %i / %i", Broodwar->self()->supplyUsed(), Broodwar->self()->supplyTotal());
-	Broodwar->drawTextScreen(1, 20, "Framecount: %i", Broodwar->getFrameCount());
-	Broodwar->drawTextScreen(1, 30, "lasterror: %i", lastError);
+	Broodwar->drawTextScreen(1, 0, "Supply: %i/%i", Broodwar->self()->supplyUsed(), Broodwar->self()->supplyTotal());
+	Broodwar->drawTextScreen(1, 10, "Framecount: %i", Broodwar->getFrameCount());
+	Broodwar->drawTextScreen(1, 20, "lasterror: %i", lastError);
+	Broodwar->drawTextScreen(1, 30, "enemy buildings: %i", enemyBuildings.size());
+	Broodwar->drawTextScreen(1, 40, "enemy army: %i", enemyArmy.size());
+	Broodwar->drawTextScreen(1, 50, "Hat/Work: %i/%i", hatcheries.size(), workerList.size());
 
 	Broodwar->drawTextScreen(100, 0, "bo indx: %i", indx);
-	Broodwar->drawTextScreen(100, 20, "pool: %i", pool);
+	Broodwar->drawTextScreen(100, 10, "pool: %i", pool);
+	
+	int screenVPos = 20;
+	int count = 1;
+	for (auto scoutData : scoutingInfo)
+	{
+		Broodwar->drawTextScreen(100, screenVPos, "%i: gd%.1f ad%.1f md%.1f gt%.1f at%.1f mt%.1f", count, 
+			scoutData.second[0], scoutData.second[1], scoutData.second[2], 
+			scoutData.second[3], scoutData.second[4], scoutData.second[5] );
+		count++;
+		screenVPos += 10;
+	}
 
-	Broodwar->drawTextScreen(1, 40, "enemy buildings: %i", enemyBuildings.size());
-	Broodwar->drawTextScreen(1, 50, "enemy army: %i", enemyArmy.size());
+	Broodwar->drawTextScreen(200, 0, "FPS: %d", Broodwar->getFPS());
+	Broodwar->drawTextScreen(200, 10, "Average FPS: %.1f", Broodwar->getAverageFPS());
 
 	//BWTA draw
 	//if (analyzed)	drawTerrainData();
@@ -323,6 +335,47 @@ auto getPos =
 	return Position(Position(tp) + Position((ut.tileWidth() * BWAPI::TILEPOSITION_SCALE) / 2, (ut.tileHeight() * BWAPI::TILEPOSITION_SCALE) / 2));
 };
 
+auto groundDistance =
+[](const TilePosition start, const TilePosition end)
+{
+	auto dist = BWTA::getGroundDistance(start, end);
+	return dist;
+};
+
+auto airDistance =
+[](const TilePosition start, const TilePosition end)
+{
+	auto p1 = getPos(start, UnitTypes::Special_Start_Location);
+	auto p2 = getPos(end, UnitTypes::Special_Start_Location);
+	auto dx = abs(p1.x - p2.x);
+	auto dy = abs(p1.y - p2.y);
+	auto dist = sqrt(pow(dx, 2) + pow(dy, 2));
+	return dist;
+};
+
+auto groundTime =
+[](const TilePosition start, const TilePosition end)
+{
+	auto gdist = groundDistance(start, end)
+		- UnitTypes::Zerg_Zergling.sightRange();
+
+	double poolDone = 2437;	// frame time when, based on my samples, 99% the pool is done
+	double travelTime = gdist / UnitTypes::Zerg_Zergling.topSpeed();
+	double time = (double) UnitTypes::Zerg_Zergling.buildTime() + poolDone + travelTime;
+	return time;
+};
+
+auto airTime =
+[](const TilePosition start, const TilePosition end)
+{
+	auto adist = airDistance(start, end)
+		- UnitTypes::Zerg_Overlord.sightRange();
+
+	double travelTime = adist / UnitTypes::Zerg_Overlord.topSpeed();
+	double time = travelTime;
+	return time;
+};
+
 //void scout(Unit* u) {
 //	Broodwar->sendText("Scouting!");
 //
@@ -457,7 +510,7 @@ void PeregrineBot::onStart()
 
 	// Set the command optimization level so that common commands can be grouped
 	// and reduce the bot's APM (Actions Per Minute).
-	Broodwar->setCommandOptimizationLevel(2);
+	Broodwar->setCommandOptimizationLevel(1);
 
 	// Check if this is a replay
 	if (Broodwar->isReplay())
@@ -510,7 +563,46 @@ void PeregrineBot::onStart()
 			}
 		}
 
-		if (islandFound)	Broodwar << "Islands on map!" << std::endl;
+		if (islandFound)
+			Broodwar << "Islands on map!" << std::endl;
+
+		std::set<Unit> overlords;
+		for (Unit u : Broodwar->self()->getUnits()){
+			if (u->getType() == UnitTypes::Zerg_Overlord)
+				overlords.insert(u);
+		}
+
+
+
+		for (TilePosition p : Broodwar->getStartLocations()){
+			if (p == Broodwar->self()->getStartLocation())
+				continue;
+			TilePosition airOrigin;
+			if (overlords.size() == 1) {
+				airOrigin = (TilePosition)(*overlords.begin())->getPosition();
+			}
+			else {
+				airOrigin = Broodwar->self()->getStartLocation();
+				Broodwar << "Not exactly 1 Overlord at start?!" << std::endl;
+			}
+			auto groundd = groundDistance(Broodwar->self()->getStartLocation(), p);
+			auto aird = airDistance(airOrigin, p);
+			auto groundt = groundTime(Broodwar->self()->getStartLocation(), p);
+			auto airt = airTime(airOrigin, p);
+			auto metricd = groundd - aird;
+			auto metrict = groundt - airt;
+
+			std::array<double, 6> arr = { groundd, aird, metricd, groundt, airt, metrict };
+
+			scoutingInfo.insert(std::pair<TilePosition,std::array<double,6>>(p, arr));
+
+			//Broodwar << "Ground distance: " << groundd << ", ";
+			//Broodwar << "Air distance: " << aird << ", ";
+			//Broodwar << "MetricD is: " << metricd << std::endl;
+			//Broodwar << "Ground time: " << groundt << ", ";
+			//Broodwar << "Air time: " << airt << ", ";
+			//Broodwar << "MetricT is: " << metrict << std::endl;
+		}
 	}
 }
 

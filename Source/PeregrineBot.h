@@ -7,6 +7,8 @@
 #include <BWTA.h>
 #include <boost/filesystem.hpp>
 #include <boost/filesystem/fstream.hpp>
+#include <array>
+#include <map>
 //#include <sqlite3.h>
 
 // Remember not to use "Broodwar" in any global class constructor!
