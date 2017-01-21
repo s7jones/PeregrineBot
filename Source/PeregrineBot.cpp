@@ -60,8 +60,47 @@ BWAPI::Unitset workerList;
 BWAPI::Unitset enemyArmy;
 std::map <TilePosition, std::array<double, 6>> scoutingInfo;
 
+std::map<int, std::pair<char*, int>> msgList;
+std::map<Unit, std::pair<std::vector<TilePosition>, int>> movelists;
+
 // not working for some reason
 //bool DrawUnitHealthBars = true;
+
+auto getPos =
+[](const BWAPI::TilePosition tp, const BWAPI::UnitType ut)
+{
+	return Position(Position(tp) + Position((ut.tileWidth() * BWAPI::TILEPOSITION_SCALE) / 2, (ut.tileHeight() * BWAPI::TILEPOSITION_SCALE) / 2));
+};
+
+struct sortByMostTopThenLeft {
+	bool operator()(const TilePosition& lhs_tp, const TilePosition& rhs_tp)
+	{
+		Position lhs = getPos(lhs_tp, UnitTypes::Special_Start_Location);
+		Position rhs = getPos(rhs_tp, UnitTypes::Special_Start_Location);
+		if (lhs.y <= rhs.y) {
+			if (lhs.y == rhs.y) {
+				if (lhs.x <= rhs.x) {
+					return true;  // lhs same y and less or equal x
+				}
+				else {
+					return false; // lhs same y but greater x
+				}
+			}
+			else {
+				return true; // lhs less y
+			}
+		}
+		else {
+			return false; // lhs greater y
+		}
+	}
+};
+
+// for now these have to go under sortByMost functor until
+// I can find out if I can put it in the header
+struct distAndTime { double distance; double time; };
+std::map <std::set<TilePosition, sortByMostTopThenLeft>, distAndTime> zerglingNetwork;
+std::map <std::set<TilePosition, sortByMostTopThenLeft>, distAndTime> overlordNetwork;
 
 void PeregrineBot::drawAdditionalInformation(){
 	// Display the game frame rate as text in the upper left area of the screen
@@ -329,10 +368,10 @@ void PeregrineBot::drawExtendedInterface()
 	}
 }
 
-auto getPos =
-[](const BWAPI::TilePosition tp, const BWAPI::UnitType ut)
-{
-	return Position(Position(tp) + Position((ut.tileWidth() * BWAPI::TILEPOSITION_SCALE) / 2, (ut.tileHeight() * BWAPI::TILEPOSITION_SCALE) / 2));
+struct ScoutingOptionFor4 {
+	std::array<TilePosition, 3> startToP1ToP2;
+	std::array<double, 2> groundTimeFromStartToP1ToP2;
+	double airTimeFromStartToOther;
 };
 
 auto groundDistance =
@@ -359,9 +398,10 @@ auto groundTime =
 	auto gdist = groundDistance(start, end)
 		- UnitTypes::Zerg_Zergling.sightRange();
 
-	double poolDone = 2437;	// frame time when, based on my samples, 99% the pool is done
+	//double poolDone = 2437;	// frame time when, based on my samples, 99% the pool is done
 	double travelTime = gdist / UnitTypes::Zerg_Zergling.topSpeed();
-	double time = (double) UnitTypes::Zerg_Zergling.buildTime() + poolDone + travelTime;
+	//double time = (double) UnitTypes::Zerg_Zergling.buildTime() + travelTime;
+	double time = travelTime;
 	return time;
 };
 
@@ -404,8 +444,6 @@ auto airTime =
 //		}
 //	}
 //}
-
-std::map<Unit, std::pair<std::vector<TilePosition>, int>> movelists;
 
 
 void zerglingScout(const Unit& u) {
@@ -479,8 +517,6 @@ void move(BWAPI::Unit* u, const BWAPI::Position &pos) {
 		}
 	}
 }
-
-std::map<int, std::pair<char*, int>> msgList;
 
 void sendText(int key, char* msg) {
 	std::pair<char*, int> value(msg, Broodwar->getFrameCount());
@@ -572,19 +608,18 @@ void PeregrineBot::onStart()
 				overlords.insert(u);
 		}
 
-
+		TilePosition airOrigin;
+		if (overlords.size() == 1) {
+			airOrigin = (TilePosition)(*overlords.begin())->getPosition();
+		}
+		else {
+			airOrigin = Broodwar->self()->getStartLocation();
+			Broodwar << "Not exactly 1 Overlord at start?!" << std::endl;
+		}
 
 		for (TilePosition p : Broodwar->getStartLocations()){
 			if (p == Broodwar->self()->getStartLocation())
 				continue;
-			TilePosition airOrigin;
-			if (overlords.size() == 1) {
-				airOrigin = (TilePosition)(*overlords.begin())->getPosition();
-			}
-			else {
-				airOrigin = Broodwar->self()->getStartLocation();
-				Broodwar << "Not exactly 1 Overlord at start?!" << std::endl;
-			}
 			auto groundd = groundDistance(Broodwar->self()->getStartLocation(), p);
 			auto aird = airDistance(airOrigin, p);
 			auto groundt = groundTime(Broodwar->self()->getStartLocation(), p);
@@ -595,14 +630,94 @@ void PeregrineBot::onStart()
 			std::array<double, 6> arr = { groundd, aird, metricd, groundt, airt, metrict };
 
 			scoutingInfo.insert(std::pair<TilePosition,std::array<double,6>>(p, arr));
-
-			//Broodwar << "Ground distance: " << groundd << ", ";
-			//Broodwar << "Air distance: " << aird << ", ";
-			//Broodwar << "MetricD is: " << metricd << std::endl;
-			//Broodwar << "Ground time: " << groundt << ", ";
-			//Broodwar << "Air time: " << airt << ", ";
-			//Broodwar << "MetricT is: " << metrict << std::endl;
 		}
+
+		for (auto iter1 = Broodwar->getStartLocations().begin(); iter1 != (Broodwar->getStartLocations().end() - 1); ++iter1) {
+			for (auto iter2 = iter1 + 1; iter2 != Broodwar->getStartLocations().end(); ++iter2){
+				std::set<TilePosition, sortByMostTopThenLeft> zerglingLink = { *iter1, *iter2 };
+				double zerglingDist = groundDistance(*iter1, *iter2);
+				double zerglingTime = groundTime(*iter1, *iter2);
+
+				// calculate airDistance from firstOverlordPosition
+				TilePosition p1, p2;
+				if (*iter1 == Broodwar->self()->getStartLocation()) {
+					p1 = airOrigin;
+				}
+				else {
+					p1 = *iter1;
+				}
+
+				if (*iter2 == Broodwar->self()->getStartLocation()) {
+					p2 = airOrigin;
+				}
+				else {
+					p2 = *iter2;
+				}
+
+				std::set<TilePosition, sortByMostTopThenLeft> overlordLink = { *iter1, *iter2 };
+				double overlordDist = airDistance(p1, p2);
+				double overlordTime = airTime(p1, p2);
+
+				distAndTime zerglingDnT = { zerglingDist, zerglingTime };
+				distAndTime overlordDnT = { overlordDist, overlordTime };
+
+				zerglingNetwork.insert(std::make_pair(zerglingLink, zerglingDnT));
+				overlordNetwork.insert(std::make_pair(overlordLink, overlordDnT));
+			}
+		}
+
+		int nodes = Broodwar->getStartLocations().size();
+		int networkSize = nodes * (nodes - 1) / 2;
+		Broodwar << "Network size from maths = " << networkSize << std::endl;
+		if (zerglingNetwork.size() != networkSize || overlordNetwork.size() != networkSize)
+			Broodwar << "Network size does not match maths." << std::endl;
+
+		std::map<std::array<TilePosition, 3>, std::array<double, 3>> scoutingNetwork;
+
+		auto allStartsList = Broodwar->getStartLocations();
+		std::set<TilePosition> allStarts(allStartsList.begin(), allStartsList.end());
+		std::set<TilePosition> otherStarts(allStarts);
+		otherStarts.erase(Broodwar->self()->getStartLocation());
+
+		Broodwar << allStarts.size() << " starts / " << otherStarts.size() << "otherstarts" << std::endl;
+
+		for (TilePosition p1 : otherStarts){
+			std::set<TilePosition, sortByMostTopThenLeft> startToP1 = { Broodwar->self()->getStartLocation(), p1 };
+			Broodwar << "ad" << overlordNetwork.find(startToP1)->second.distance << 
+				"   at" << overlordNetwork.find(startToP1)->second.time << std::endl;
+
+			if (Broodwar->getStartLocations().size() != 4) {
+				Broodwar << "less than 4 start positions" << std::endl;
+			}
+			else {
+				for (TilePosition p2 : otherStarts){
+					if (p2 == p1)
+						continue;
+					// p1 is any position that is not my start position,
+					// p2 is any position that is not start position or p1
+
+					std::set<TilePosition> remainingPlaces(otherStarts);
+					remainingPlaces.erase(p1);
+					remainingPlaces.erase(p2);
+					if (remainingPlaces.size() != 1)
+						continue;
+
+					std::set<TilePosition, sortByMostTopThenLeft> startToOther = { Broodwar->self()->getStartLocation(), *remainingPlaces.begin() };
+
+					std::set<TilePosition, sortByMostTopThenLeft> p1ToP2 = { p1, p2 };
+
+					std::array<TilePosition, 3> startToP1ToP2 = { Broodwar->self()->getStartLocation(), p1, p2 };
+					
+					double zerglingTimeStartP1 = zerglingNetwork.find(startToP1)->second.time;
+					double zerglingTimeP1P2 = zerglingNetwork.find(p1ToP2)->second.time;
+
+					ScoutingOptionFor4 scoutingOption;
+					scoutingOption.airTimeFromStartToOther = overlordNetwork.find(startToOther)->second.time;
+					scoutingOption.startToP1ToP2 = startToP1ToP2;
+				}
+			}
+		}
+
 	}
 }
 
