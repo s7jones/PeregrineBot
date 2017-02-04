@@ -113,14 +113,14 @@ std::map <std::set<TilePosition, sortByMostTopThenLeft>, distAndTime> overlordNe
 void PeregrineBot::drawAdditionalInformation(){
 	// Display the game frame rate as text in the upper left area of the screen
 	Broodwar->drawTextScreen(1, 0, "Supply: %i/%i", Broodwar->self()->supplyUsed(), Broodwar->self()->supplyTotal());
-	Broodwar->drawTextScreen(1, 10, "Framecount: %i", Broodwar->getFrameCount());
-	Broodwar->drawTextScreen(1, 20, "lasterror: %i", lastError);
-	Broodwar->drawTextScreen(1, 30, "enemy buildings: %i", enemyBuildings.size());
-	Broodwar->drawTextScreen(1, 40, "enemy army: %i", enemyArmy.size());
-	Broodwar->drawTextScreen(1, 50, "Hat/Work: %i/%i", hatcheries.size(), workerList.size());
+	Broodwar->drawTextScreen(1, 10, "Frame Count: %i", Broodwar->getFrameCount());
+	Broodwar->drawTextScreen(1, 20, "Last Error: %i", lastError);
+	Broodwar->drawTextScreen(1, 30, "Enemy Buildings: %i", enemyBuildings.size());
+	Broodwar->drawTextScreen(1, 40, "Enemy Army: %i", enemyArmy.size());
+	Broodwar->drawTextScreen(1, 50, "Htchrs/Wrkrs: %i/%i", hatcheries.size(), workerList.size());
 
-	Broodwar->drawTextScreen(100, 0, "bo indx: %i", indx);
-	Broodwar->drawTextScreen(100, 10, "pool: %i", pool);
+	Broodwar->drawTextScreen(100, 0, "BO index: %i", indx);
+	Broodwar->drawTextScreen(100, 10, "Pool: %i", pool);
 	
 	int screenVPos = 20;
 	int count = 1;
