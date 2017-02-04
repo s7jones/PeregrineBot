@@ -1,0 +1,11 @@
+﻿---
+BasedOnStyle: WebKit
+AlignAfterOpenBracket: Align
+AlignConsecutiveAssignments: 'true'
+AlignTrailingComments: 'true'
+AllowShortIfStatementsOnASingleLine: 'true'
+IndentWidth: '4'
+TabWidth: '4'
+UseTab: ForIndentation
+
+...
