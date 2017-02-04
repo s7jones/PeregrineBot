@@ -55,7 +55,7 @@ int poolLastChecked = 0;
 bool reachEnemyBase = false;
 bool destroyEnemyBase = false;
 
-static int frameCount = 1;
+int frameCount = 1;
 
 int i;
 Position enemyBase(0, 0);
@@ -70,6 +70,9 @@ std::map <TilePosition, std::array<double, 6>> scoutingInfo;
 
 std::map<int, std::pair<char*, int>> msgList;
 std::map<Unit, std::pair<std::vector<TilePosition>, int>> movelists;
+
+double duration = 0;
+std::chrono::steady_clock::time_point start;
 
 // not working for some reason
 //bool DrawUnitHealthBars = true;
@@ -857,13 +860,24 @@ void PeregrineBot::onEnd(bool isWinner)
 
 void PeregrineBot::onFrame()
 {
-	static double duration;
-	static std::chrono::steady_clock::time_point start;
 
-	if (frameCount == 1)
+	if (frameCount > 23)
 	{
-		start = std::chrono::steady_clock::now();
+		std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
+
+		//double duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() / 24;
+		std::chrono::duration<double, std::milli> fp_ms = end - start;
+		duration = fp_ms.count() / 24;
+		frameCount = 1;
 	}
+	else {
+		if (frameCount == 1)
+		{
+			start = std::chrono::steady_clock::now();
+		}
+		++frameCount;
+	}
+	Broodwar->drawTextScreen(1, 60, "Frame Time: %.1fms", duration);
 
 	// Called once every game frame
 
@@ -1270,18 +1284,6 @@ void PeregrineBot::onFrame()
 			} // end if moving
 		}
 	} // closure: unit iterator
-
-	++frameCount;
-
-	if (frameCount > 23)
-	{
-		std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
-
-		double duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() / 24;
-		frameCount = 1;
-	}
-	Broodwar->drawTextScreen(1, 60, "Frametime: %f", duration);
-
 
 	if (Broodwar->getFrameCount() > 86400)	Broodwar->leaveGame();
 }
