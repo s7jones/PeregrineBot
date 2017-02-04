@@ -19,6 +19,12 @@ https://bitbucket.org/auriarte/bwta2
 http://www.teamliquid.net/blogs/485544-intro-to-scbw-ai-development
 */
 
+//#ifdef NDEBUG
+#ifndef _DEBUG
+bool MY_DEBUG = false;
+#else
+bool MY_DEBUG = true;
+#endif
 
 using namespace BWAPI;
 using namespace Filter;
@@ -48,6 +54,8 @@ int lastChecked = 0;
 int poolLastChecked = 0;
 bool reachEnemyBase = false;
 bool destroyEnemyBase = false;
+
+static int frameCount = 1;
 
 int i;
 Position enemyBase(0, 0);
@@ -141,7 +149,9 @@ void PeregrineBot::drawAdditionalInformation(){
 	drawExtendedInterface();
 
 	if (analysis_just_finished) {
-		Broodwar << "Finished analyzing map." << std::endl;
+		if (MY_DEBUG) {
+			Broodwar << "Finished analyzing map." << std::endl;
+		}
 		analysis_just_finished = false;
 	}
 }
@@ -392,18 +402,45 @@ auto airDistance =
 	return dist;
 };
 
+/*auto groundTime =
+[](const TilePosition start, const TilePosition end, const UnitType ut, const bool reach)
+{
+	auto gdist = groundDistance(start, end);
+
+	if (!reach) {
+		gdist -= ut.sightRange();
+	}
+
+	double time = gdist / ut.topSpeed();
+	return time;
+};
+
+auto groundTime =
+[](const TilePosition start, const TilePosition end, const bool reach)
+{
+	auto time = groundTime(start, end, UnitTypes::Zerg_Zergling, true);
+	return time;
+};*/
+
 auto groundTime =
 [](const TilePosition start, const TilePosition end)
 {
-	auto gdist = groundDistance(start, end)
-		- UnitTypes::Zerg_Zergling.sightRange();
+	auto gdist = groundDistance(start, end);
 
-	//double poolDone = 2437;	// frame time when, based on my samples, 99% the pool is done
-	double travelTime = gdist / UnitTypes::Zerg_Zergling.topSpeed();
-	//double time = (double) UnitTypes::Zerg_Zergling.buildTime() + travelTime;
-	double time = travelTime;
+	//if (!reach) {
+	//	gdist -= ut.sightRange();
+	//}
+
+	double time = gdist / UnitTypes::Zerg_Zergling.topSpeed();
 	return time;
 };
+
+//auto airTime =
+//[](const TilePosition start, const TilePosition end, const bool reach)
+//{
+//	auto time = groundTime(start, end, UnitTypes::Zerg_Zergling, true);
+//	return time;
+//};
 
 auto airTime =
 [](const TilePosition start, const TilePosition end)
@@ -453,10 +490,14 @@ void zerglingScout(const Unit& u) {
 			Position buildingPos = building->getPosition();
 			// if building isn't reachable then skip
 			if (!BWTA::getRegion(u->getPosition())->isReachable(BWTA::getRegion(buildingPos))){
-				Broodwar << "unaccessible building" << std::endl;
+				if (MY_DEBUG) {
+					Broodwar << "unaccessible building" << std::endl;
+				}
 				continue;
 			}
-			Broodwar << "scoutable building" << std::endl;
+			if (MY_DEBUG) {
+				Broodwar << "scoutable building" << std::endl;
+			}
 			zerglingScoutLocations.push_back(buildingPos);
 		}
 		for (const auto& region : BWTA::getRegions()) {
@@ -480,7 +521,9 @@ void zerglingScout(const Unit& u) {
 		}
 	}
 	else {
-		Broodwar << "Zergling Scouting!" << std::endl;
+		if (MY_DEBUG) {
+			Broodwar << "Zergling Scouting!" << std::endl;
+		}
 		auto it = zerglingScoutLocations.begin();
 		Position perimeterPoint = (*it);
 		u->move(perimeterPoint, false);
@@ -531,12 +574,11 @@ void sendText(int key, char* msg) {
 
 void PeregrineBot::onStart()
 {
-	// Hello World!
-	Broodwar->sendText("PeregrineBot");
-
 	// Print the map name.
 	// BWAPI returns std::string when retrieving a string, don't forget to add .c_str() when printing!
-	Broodwar << "The map is " << Broodwar->mapName() << "!" << std::endl;
+	if (MY_DEBUG) {
+		Broodwar << "The map is " << Broodwar->mapName() << "!" << std::endl;
+	}
 
 	// Enable the UserInput flag, which allows us to control the bot and type messages.
 	//Broodwar->enableFlag(Flag::UserInput);
@@ -584,7 +626,9 @@ void PeregrineBot::onStart()
 		//analyzing = false;
 
 		if (analysis){
-			Broodwar << "Begin analyzing map." << std::endl;
+			if (MY_DEBUG) {
+				Broodwar << "Begin analyzing map." << std::endl;
+			}
 			BWTA::readMap();
 			BWTA::analyze();
 			analyzed = true;
@@ -600,7 +644,9 @@ void PeregrineBot::onStart()
 		}
 
 		if (islandFound)
-			Broodwar << "Islands on map!" << std::endl;
+			if (MY_DEBUG) {
+				Broodwar << "Islands on map!" << std::endl;
+			}
 
 		std::set<Unit> overlords;
 		for (Unit u : Broodwar->self()->getUnits()){
@@ -614,7 +660,9 @@ void PeregrineBot::onStart()
 		}
 		else {
 			airOrigin = Broodwar->self()->getStartLocation();
-			Broodwar << "Not exactly 1 Overlord at start?!" << std::endl;
+			if (MY_DEBUG) {
+				Broodwar << "Not exactly 1 Overlord at start?!" << std::endl;
+			}
 		}
 
 		for (TilePosition p : Broodwar->getStartLocations()){
@@ -668,10 +716,15 @@ void PeregrineBot::onStart()
 
 		int nodes = Broodwar->getStartLocations().size();
 		int networkSize = nodes * (nodes - 1) / 2;
-		Broodwar << "Network size from maths = " << networkSize << std::endl;
+		if (MY_DEBUG) {
+			Broodwar << "Network size from maths = " << networkSize << std::endl;
+		}
 		if (zerglingNetwork.size() != networkSize || overlordNetwork.size() != networkSize)
-			Broodwar << "Network size does not match maths." << std::endl;
-
+		{
+			if (MY_DEBUG) {
+				Broodwar << "Network size does not match maths." << std::endl;
+			}
+		}
 		std::map<std::array<TilePosition, 3>, std::array<double, 3>> scoutingNetwork;
 
 		auto allStartsList = Broodwar->getStartLocations();
@@ -679,15 +732,21 @@ void PeregrineBot::onStart()
 		std::set<TilePosition> otherStarts(allStarts);
 		otherStarts.erase(Broodwar->self()->getStartLocation());
 
-		Broodwar << allStarts.size() << " starts / " << otherStarts.size() << "otherstarts" << std::endl;
+		if (MY_DEBUG) {
+			Broodwar << allStarts.size() << " starts / " << otherStarts.size() << " otherstarts" << std::endl;
+		}
 
 		for (TilePosition p1 : otherStarts){
 			std::set<TilePosition, sortByMostTopThenLeft> startToP1 = { Broodwar->self()->getStartLocation(), p1 };
-			Broodwar << "ad" << overlordNetwork.find(startToP1)->second.distance << 
-				"   at" << overlordNetwork.find(startToP1)->second.time << std::endl;
+			if (MY_DEBUG) {
+				Broodwar << "ad" << overlordNetwork.find(startToP1)->second.distance <<
+					"   at" << overlordNetwork.find(startToP1)->second.time << std::endl;
+			}
 
 			if (Broodwar->getStartLocations().size() != 4) {
-				Broodwar << "less than 4 start positions" << std::endl;
+				if (MY_DEBUG) {
+					Broodwar << "less than 4 start positions" << std::endl;
+				}
 			}
 			else {
 				for (TilePosition p2 : otherStarts){
@@ -708,7 +767,9 @@ void PeregrineBot::onStart()
 
 					std::array<TilePosition, 3> startToP1ToP2 = { Broodwar->self()->getStartLocation(), p1, p2 };
 					
-					double zerglingTimeStartP1 = zerglingNetwork.find(startToP1)->second.time;
+					double poolDone = 2437;
+					double zerglingTimeStartP1 = zerglingNetwork.find(startToP1)->second.time
+						+ poolDone + (double) UnitTypes::Zerg_Zergling.buildTime();
 					double zerglingTimeP1P2 = zerglingNetwork.find(p1ToP2)->second.time;
 
 					ScoutingOptionFor4 scoutingOption;
@@ -796,6 +857,14 @@ void PeregrineBot::onEnd(bool isWinner)
 
 void PeregrineBot::onFrame()
 {
+	static double duration;
+	static std::chrono::steady_clock::time_point start;
+
+	if (frameCount == 1)
+	{
+		start = std::chrono::steady_clock::now();
+	}
+
 	// Called once every game frame
 
 	// Return if the game is a replay or is paused
@@ -878,7 +947,9 @@ void PeregrineBot::onFrame()
 					sprintf_s(msg, sizeof(msg), "Enemy base, x: %i, y: %i, frame: %i", otherPos.x, otherPos.y, Broodwar->getFrameCount());
 					//Broodwar->sendText(msg);
 					sendText(i, msg);
-					Broodwar << msg << std::endl;
+					if (MY_DEBUG) {
+						Broodwar << msg << std::endl;
+					}
 				}
 				enemyBase = otherPos;
 			}
@@ -931,11 +1002,17 @@ void PeregrineBot::onFrame()
 					if (!u->gather(u->getClosestUnit(IsMineralField || IsRefinery)))
 					{
 						// If the call fails, then print the last error message
-						Broodwar << Broodwar->getLastError() << std::endl;
+						if (MY_DEBUG) {
+							Broodwar << Broodwar->getLastError() << std::endl;
+						}
 					}
 
 				} // closure: has no powerup
-				else Broodwar << "is idle and has power up?" << std::endl;
+				else {
+					if (MY_DEBUG) {
+						Broodwar << "is idle and has power up?" << std::endl;
+					}
+				}
 			}
 			if (bo[indx] == UnitTypes::Zerg_Spawning_Pool) {
 				if ((!pool) && (Broodwar->self()->minerals() >= UnitTypes::Zerg_Spawning_Pool.mineralPrice())) {
@@ -966,11 +1043,15 @@ void PeregrineBot::onFrame()
 		if ((bo[indx] == UnitTypes::Zerg_Spawning_Pool) && (u->getType() == UnitTypes::Zerg_Spawning_Pool) && (u->isBeingConstructed())){
 			indx++;
 			pool = true;
-			Broodwar << "pool isBeingConstructed: " << Broodwar->getFrameCount() << std::endl;
+			if (MY_DEBUG) {
+				Broodwar << "pool isBeingConstructed: " << Broodwar->getFrameCount() << std::endl;
+			}
 		}
 
 		if ((!poolready) && (u->getType() == UnitTypes::Zerg_Spawning_Pool) && (u->isCompleted())) {
-			Broodwar << "pool ready: " << Broodwar->getFrameCount() << std::endl;
+			if (MY_DEBUG) {
+				Broodwar << "pool ready: " << Broodwar->getFrameCount() << std::endl;
+			}
 			poolready = true;
 		}
 
@@ -1010,7 +1091,9 @@ void PeregrineBot::onFrame()
 			{
 				if (!u->getLarva().empty()) {
 					u->train(UnitTypes::Zerg_Drone);
-					Broodwar << "droning up from " << workerList.size() << " to " << (hatcheries.size() * 3) << std::endl;
+					if (MY_DEBUG) {
+						Broodwar << "droning up from " << workerList.size() << " to " << (hatcheries.size() * 3) << std::endl;
+					}
 				}
 			}
 
@@ -1036,7 +1119,9 @@ void PeregrineBot::onFrame()
 				}
 				else {
 					// Overlord scouting perimeter of all regions
-					Broodwar << "Overlord Scouting!" << std::endl;
+					if (MY_DEBUG) {
+						Broodwar << "Overlord Scouting!" << std::endl;
+					}
 					static std::deque<Position> scoutLocations;
 					if (scoutLocations.empty()) {
 						BWTA::Region* enemyRegion = BWTA::getRegion(enemyBase);
@@ -1070,7 +1155,9 @@ void PeregrineBot::onFrame()
 		if (u->getType() == UnitTypes::Zerg_Zergling) {
 			if ((enemyBase.x != 0) && (enemyBase.y != 0)){
 				if ((!reachEnemyBase) && (BWTA::getRegion(u->getPosition()) == BWTA::getRegion(enemyBase))) {
-					Broodwar << "reach enemy base: " << Broodwar->getFrameCount() << std::endl;
+					if (MY_DEBUG) {
+						Broodwar << "reach enemy base: " << Broodwar->getFrameCount() << std::endl;
+					}
 					reachEnemyBase = true;
 				}
 			}
@@ -1169,7 +1256,10 @@ void PeregrineBot::onFrame()
 					Position targetPos = lastCmd.getTargetPosition();
 					//if (unscoutedOtherPositions.find(targetPos) == unscoutedOtherPositions.end()) {
 					if ((unscoutedOtherPositions.count(targetPos) == 0) && (!unscoutedOtherPositions.empty())) {
-						Broodwar << "recalculate scouting" << std::endl;
+						if (MY_DEBUG)
+						{
+							Broodwar << "recalculate scouting" << std::endl;
+						}
 						u->stop();
 						u->move((*unscoutedOtherPositions.begin()), false);
 						/*for (auto p : unscoutedOtherPositions) {
@@ -1180,6 +1270,18 @@ void PeregrineBot::onFrame()
 			} // end if moving
 		}
 	} // closure: unit iterator
+
+	++frameCount;
+
+	if (frameCount > 23)
+	{
+		std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
+
+		double duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() / 24;
+		frameCount = 1;
+	}
+	Broodwar->drawTextScreen(1, 60, "Frametime: %f", duration);
+
 
 	if (Broodwar->getFrameCount() > 86400)	Broodwar->leaveGame();
 }
@@ -1199,7 +1301,9 @@ void PeregrineBot::onSendText(std::string text)
 void PeregrineBot::onReceiveText(BWAPI::Player player, std::string text)
 {
 	// Parse the received text
-	Broodwar << player->getName() << " said \"" << text << "\"" << std::endl;
+	if (MY_DEBUG) {
+		Broodwar << player->getName() << " said \"" << text << "\"" << std::endl;
+	}
 }
 
 void PeregrineBot::onPlayerLeft(BWAPI::Player player)
@@ -1216,7 +1320,9 @@ void PeregrineBot::onNukeDetect(BWAPI::Position target)
 	if (target)
 	{
 		// if so, print the location of the nuclear strike target
-		Broodwar << "Nuclear Launch Detected at " << target << std::endl;
+		if (MY_DEBUG) {
+			Broodwar << "Nuclear Launch Detected at " << target << std::endl;
+		}
 	}
 	else
 	{
@@ -1300,7 +1406,9 @@ void PeregrineBot::onUnitDestroy(BWAPI::Unit unit)
 
 	if (unit->getPosition() == enemyBase) {
 		destroyEnemyBase = true;
-		Broodwar << "destroyed enemy base: " << Broodwar->getFrameCount() << std::endl;
+		if (MY_DEBUG) {
+			Broodwar << "destroyed enemy base: " << Broodwar->getFrameCount() << std::endl;
+		}
 	}
 	enemyBuildings.erase(unit);
 }
@@ -1334,7 +1442,9 @@ void PeregrineBot::onUnitMorph(BWAPI::Unit unit)
 
 void PeregrineBot::onUnitRenegade(BWAPI::Unit unit)
 {
-	Broodwar << unit->getType() << ", " << unit->getPlayer()->getName() << ": was renegaded!" << std::endl;
+	if (MY_DEBUG) {
+		Broodwar << unit->getType() << ", " << unit->getPlayer()->getName() << ": was renegaded!" << std::endl;
+	}
 	
 	if (unit->getType().isWorker() && unit->getPlayer() == BWAPI::Broodwar->self())
 	{
