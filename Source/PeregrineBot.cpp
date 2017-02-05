@@ -32,8 +32,7 @@ using namespace Filter;
 bool analyzed;
 bool analysis_just_finished;
 bool analyzing;
-const bool analysis = true;
-
+const bool analysis            = true;
 const std::vector<UnitType> bo = { UnitType(UnitTypes::Zerg_Drone),
 	                               UnitType(UnitTypes::Zerg_Spawning_Pool),
 	                               UnitType(UnitTypes::Zerg_Drone),
@@ -45,18 +44,14 @@ const std::vector<UnitType> bo = { UnitType(UnitTypes::Zerg_Drone),
 	                               UnitType(UnitTypes::Zerg_Zergling),
 	                               UnitType(UnitTypes::Zerg_Zergling),
 	                               UnitType(UnitTypes::Zerg_Zergling) };
-
-int indx = 0;
-
+int indx              = 0;
 bool pool             = false;
 bool poolready        = false;
 int lastChecked       = 0;
 int poolLastChecked   = 0;
 bool reachEnemyBase   = false;
 bool destroyEnemyBase = false;
-
-int frameCount = 1;
-
+int frameCount        = 1;
 int i;
 Position enemyBase(0, 0);
 Race enemyRace      = Races::Unknown;
@@ -68,9 +63,29 @@ BWAPI::Unitset workerList;
 BWAPI::Unitset enemyArmy;
 std::map<TilePosition, std::array<double, 6>> scoutingInfo;
 
+struct ScoutingOptionFor4 {
+	std::array<TilePosition, 3> startToP1ToP2;
+	std::array<double, 2> groundTimeFromStartToP1ToP2;
+	double airTimeFromStartToOther;
+	double maxTime;
+	double meanTime;
+	double stdDev;
+};
+
+struct sortByMeanTime {
+	bool operator()(const ScoutingOptionFor4& lhs, const ScoutingOptionFor4& rhs)
+	{
+		if (lhs.meanTime <= rhs.meanTime) {
+			return true; // lhs meantTime is less
+		} else {
+			return false;
+		}
+	}
+};
+
+std::set<ScoutingOptionFor4, sortByMeanTime> scoutingOptions;
 std::map<int, std::pair<char*, int>> msgList;
 std::map<Unit, std::pair<std::vector<TilePosition>, int>> movelists;
-
 double duration = 0;
 std::chrono::steady_clock::time_point start;
 
@@ -111,12 +126,6 @@ struct distAndTime {
 };
 std::map<std::set<TilePosition, sortByMostTopThenLeft>, distAndTime> zerglingNetwork;
 std::map<std::set<TilePosition, sortByMostTopThenLeft>, distAndTime> overlordNetwork;
-
-struct ScoutingOptionFor4 {
-	std::array<TilePosition, 3> startToP1ToP2;
-	std::array<double, 2> groundTimeFromStartToP1ToP2;
-	double airTimeFromStartToOther;
-};
 
 auto groundDistance =
     [](const TilePosition start, const TilePosition end) {
@@ -477,26 +486,48 @@ void PeregrineBot::onStart()
 					std::set<TilePosition> remainingPlaces(otherStarts);
 					remainingPlaces.erase(p1);
 					remainingPlaces.erase(p2);
-					if (remainingPlaces.size() != 1)
+					if (remainingPlaces.size() != 1) {
+						if (MY_DEBUG) {
+							Broodwar << "remaining places less than 1" << std::endl;
+						}
 						continue;
+					}
 
 					std::set<TilePosition, sortByMostTopThenLeft> startToOther = { Broodwar->self()->getStartLocation(), *remainingPlaces.begin() };
-
-					std::set<TilePosition, sortByMostTopThenLeft> p1ToP2 = { p1, p2 };
-
-					std::array<TilePosition, 3> startToP1ToP2 = { Broodwar->self()->getStartLocation(), p1, p2 };
+					std::set<TilePosition, sortByMostTopThenLeft> p1ToP2       = { p1, p2 };
+					std::array<TilePosition, 3> startToP1ToP2                  = { Broodwar->self()->getStartLocation(), p1, p2 };
 
 					double poolDone            = 2437;
 					double zerglingTimeStartP1 = zerglingNetwork.find(startToP1)->second.time
 					    + poolDone + (double)UnitTypes::Zerg_Zergling.buildTime();
-					double zerglingTimeP1P2 = zerglingNetwork.find(p1ToP2)->second.time;
+					double zerglingTimeP1P2    = zerglingTimeStartP1 + zerglingNetwork.find(p1ToP2)->second.time;
+					double overLordTimeToOther = overlordNetwork.find(startToOther)->second.time;
+					double meanTime            = (overLordTimeToOther + zerglingTimeStartP1 + zerglingTimeP1P2) / 3;
+					double stdDev              = sqrt((pow(overLordTimeToOther - meanTime, 2) + pow(zerglingTimeStartP1 - meanTime, 2) + pow(zerglingTimeP1P2 - meanTime, 2)) / 3);
 
 					ScoutingOptionFor4 scoutingOption;
-					scoutingOption.airTimeFromStartToOther = overlordNetwork.find(startToOther)->second.time;
-					scoutingOption.startToP1ToP2           = startToP1ToP2;
+					scoutingOption.airTimeFromStartToOther     = overLordTimeToOther;
+					scoutingOption.startToP1ToP2               = startToP1ToP2;
+					scoutingOption.groundTimeFromStartToP1ToP2 = { { zerglingTimeStartP1, zerglingTimeP1P2 } };
+					scoutingOption.maxTime                     = std::max(overLordTimeToOther, zerglingTimeP1P2);
+					scoutingOption.meanTime                    = meanTime;
+					scoutingOption.stdDev                      = stdDev;
+
+					scoutingOptions.insert(scoutingOption);
 				}
 			}
 		}
+
+		//for (auto scoutingOption : scoutingOptions) {
+		//	auto start = scoutingOption.startToP1ToP2.front();
+		//	for (auto tp : scoutingOption.startToP1ToP2) {
+		//		if (tp == start)
+		//			continue;
+		//		auto p = getPos(tp, UnitTypes::Special_Start_Location);
+		//		Broodwar << p.x << "," << p.y << "; ";
+		//	}
+		//	Broodwar << scoutingOption.meanTime << " +- " << scoutingOption.stdDev << std::endl;
+		//}
 	}
 }
 
@@ -1121,10 +1152,20 @@ void PeregrineBot::drawAdditionalInformation()
 
 	int screenVPos = 20;
 	int count      = 1;
-	for (auto scoutData : scoutingInfo) {
-		Broodwar->drawTextScreen(100, screenVPos, "%i: gd%.1f ad%.1f md%.1f gt%.1f at%.1f mt%.1f", count,
-		                         scoutData.second[0], scoutData.second[1], scoutData.second[2],
-		                         scoutData.second[3], scoutData.second[4], scoutData.second[5]);
+	//for (auto scoutData : scoutingInfo) {
+	//	Broodwar->drawTextScreen(100, screenVPos, "%i: gd%.1f ad%.1f md%.1f gt%.1f at%.1f mt%.1f", count,
+	//	                         scoutData.second[0], scoutData.second[1], scoutData.second[2],
+	//	                         scoutData.second[3], scoutData.second[4], scoutData.second[5]);
+	//	count++;
+	//	screenVPos += 10;
+	//}
+
+	for (auto scoutingOption : scoutingOptions) {
+		Broodwar->drawTextScreen(100, screenVPos, "%i: %i,%i; %i,%i : %.1f +- %.1f", count,
+		                         scoutingOption.startToP1ToP2[1].x, scoutingOption.startToP1ToP2[1].y,
+		                         scoutingOption.startToP1ToP2[2].x, scoutingOption.startToP1ToP2[2].y,
+		                         scoutingOption.meanTime, scoutingOption.stdDev);
+
 		count++;
 		screenVPos += 10;
 	}
