@@ -2,7 +2,7 @@
 
 /**
 Bot: PeregrineBot
-Auther: S Jones (s7jones)
+Author: S Jones (s7jones)
 
 A simple, not very clever, 5 pooling zerg.
 Beats the vanilla AI consistently on the SSCAI maps.
@@ -613,7 +613,7 @@ void PeregrineBot::onFrame()
 	static int choice = -1;
 
 	if (Broodwar->getFrameCount() == 2300) {
-		choice = rand() % 1000;
+		choice = rand() % 100;
 		switch (choice) {
 		case 17:
 			Broodwar->sendText("Status: 0x00000011");
