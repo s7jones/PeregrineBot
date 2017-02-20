@@ -11,6 +11,7 @@
 #include <map>
 #include <string>
 //#include <sqlite3.h>
+#include "DebugMessenger.h"
 
 // Remember not to use "Broodwar" in any global class constructor!
 
@@ -43,4 +44,6 @@ public:
 	//void scoutOverlord(BWAPI::Unit* u);
 	void move(BWAPI::Unit* u, const BWAPI::Position& pos);
 	void setMoveTo(BWAPI::Unit* u, const BWAPI::Position& pos);
+
+	bool MY_DEBUG;
 };
