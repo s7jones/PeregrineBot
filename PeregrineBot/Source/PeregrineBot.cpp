@@ -238,24 +238,6 @@ void zerglingScout(const Unit& u)
 {
 	static std::deque<Position> zerglingScoutLocations;
 	if (zerglingScoutLocations.empty()) {
-		for (const auto& building : enemyBuildings) {
-			Position buildingPos = building->getPosition();
-			// if building isn't reachable then skip
-			if (!BWTA::getRegion(u->getPosition())->isReachable(BWTA::getRegion(buildingPos))) {
-				/*if (MY_DEBUG) {
-				Broodwar << "unaccessible building" << std::endl;
-				}*/
-				debugMessenger << "unaccessible building" << std::endl;
-
-				continue;
-			}
-			/*if (MY_DEBUG) {
-			Broodwar << "scoutable building" << std::endl;
-			}*/
-			debugMessenger << "scoutable building" << std::endl;
-
-			zerglingScoutLocations.push_back(buildingPos);
-		}
 		for (const auto& region : BWTA::getRegions()) {
 			// if region isn't reachable then skip
 			if (!BWTA::getRegion(u->getPosition())->isReachable(region)) {
@@ -273,6 +255,23 @@ void zerglingScout(const Unit& u)
 				}
 			}
 		}
+		for (const auto& building : enemyBuildings) {
+			Position buildingPos = building->getPosition();
+			// if building isn't reachable then skip
+			if (!BWTA::getRegion(u->getPosition())->isReachable(BWTA::getRegion(buildingPos))) {
+				/*if (MY_DEBUG) {
+				Broodwar << "unaccessible building" << std::endl;
+				}*/
+				debugMessenger << "unaccessible building" << std::endl;
+				continue;
+			}
+			/*if (MY_DEBUG) {
+			Broodwar << "scoutable building" << std::endl;
+			}*/
+			debugMessenger << "scoutable building" << std::endl;
+			auto it = zerglingScoutLocations.begin();
+			it      = zerglingScoutLocations.insert(it, buildingPos);
+		}
 	} else {
 		/*if (MY_DEBUG) {
 		Broodwar << "Zergling Scouting!" << std::endl;
@@ -281,8 +280,8 @@ void zerglingScout(const Unit& u)
 
 		auto it                 = zerglingScoutLocations.begin();
 		Position perimeterPoint = (*it);
-		unitsToWaitAfterOrder.insert({ u, 0 });
 		u->move(perimeterPoint, false);
+		unitsToWaitAfterOrder.insert({ u, 0 });
 		zerglingScoutLocations.erase(it);
 	}
 }
@@ -932,7 +931,6 @@ void PeregrineBot::onFrame()
 				unitsToWaitAfterOrder.insert({ u, 0 });
 				u->move(getBasePos(Broodwar->self()->getStartLocation()));
 			} else if ((enemyBase.x != 0) && (enemyBase.y != 0)) {
-				unitsToWaitAfterOrder.insert({ u, 0 });
 				u->stop();
 			}
 		}
