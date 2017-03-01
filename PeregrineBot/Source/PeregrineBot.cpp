@@ -61,13 +61,14 @@ std::string Version = "v4";
 Error lastError     = Errors::None;
 std::set<Unit> enemyBuildings;
 std::set<Unit> hatcheries;
-BWAPI::Unitset workerList;
-BWAPI::Unitset enemyArmy;
+std::set<Unit> workerList;
+std::set<Unit> enemyArmy;
 std::map<TilePosition, std::array<double, 6>> scoutingInfo;
 std::set<TilePosition> allStarts;
 std::set<TilePosition> otherStarts;
 std::set<Position> unscoutedPositions;
 std::set<Position> scoutedPositions;
+std::map<Unit, int> unitsToWaitAfterOrder;
 
 struct ScoutingOptionFor4 {
 	std::array<TilePosition, 3> startToP1ToP2;
@@ -280,6 +281,7 @@ void zerglingScout(const Unit& u)
 
 		auto it                 = zerglingScoutLocations.begin();
 		Position perimeterPoint = (*it);
+		unitsToWaitAfterOrder.insert({ u, 0 });
 		u->move(perimeterPoint, false);
 		zerglingScoutLocations.erase(it);
 	}
@@ -365,8 +367,9 @@ void PeregrineBot::onStart()
 		// Retrieve you and your enemy's races. enemy() will just return the first enemy.
 		// If you wish to deal with multiple enemies then you must use enemies().
 		if (Broodwar->enemy()) // First make sure there is an enemy
+		{
 			//Broodwar << "The matchup is " << Broodwar->self()->getRace() << " vs " << Broodwar->enemy()->getRace() << std::endl;
-
+		}
 		// Make our bot run thousands of games as fast as possible!
 		Broodwar->setLocalSpeed(0);
 		//Broodwar->setGUI(false);
@@ -735,6 +738,17 @@ void PeregrineBot::onFrame()
 		/* if ( !u->isCompleted() || u->isConstructing() )
 		continue;*/
 
+		// If unit has been given an order in the last 8 frames
+		auto unitIterator = unitsToWaitAfterOrder.find(u);
+		if (unitIterator != unitsToWaitAfterOrder.end()) {
+			++(unitIterator->second);
+			if (unitIterator->second >= 8) {
+				unitsToWaitAfterOrder.erase(u);
+			} else {
+				continue;
+			}
+		}
+
 		// Finally make the unit do some stuff!
 		// If the unit is a worker unit
 		if (u->getType().isWorker()) {
@@ -771,6 +785,7 @@ void PeregrineBot::onFrame()
 						//find a location for spawning pool and construct it
 						TilePosition buildPosition = Broodwar->getBuildLocation(UnitTypes::Zerg_Spawning_Pool, u->getTilePosition());
 						u->build(UnitTypes::Zerg_Spawning_Pool, buildPosition);
+						unitsToWaitAfterOrder.insert({ u, 0 });
 						poolLastChecked = Broodwar->getFrameCount();
 					}
 				}
@@ -780,6 +795,7 @@ void PeregrineBot::onFrame()
 				if ((lastChecked + 400) < Broodwar->getFrameCount()) {
 					TilePosition buildPosition = Broodwar->getBuildLocation(UnitTypes::Zerg_Hatchery, u->getTilePosition());
 					u->build(UnitTypes::Zerg_Hatchery, buildPosition);
+					unitsToWaitAfterOrder.insert({ u, 0 });
 					lastChecked = Broodwar->getFrameCount();
 				}
 			}
@@ -862,16 +878,19 @@ void PeregrineBot::onFrame()
 						auto p                        = getBasePos(tp);
 						const bool firstOptionScouted = scoutedPositions.find(p) != scoutedPositions.end();
 						if (!firstOptionScouted) {
+							unitsToWaitAfterOrder.insert({ u, 0 });
 							u->move(p, true);
 						} else {
 							for (auto p2 : boost::adaptors::reverse(unscoutedPositions)) { //https://stackoverflow.com/questions/8542591/c11-reverse-range-based-for-loop
 								if (p2 == p)
 									continue;
+								unitsToWaitAfterOrder.insert({ u, 0 });
 								u->move(p2, true);
 							}
 						}
 					} else {                                                          // map size isn't 4, so use old scouting
 						for (auto p : boost::adaptors::reverse(unscoutedPositions)) { //https://stackoverflow.com/questions/8542591/c11-reverse-range-based-for-loop
+							unitsToWaitAfterOrder.insert({ u, 0 });
 							u->move(p, true);
 						}
 					}
@@ -901,15 +920,19 @@ void PeregrineBot::onFrame()
 					} else {
 						auto it              = scoutLocations.begin();
 						Position baseToScout = (*it);
+						unitsToWaitAfterOrder.insert({ u, 0 });
 						u->move(baseToScout, false);
 						scoutLocations.erase(it);
 					}
 				} else { // enemy race is terran, move back to our own base
+					unitsToWaitAfterOrder.insert({ u, 0 });
 					u->move(getBasePos(Broodwar->self()->getStartLocation()));
 				}
 			} else if (u->isUnderAttack()) {
+				unitsToWaitAfterOrder.insert({ u, 0 });
 				u->move(getBasePos(Broodwar->self()->getStartLocation()));
 			} else if ((enemyBase.x != 0) && (enemyBase.y != 0)) {
+				unitsToWaitAfterOrder.insert({ u, 0 });
 				u->stop();
 			}
 		}
@@ -935,15 +958,19 @@ void PeregrineBot::onFrame()
 				Unit enemy_atall = u->getClosestUnit(IsEnemy);
 				if (enemy) {
 					//Broodwar->setLocalSpeed(1);
+					unitsToWaitAfterOrder.insert({ u, 0 });
 					u->attack(PositionOrUnit(enemy));
 					//Broodwar->setLocalSpeed(1);
 				} else if (supply) {
-
+					unitsToWaitAfterOrder.insert({ u, 0 });
 					u->attack(PositionOrUnit(supply));
-				} else if (worker)
+				} else if (worker) {
+					unitsToWaitAfterOrder.insert({ u, 0 });
 					u->attack(PositionOrUnit(worker));
-				else if (enemy_atall)
+				} else if (enemy_atall) {
+					unitsToWaitAfterOrder.insert({ u, 0 });
 					u->attack(PositionOrUnit(enemy_atall));
+				}
 			}      // end if protoss
 			else { // not protoss - enemy and worker then supply
 				Unit enemy = u->getClosestUnit(
@@ -953,12 +980,16 @@ void PeregrineBot::onFrame()
 				Unit enemy_atall = u->getClosestUnit(IsEnemy);
 				if (enemy) {
 					//Broodwar->setLocalSpeed(1);
+					unitsToWaitAfterOrder.insert({ u, 0 });
 					u->attack(PositionOrUnit(enemy));
 					//Broodwar->setLocalSpeed(1);
-				} else if (supply)
+				} else if (supply) {
+					unitsToWaitAfterOrder.insert({ u, 0 });
 					u->attack(PositionOrUnit(supply));
-				else if (enemy_atall)
+				} else if (enemy_atall) {
+					unitsToWaitAfterOrder.insert({ u, 0 });
 					u->attack(PositionOrUnit(enemy_atall));
+				}
 			}
 
 			//Unit neutral = u->getClosestUnit(IsNeutral && IsBuilding, 5);
@@ -974,11 +1005,13 @@ void PeregrineBot::onFrame()
 				} else {
 					if ((enemyBase.x != 0) && (enemyBase.y != 0)) {
 						if (!destroyEnemyBase) {
-							if (!Broodwar->isVisible(TilePosition(enemyBase)))
+							if (!Broodwar->isVisible(TilePosition(enemyBase))) {
+								unitsToWaitAfterOrder.insert({ u, 0 });
 								u->attack(PositionOrUnit(enemyBase));
-							else if (!Broodwar->getUnitsOnTile(TilePosition(enemyBase), IsEnemy && IsVisible && Exists && IsBuilding && !IsLifted).empty())
+							} else if (!Broodwar->getUnitsOnTile(TilePosition(enemyBase), IsEnemy && IsVisible && Exists && IsBuilding && !IsLifted).empty()) {
+								unitsToWaitAfterOrder.insert({ u, 0 });
 								u->attack(PositionOrUnit(enemyBase));
-							else {
+							} else {
 								zerglingScout(u);
 							}
 						} // havent destroyed enemy base
@@ -995,6 +1028,7 @@ void PeregrineBot::onFrame()
 							auto p2                        = getBasePos(tp2);
 							const bool secondOptionScouted = scoutedPositions.find(p2) != scoutedPositions.end();
 							if (!firstOptionScouted) {
+								unitsToWaitAfterOrder.insert({ u, 0 });
 								u->move(p1, false);
 								/*if (MY_DEBUG) {
 								Broodwar << " moving to tp1" << tp1.x << "," << tp1.y << std::endl;
@@ -1003,6 +1037,7 @@ void PeregrineBot::onFrame()
 
 							} else if (!secondOptionScouted) {
 								u->move(p2, false);
+								unitsToWaitAfterOrder.insert({ u, 0 });
 								/*if (MY_DEBUG) {
 								Broodwar << " moving to tp2" << tp2.x << "," << tp2.y << std::endl;
 								}*/
@@ -1010,6 +1045,7 @@ void PeregrineBot::onFrame()
 
 							} else {
 								auto p = *unscoutedPositions.begin();
+								unitsToWaitAfterOrder.insert({ u, 0 });
 								u->move(p, false);
 								auto tp3 = (TilePosition)p;
 								/*if (MY_DEBUG) {
@@ -1019,6 +1055,7 @@ void PeregrineBot::onFrame()
 							}
 						} else { // map size isn't 4, so use old scouting
 							auto p = *unscoutedPositions.begin();
+							unitsToWaitAfterOrder.insert({ u, 0 });
 							u->move(p, false);
 							//move(u, (*unscoutedOtherPositions.begin()));
 							/*for (auto p : unscoutedOtherPositions) {
@@ -1364,9 +1401,9 @@ void PeregrineBot::drawExtendedInterface()
 		if (!type.isResourceContainer() && type.maxHitPoints() > 0) {
 			double hpRatio = (double)hitPoints / (double)type.maxHitPoints();
 
-			BWAPI::Color hpColor        = BWAPI::Colors::Green;
-			if (hpRatio < 0.66) hpColor = BWAPI::Colors::Orange;
-			if (hpRatio < 0.33) hpColor = BWAPI::Colors::Red;
+			BWAPI::Color hpColor         = BWAPI::Colors::Green;
+			if (hpRatio <= 0.67) hpColor = BWAPI::Colors::Orange;
+			if (hpRatio <= 0.33) hpColor = BWAPI::Colors::Red;
 
 			int ratioRight = left + (int)((right - left) * hpRatio);
 			int hpTop      = top + verticalOffset;
