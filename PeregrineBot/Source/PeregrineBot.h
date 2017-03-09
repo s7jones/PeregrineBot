@@ -12,6 +12,7 @@
 #include <string>
 //#include <sqlite3.h>
 #include "DebugMessenger.h"
+#include "BaseManager.h"
 
 // Remember not to use "Broodwar" in any global class constructor!
 

@@ -1,26 +1,30 @@
 #include "BaseManager.h"
 
-#include <boost/foreach.hpp>
+using namespace BWAPI;
 
-bool isLeft(BWAPI::Position a, BWAPI::Position b, BWAPI::Position c)
+bool LanLatency = true;
+std::vector<BaseManager*> CCmanager;
+
+bool isLeft(Position a, Position b, Position c)
 {
-	return ((b.x() - a.x()) * (c.y() - a.y()) - (b.y() - a.y()) * (c.x() - a.x())) >= 0;
+	return ((b.x - a.x) * (c.y - a.y) - (b.y - a.y) * (c.x - a.x)) >= 0;
 }
 
-void BaseManager::CalCulateTrickChoice()
+void BaseManager::CalculateTrickChoice()
 {
-
 	if (LanLatency == true) {
-		CalCulateTrick();
+		CalculateTrick();
 	}
 }
 
-BaseManager::BaseManager(Unit* CC, BWAPI::TilePosition land)
+BaseManager::BaseManager(Unit CC, TilePosition land)
 {
 
-	Broodwar->printf("added command center");
+	//Broodwar->printf("added command center");
 
-	InitialMinerals = 0; //will be added on addMineralField()
+	BWAPI::Broodwar << "added command center" << std::endl;
+
+	InitialMinerals = 0; // will be added on addMineralField()
 	SCVsonGas       = 3;
 	cycleMineral    = 0;
 	MineralSCV.clear();
@@ -39,30 +43,33 @@ BaseManager::BaseManager(Unit* CC, BWAPI::TilePosition land)
 	if (BaseReady == true) {
 
 		/*
-		for(std::set<Unit*>::iterator m=Broodwar->getMinerals().begin();m!=Broodwar->getMinerals().end();m++)
+		for(std::set<Unit>::iterator m=Broodwar->getMinerals().begin();m!=Broodwar->getMinerals().end();m++)
 		{
 		if ( CommandCenter->getDistance(*m)<  11*32 ){
-		//Minerals.push_back( *m);
+		// Minerals.push_back( *m);
 		addMineralField(*m);
 		}
 		}
 		*/
 
-		std::set<Unit*> GetMinerals = CommandCenter->getUnitsInRadius(15 * 32);
-		BOOST_FOREACH (Unit* mineral, GetMinerals) {
+		Unitset GetMinerals = CommandCenter->getUnitsInRadius(15 * 32);
+
+		// BOOST_FOREACH (Unit mineral, GetMinerals) {
+		for (auto mineral : GetMinerals) {
 			if (mineral->getType() == BWAPI::UnitTypes::Resource_Mineral_Field) {
 				addMineralField(mineral);
 			}
 		}
 
-		CalCulateTrickChoice();
-		for (std::set<Unit*>::iterator g = Broodwar->getGeysers().begin(); g != Broodwar->getGeysers().end(); g++) {
-			if (CommandCenter->getDistance(*g) < 11 * 32) {
-				Geysers.push_back(*g);
-				//Broodwar->printf("added geyser");
+		CalculateTrickChoice();
+		// for (std::set<Unit>::iterator g = Broodwar->getGeysers().begin(); g != Broodwar->getGeysers().end(); g++) {
+		for (auto geyser : BWAPI::Broodwar->getGeysers()) {
+			if (CommandCenter->getDistance(geyser) < 11 * 32) {
+				Geysers.push_back(geyser);
+				// Broodwar->printf("added geyser");
 			}
 		}
-		//SCVsaturation = Minerals.size() * 2 + 2; //force gather trick is almost saturated at 2 times minerals
+		// SCVsaturation = Minerals.size() * 2 + 2; // force gather trick is almost saturated at 2 times minerals
 	}
 
 	/*
@@ -80,13 +87,13 @@ BaseManager::BaseManager(Unit* CC, BWAPI::TilePosition land)
 
 	*/
 	/*
-	for(std::set<Unit*>::iterator m=Broodwar->getMinerals().begin();m!=Broodwar->getMinerals().end();m++)
+	for(std::set<Unit>::iterator m=Broodwar->getMinerals().begin();m!=Broodwar->getMinerals().end();m++)
 	{
 	if ( CommandCenter->getDistance(*m)<  300 ){
 	Minerals.push_back( *m);
 	}
 	}
-	for(std::set<Unit*>::iterator g=Broodwar->getGeysers().begin();g!=Broodwar->getGeysers().end();g++)
+	for(std::set<Unit>::iterator g=Broodwar->getGeysers().begin();g!=Broodwar->getGeysers().end();g++)
 	{
 	if ( CommandCenter->getDistance(*g)<  300 ){
 	Geysers.push_back(*g);
@@ -95,35 +102,35 @@ BaseManager::BaseManager(Unit* CC, BWAPI::TilePosition land)
 	}
 	*/
 
-	//SCVsaturation = Minerals.size() * 2.5; //build in is (almost) saturated at 2.5 times minerals
-	//SCVsaturation = Minerals.size() * 2 + 2; //force gather trick is almost saturated at 2 times minerals
+	// SCVsaturation = Minerals.size() * 2.5; // build in is (almost) saturated at 2.5 times minerals
+	// SCVsaturation = Minerals.size() * 2 + 2; // force gather trick is almost saturated at 2 times minerals
 
-	//maynarding
+	// maynarding
 	if (BaseReady == true && Broodwar->self()->completedUnitCount(BWAPI::UnitTypes::Terran_Command_Center) == 2) {
 		for (int i = 0; i < 6; i++) {
 			addSCV(CCmanager[0]->getBuilder());
 		}
-		//add a refinery
+		// add a refinery
 		if (Geysers.size() > 0) {
 			// ||  (Broodwar->enemy()->getRace() == BWAPI::Races::Zerg && CCmanager.size() >= 2 )
 			if (Broodwar->enemy()->getRace() != BWAPI::Races::Zerg) {
-				ProdMan->addToQueueTile(BWAPI::UnitTypes::Terran_Refinery, Geysers[0]->getTilePosition());
+				//ProdMan->addToQueueTile(BWAPI::UnitTypes::Terran_Refinery, Geysers[0]->getTilePosition()); // COMMENTED BY SAM
 			}
-			//ProdMan->addToQueueTile( BWAPI::UnitTypes::Terran_Refinery, Geysers[0]->getTilePosition() );
+			// ProdMan->addToQueueTile( BWAPI::UnitTypes::Terran_Refinery, Geysers[0]->getTilePosition() );
 		}
 	}
 
 	if (BaseReady == true && Broodwar->self()->completedUnitCount(BWAPI::UnitTypes::Terran_Command_Center) > 2) {
 		if (Geysers.size() > 0) {
-			//if( Broodwar->enemy()->getRace() != BWAPI::Races::Zerg ){
-			ProdMan->addToQueueTile(BWAPI::UnitTypes::Terran_Refinery, Geysers[0]->getTilePosition());
+			// if( Broodwar->enemy()->getRace() != BWAPI::Races::Zerg ){
+			//ProdMan->addToQueueTile(BWAPI::UnitTypes::Terran_Refinery, Geysers[0]->getTilePosition()); // COMMENTED BY SAM
 			//}
-			//ProdMan->addToQueueTile( BWAPI::UnitTypes::Terran_Refinery, Geysers[0]->getTilePosition() );
+			// ProdMan->addToQueueTile( BWAPI::UnitTypes::Terran_Refinery, Geysers[0]->getTilePosition() );
 		}
 	}
 }
 
-void BaseManager::addSCV(Unit* scv)
+void BaseManager::addSCV(Unit scv)
 {
 
 	if (scv == NULL) {
@@ -137,10 +144,10 @@ void BaseManager::addSCV(Unit* scv)
 	MineralSCV.push_back( scv );
 	*/
 
-	//check if the scv is already assigned
+	// check if the scv is already assigned
 	for (unsigned int i = 0; i < MineralSCV.size(); i++) {
 		if (MineralSCV[i].scv->getID() == scv->getID()) {
-			//Broodwar->printf("scv already stored");
+			// Broodwar->printf("scv already stored");
 			return;
 		}
 	}
@@ -195,22 +202,24 @@ void BaseManager::buildSCV()
 		return;
 	}
 
+	/*
 	if (ProdMan->Academy != NULL && CommandCenter->getAddon() == NULL
 	    && buildComsat == true) {
-		return; //build comsat station first
+		return; // build comsat station first
 	}
+	*/
 
 	if (CommandCenter->getTrainingQueue().size() == 0) {
 		CommandCenter->train(BWAPI::UnitTypes::Terran_SCV);
 	}
 }
 
-void BaseManager::addMineralField(Unit* mineral)
+void BaseManager::addMineralField(Unit mineral)
 {
 
 	InitialMinerals++;
 
-	//Minerals.push_back(mineral);
+	// Minerals.push_back(mineral);
 	bool isPathTrick = false;
 
 	/*
@@ -225,11 +234,11 @@ void BaseManager::addMineralField(Unit* mineral)
 	MineralPatch newpatch;
 	newpatch.trickPossible = isPathTrick;
 	newpatch.mineralPatch  = mineral;
-	newpatch.mineralTrick  = NULL; //still has to be determined at calcualte trick
+	newpatch.mineralTrick  = NULL; // still has to be determined at calcualte trick
 	Minerals.push_back(newpatch);
 }
 
-void BaseManager::CalCulateTrick()
+void BaseManager::CalculateTrick()
 {
 	/*
 	for(int i=0; i<Minerals.size(); i++){
@@ -246,12 +255,12 @@ void BaseManager::CalCulateTrick()
 
 	for (int i = 0; i < Minerals.size(); i++) {
 
-		//determine orientation for mineral field, 1=up,2=bottom,3=left,4=right
+		// determine orientation for mineral field, 1=up,2=bottom,3=left,4=right
 		int orientation = 0;
-		BWAPI::Position TopLeft(CommandCenter->getPosition().x() - 32 * 10, CommandCenter->getPosition().y() - 32 * 10);
-		BWAPI::Position BottomRight(CommandCenter->getPosition().x() + 32 * 10, CommandCenter->getPosition().y() + 32 * 10);
-		BWAPI::Position BottomLeft(CommandCenter->getPosition().x() - 32 * 10, CommandCenter->getPosition().y() + 32 * 10);
-		BWAPI::Position TopRight(CommandCenter->getPosition().x() + 32 * 10, CommandCenter->getPosition().y() - 32 * 10);
+		BWAPI::Position TopLeft(CommandCenter->getPosition().x - 32 * 10, CommandCenter->getPosition().y - 32 * 10);
+		BWAPI::Position BottomRight(CommandCenter->getPosition().x + 32 * 10, CommandCenter->getPosition().y + 32 * 10);
+		BWAPI::Position BottomLeft(CommandCenter->getPosition().x - 32 * 10, CommandCenter->getPosition().y + 32 * 10);
+		BWAPI::Position TopRight(CommandCenter->getPosition().x + 32 * 10, CommandCenter->getPosition().y - 32 * 10);
 		bool isUpRight    = false;
 		bool isBottomLeft = false;
 		if (isLeft(TopLeft, BottomRight, Minerals[i].mineralPatch->getPosition())) {
@@ -286,12 +295,12 @@ void BaseManager::CalCulateTrick()
 
 	for (int i = 0; i < Minerals.size(); i++) {
 
-		//determine orientation for mineral field, 1=up,2=bottom,3=left,4=right
+		// determine orientation for mineral field, 1=up,2=bottom,3=left,4=right
 		int orientation = 0;
-		BWAPI::Position TopLeft(CommandCenter->getPosition().x() - 32 * 10, CommandCenter->getPosition().y() - 32 * 10);
-		BWAPI::Position BottomRight(CommandCenter->getPosition().x() + 32 * 10, CommandCenter->getPosition().y() + 32 * 10);
-		BWAPI::Position BottomLeft(CommandCenter->getPosition().x() - 32 * 10, CommandCenter->getPosition().y() + 32 * 10);
-		BWAPI::Position TopRight(CommandCenter->getPosition().x() + 32 * 10, CommandCenter->getPosition().y() - 32 * 10);
+		BWAPI::Position TopLeft(CommandCenter->getPosition().x - 32 * 10, CommandCenter->getPosition().y - 32 * 10);
+		BWAPI::Position BottomRight(CommandCenter->getPosition().x + 32 * 10, CommandCenter->getPosition().y + 32 * 10);
+		BWAPI::Position BottomLeft(CommandCenter->getPosition().x - 32 * 10, CommandCenter->getPosition().y + 32 * 10);
+		BWAPI::Position TopRight(CommandCenter->getPosition().x + 32 * 10, CommandCenter->getPosition().y - 32 * 10);
 		bool isUpRight    = false;
 		bool isBottomLeft = false;
 		if (isLeft(TopLeft, BottomRight, Minerals[i].mineralPatch->getPosition())) {
@@ -320,18 +329,18 @@ void BaseManager::CalCulateTrick()
 					TotalTrick++;
 				}
 				if (orientation == 2 && MineralOrient == 2) {
-					//Broodwar->printf("Added trick bottom");
+					// Broodwar->printf("Added trick bottom");
 					TotalTrick++;
 				}
 				if (orientation == 3 && MineralOrient == 3) {
-					//Broodwar->printf("Added trick left");
+					// Broodwar->printf("Added trick left");
 					TotalTrick++;
 				}
 				if (orientation == 4 && MineralOrient == 4) {
-					//Broodwar->printf("Added trick right");
+					// Broodwar->printf("Added trick right");
 					TotalTrick++;
 				}
-				//Minerals[i].mineralTrick = Minerals[j].mineralPatch;
+				// Minerals[i].mineralTrick = Minerals[j].mineralPatch;
 			}
 		}
 		/*
@@ -342,34 +351,34 @@ void BaseManager::CalCulateTrick()
 		for (int j = 0; j < Minerals.size(); j++) {
 			if (i != j && Minerals[i].mineralPatch->getDistance(Minerals[j].mineralPatch) <= 1 * 16) {
 				if (orientation == 1 && MineralOrient == 1) {
-					//Broodwar->printf("Added trick up");
-					if (Minerals[i].mineralPatch->getPosition().y() < Minerals[j].mineralPatch->getPosition().y()) {
+					// Broodwar->printf("Added trick up");
+					if (Minerals[i].mineralPatch->getPosition().y < Minerals[j].mineralPatch->getPosition().y) {
 						Minerals[j].trickPossible = true;
 						Minerals[j].mineralTrick  = Minerals[i].mineralPatch;
 					}
 				}
 				if (orientation == 2 && MineralOrient == 2) {
-					//Broodwar->printf("Added trick bottom");
-					if (Minerals[i].mineralPatch->getPosition().y() > Minerals[j].mineralPatch->getPosition().y()) {
+					// Broodwar->printf("Added trick bottom");
+					if (Minerals[i].mineralPatch->getPosition().y > Minerals[j].mineralPatch->getPosition().y) {
 						Minerals[j].trickPossible = true;
 						Minerals[j].mineralTrick  = Minerals[i].mineralPatch;
 					}
 				}
 				if (orientation == 3 && MineralOrient == 3) {
-					//Broodwar->printf("Added trick left");
-					if (Minerals[i].mineralPatch->getPosition().x() < Minerals[j].mineralPatch->getPosition().x()) {
+					// Broodwar->printf("Added trick left");
+					if (Minerals[i].mineralPatch->getPosition().x < Minerals[j].mineralPatch->getPosition().x) {
 						Minerals[j].trickPossible = true;
 						Minerals[j].mineralTrick  = Minerals[i].mineralPatch;
 					}
 				}
 				if (orientation == 4 && MineralOrient == 4) {
-					//Broodwar->printf("Added trick right");
-					if (Minerals[i].mineralPatch->getPosition().x() > Minerals[j].mineralPatch->getPosition().x()) {
+					// Broodwar->printf("Added trick right");
+					if (Minerals[i].mineralPatch->getPosition().x > Minerals[j].mineralPatch->getPosition().x) {
 						Minerals[j].trickPossible = true;
 						Minerals[j].mineralTrick  = Minerals[i].mineralPatch;
 					}
 				}
-				//Minerals[i].mineralTrick = Minerals[j].mineralPatch;
+				// Minerals[i].mineralTrick = Minerals[j].mineralPatch;
 			}
 		}
 	}
@@ -379,13 +388,14 @@ void BaseManager::MineralGather()
 {
 
 	for (unsigned int i = 0; i < MineralSCV.size(); i++) {
-		if (!MineralSCV[i].scv->exists()) { //remove destroyed scvs
+		if (!MineralSCV[i].scv->exists()) { // remove destroyed scvs
 			MineralSCV.erase(MineralSCV.begin() + i);
 			i--;
 			continue;
 		}
-		//check if scv is not used in constructing buildings
+		// check if scv is not used in constructing buildings
 		bool alreadyBuilding = false;
+		/*
 		for (unsigned int j = 0; j < ProdMan->BuildingsQueue.size(); j++) {
 			if (ProdMan->BuildingsQueue[j].scv != NULL) {
 				if (ProdMan->BuildingsQueue[j].scv->getID() == MineralSCV[i].scv->getID()) {
@@ -393,6 +403,7 @@ void BaseManager::MineralGather()
 				}
 			}
 		}
+		*/ // COMMENTED BY SAM
 		if (alreadyBuilding) {
 			Broodwar->printf("scv already assigned to building");
 			MineralSCV.erase(MineralSCV.begin() + i);
@@ -400,21 +411,21 @@ void BaseManager::MineralGather()
 			continue;
 		}
 
-		//no mineral patches availabe anymore
+		// no mineral patches availabe anymore
 		if (MineralSCV[i].mineralPatch == NULL) {
-			//Broodwar->printf("No mineral patch assigned to scv");
-			//TODO: give this scv another task
+			// Broodwar->printf("No mineral patch assigned to scv");
+			// TODO: give this scv another task
 			continue;
 		}
 
-		//reassign SCV when current mineral patch has run out
+		// reassign SCV when current mineral patch has run out
 		if (MineralSCV[i].mineralPatch != NULL) {
 			if (!MineralSCV[i].mineralPatch->exists()) {
 				Broodwar->printf("Mineral patch used up. Reassigning SCV");
-				BWAPI::Unit* thisSCV = MineralSCV[i].scv;
+				BWAPI::Unit thisSCV = MineralSCV[i].scv;
 				MineralSCV.erase(MineralSCV.begin() + i);
 				addSCV(thisSCV);
-				break; //TODO: make this a continue that doesn't mess up the MineralSCV loop
+				break; // TODO: make this a continue that doesn't mess up the MineralSCV loop
 			}
 		}
 
@@ -423,7 +434,7 @@ void BaseManager::MineralGather()
 				MineralSCV[i].scv->gather(MineralSCV[i].mineralPatch);
 			}
 
-			//scv currently working at the correct mineral patch
+			// scv currently working at the correct mineral patch
 			if (MineralSCV[i].scv->isCarryingMinerals()) {
 				if (MineralSCV[i].scv->getOrder() != BWAPI::Orders::ReturnMinerals) {
 					MineralSCV[i].scv->returnCargo();
@@ -436,14 +447,14 @@ void BaseManager::MineralGather()
 				continue;
 			}
 
-			//scv going to the wrong mineral patch
+			// scv going to the wrong mineral patch
 			if (MineralSCV[i].scv->getOrderTarget()->getID() != MineralSCV[i].mineralPatch->getID()) {
-				//Broodwar->printf("reassinging scv");
+				// Broodwar->printf("reassinging scv");
 				MineralSCV[i].scv->gather(MineralSCV[i].mineralPatch);
 			}
-		} else if (MineralSCV[i].mineralTrick != NULL) { //always gotta check for null pointers
+		} else if (MineralSCV[i].mineralTrick != NULL) { // always gotta check for null pointers
 
-			//scv currently working at the correct mineral patch
+			// scv currently working at the correct mineral patch
 			if (MineralSCV[i].scv->isCarryingMinerals()) {
 				if (MineralSCV[i].scv->getOrder() != BWAPI::Orders::ReturnMinerals) {
 					MineralSCV[i].scv->returnCargo();
@@ -452,9 +463,9 @@ void BaseManager::MineralGather()
 				continue;
 			}
 
-			//use path trick as long as the SCV isn't close to the actual mineral field
+			// use path trick as long as the SCV isn't close to the actual mineral field
 			if (MineralSCV[i].mineralPatch->getDistance(MineralSCV[i].scv->getPosition()) > 40) {
-				//don't spam
+				// don't spam
 				if (MineralSCV[i].scv->getTarget() != NULL) {
 					if (MineralSCV[i].scv->getTarget()->getID() == MineralSCV[i].mineralTrick->getID()) {
 						continue;
@@ -464,7 +475,7 @@ void BaseManager::MineralGather()
 				continue;
 			}
 
-			//use path trick as long as the SCV isn't close to the actual mineral field
+			// use path trick as long as the SCV isn't close to the actual mineral field
 			if (MineralSCV[i].mineralPatch->getDistance(MineralSCV[i].scv->getPosition()) <= 40) {
 				if (MineralSCV[i].scv->getTarget() != NULL) {
 					if (MineralSCV[i].scv->getTarget()->getID() == MineralSCV[i].mineralPatch->getID()) {
@@ -485,15 +496,15 @@ void BaseManager::MineralGather()
 			continue;
 			}
 
-			//scv going to the wrong mineral patch
+			// scv going to the wrong mineral patch
 			if( MineralSCV[i].scv->getOrderTarget()->getID()  !=  MineralSCV[i].mineralPatch->getID()){
-			//Broodwar->printf("reassinging scv");
+			// Broodwar->printf("reassinging scv");
 			MineralSCV[i].scv->gather( MineralSCV[i].mineralPatch );
 			}
 			*/
 		}
 		/*
-		//set idle scvs to mine
+		// set idle scvs to mine
 		if(  !MineralSCV[i].scv->isGatheringMinerals() ){
 
 		MineralSCV[i]->rightClick( Minerals[cycleMineral] );
@@ -509,13 +520,14 @@ void BaseManager::MineralGatherLock()
 {
 
 	for (unsigned int i = 0; i < MineralSCV.size(); i++) {
-		if (!MineralSCV[i].scv->exists()) { //remove destroyed scvs
+		if (!MineralSCV[i].scv->exists()) { // remove destroyed scvs
 			MineralSCV.erase(MineralSCV.begin() + i);
 			i--;
 			continue;
 		}
-		//check if scv is not used in constructing buildings
+		// check if scv is not used in constructing buildings
 		bool alreadyBuilding = false;
+		/*
 		for (unsigned int j = 0; j < ProdMan->BuildingsQueue.size(); j++) {
 			if (ProdMan->BuildingsQueue[j].scv != NULL) {
 				if (ProdMan->BuildingsQueue[j].scv->getID() == MineralSCV[i].scv->getID()) {
@@ -523,6 +535,7 @@ void BaseManager::MineralGatherLock()
 				}
 			}
 		}
+		*/ // COMMENTED BY SAM
 		if (alreadyBuilding) {
 			Broodwar->printf("scv already assigned to building");
 			MineralSCV.erase(MineralSCV.begin() + i);
@@ -530,30 +543,30 @@ void BaseManager::MineralGatherLock()
 			continue;
 		}
 
-		//no mineral patches availabe anymore
+		// no mineral patches availabe anymore
 		if (MineralSCV[i].mineralPatch == NULL) {
-			//Broodwar->printf("No mineral patch assigned to scv");
-			//TODO: give this scv another task
+			// Broodwar->printf("No mineral patch assigned to scv");
+			// TODO: give this scv another task
 			continue;
 		}
 
-		//reassign SCV when current mineral patch has run out
+		// reassign SCV when current mineral patch has run out
 		if (MineralSCV[i].mineralPatch != NULL) {
 			if (!MineralSCV[i].mineralPatch->exists()) {
 				Broodwar->printf("Mineral patch used up. Reassigning SCV");
-				BWAPI::Unit* thisSCV = MineralSCV[i].scv;
+				BWAPI::Unit thisSCV = MineralSCV[i].scv;
 				MineralSCV.erase(MineralSCV.begin() + i);
 				addSCV(thisSCV);
-				break; //TODO: make this a continue that doesn't mess up the MineralSCV loop
+				break; // TODO: make this a continue that doesn't mess up the MineralSCV loop
 			}
 		}
 
 		if (!MineralSCV[i].scv->isGatheringMinerals()) {
 			MineralSCV[i].scv->gather(MineralSCV[i].mineralPatch);
-			//continue;
+			// continue;
 		}
 
-		//scv currently working at the correct mineral patch
+		// scv currently working at the correct mineral patch
 		if (MineralSCV[i].scv->isCarryingMinerals()) {
 			if (MineralSCV[i].scv->getOrder() != BWAPI::Orders::ReturnMinerals) {
 				MineralSCV[i].scv->returnCargo();
@@ -566,14 +579,14 @@ void BaseManager::MineralGatherLock()
 			continue;
 		}
 
-		//scv going to the wrong mineral patch
+		// scv going to the wrong mineral patch
 		if (MineralSCV[i].scv->getOrderTarget()->getID() != MineralSCV[i].mineralPatch->getID()) {
-			//Broodwar->printf("reassinging scv");
+			// Broodwar->printf("reassinging scv");
 			MineralSCV[i].scv->gather(MineralSCV[i].mineralPatch);
 		}
 
 		/*
-		//set idle scvs to mine
+		// set idle scvs to mine
 		if(  !MineralSCV[i].scv->isGatheringMinerals() ){
 
 		MineralSCV[i]->rightClick( Minerals[cycleMineral] );
@@ -589,13 +602,14 @@ void BaseManager::MineralGatherNoTrick()
 {
 
 	for (unsigned int i = 0; i < MineralSCV.size(); i++) {
-		if (!MineralSCV[i].scv->exists()) { //remove destroyed scvs
+		if (!MineralSCV[i].scv->exists()) { // remove destroyed scvs
 			MineralSCV.erase(MineralSCV.begin() + i);
 			i--;
 			continue;
 		}
-		//check if scv is not used in constructing buildings
+		// check if scv is not used in constructing buildings
 		bool alreadyBuilding = false;
+		/*
 		for (unsigned int j = 0; j < ProdMan->BuildingsQueue.size(); j++) {
 			if (ProdMan->BuildingsQueue[j].scv != NULL) {
 				if (ProdMan->BuildingsQueue[j].scv->getID() == MineralSCV[i].scv->getID()) {
@@ -603,6 +617,7 @@ void BaseManager::MineralGatherNoTrick()
 				}
 			}
 		}
+		*/ // COMMENTED BY SAM
 		if (alreadyBuilding) {
 			Broodwar->printf("scv already assigned to building");
 			MineralSCV.erase(MineralSCV.begin() + i);
@@ -610,21 +625,21 @@ void BaseManager::MineralGatherNoTrick()
 			continue;
 		}
 
-		//no mineral patches availabe anymore
+		// no mineral patches availabe anymore
 		if (MineralSCV[i].mineralPatch == NULL) {
-			//Broodwar->printf("No mineral patch assigned to scv");
-			//TODO: give this scv another task
+			// Broodwar->printf("No mineral patch assigned to scv");
+			// TODO: give this scv another task
 			continue;
 		}
 
-		//reassign SCV when current mineral patch has run out
+		// reassign SCV when current mineral patch has run out
 		if (MineralSCV[i].mineralPatch != NULL) {
 			if (!MineralSCV[i].mineralPatch->exists()) {
 				Broodwar->printf("Mineral patch used up. Reassigning SCV");
-				BWAPI::Unit* thisSCV = MineralSCV[i].scv;
+				BWAPI::Unit thisSCV = MineralSCV[i].scv;
 				MineralSCV.erase(MineralSCV.begin() + i);
 				addSCV(thisSCV);
-				break; //TODO: make this a continue that doesn't mess up the MineralSCV loop
+				break; // TODO: make this a continue that doesn't mess up the MineralSCV loop
 			}
 		}
 
@@ -650,7 +665,7 @@ void BaseManager::MineralGatherChoice()
 	}
 
 	if (LanLatency == true) {
-		//MineralGather(); //TODO: compensate for latency
+		// MineralGather(); // TODO: compensate for latency
 		MineralGatherLock();
 	} else {
 		MineralGatherNoTrick();
@@ -680,22 +695,22 @@ void BaseManager::onFrame()
 
 	for (int i = 0; i < Minerals.size(); i++) {
 		if (Minerals[i].mineralTrick != NULL) {
-			Broodwar->drawCircleMap(Minerals[i].mineralPatch->getPosition().x(), Minerals[i].mineralPatch->getPosition().y(), 4, BWAPI::Colors::Purple, true);
+			Broodwar->drawCircleMap(Minerals[i].mineralPatch->getPosition().x, Minerals[i].mineralPatch->getPosition().y, 4, BWAPI::Colors::Purple, true);
 		}
 	}
 
 	for (int i = 0; i < MineralSCV.size(); i++) {
 		if (MineralSCV[i].useTrick == true) {
-			//Broodwar->drawCircleMap( Minerals[i].mineralPatch->getPosition().x(),Minerals[i].mineralPatch->getPosition().y(),2,BWAPI::Colors::Purple,true);
+			// Broodwar->drawCircleMap( Minerals[i].mineralPatch->getPosition().x,Minerals[i].mineralPatch->getPosition().y,2,BWAPI::Colors::Purple,true);
 			BWAPI::Position scvpos = MineralSCV[i].scv->getPosition();
 			BWAPI::Position minpos = MineralSCV[i].mineralPatch->getPosition();
-			Broodwar->drawLineMap(scvpos.x(), scvpos.y(), minpos.x(), minpos.y(), BWAPI::Colors::Red);
+			Broodwar->drawLineMap(scvpos.x, scvpos.y, minpos.x, minpos.y, BWAPI::Colors::Red);
 		}
 	}
 
-	//Broodwar->drawTextMap( CommandCenter->getPosition().x() , CommandCenter->getPosition().y(), "%d" , BaseReady );
-	//BWAPI::Position LanLocPos = BWAPI::Position( LandLocation );
-	//Broodwar->drawCircleMap( LanLocPos.x(),  LanLocPos.y(), 5 , BWAPI::Colors::Orange , true );
+	// Broodwar->drawTextMap( CommandCenter->getPosition().x , CommandCenter->getPosition().y, "%d" , BaseReady );
+	// BWAPI::Position LanLocPos = BWAPI::Position( LandLocation );
+	// Broodwar->drawCircleMap( LanLocPos.x,  LanLocPos.y, 5 , BWAPI::Colors::Orange , true );
 
 	if (BaseReady == false) {
 		if (LandLocation == CommandCenter->getTilePosition()
@@ -706,91 +721,105 @@ void BaseManager::onFrame()
 
 			if (Broodwar->enemy()->getRace() == BWAPI::Races::Protoss) {
 
-				BWAPI::TilePosition TurretLoc  = bManager->getBuildLocationNear(LandLocation, BWAPI::UnitTypes::Terran_Missile_Turret, 0);
-				BWAPI::TilePosition TurretLoc2 = BWAPI::TilePosition(LandLocation.x() + 4, LandLocation.y() - 2);
+				//BWAPI::TilePosition TurretLoc  = bManager->getBuildLocationNear(LandLocation, BWAPI::UnitTypes::Terran_Missile_Turret, 0); // COMMENTED BY SAM
+				BWAPI::TilePosition TurretLoc2 = BWAPI::TilePosition(LandLocation.x + 4, LandLocation.y - 2);
 
 				int ClosestChokeDist      = 99999;
 				BWAPI::Position BunkerPos = BWAPI::Positions::None;
-				BWAPI::Position natPos    = BWAPI::Position(InfoMan->OurNat);
-				BWAPI::Position mainPos   = InfoMan->PosOurBase; //BWAPI::Position(InfoMan->PosOurBase);
-				BWTA::Region* natRegion   = BWTA::getRegion(natPos);
-				BWTA::Region* mainRegion  = BWTA::getRegion(mainPos);
+				//BWAPI::Position natPos    = BWAPI::Position(InfoMan->OurNat); // COMMENTED BY SAM
+				//BWAPI::Position mainPos   = InfoMan->PosOurBase; // BWAPI::Position(InfoMan->PosOurBase); // COMMENTED BY SAM
+				Position natPos          = { 0, 0 };
+				Position mainPos         = (Position)Broodwar->self()->getStartLocation();
+				BWTA::Region* natRegion  = BWTA::getRegion(natPos);
+				BWTA::Region* mainRegion = BWTA::getRegion(mainPos);
 
-				BOOST_FOREACH (BWTA::Chokepoint* choke, BWTA::getChokepoints()) {
+				// BOOST_FOREACH (BWTA::Chokepoint* choke, BWTA::getChokepoints()) {
+				for (auto choke : BWTA::getChokepoints()) {
 					if ((choke->getRegions().first == natRegion && choke->getRegions().second != mainRegion) || (choke->getRegions().second == natRegion && choke->getRegions().first != mainRegion)) {
+						/*
 						if (choke->getCenter().getDistance(InfoMan->PosEnemyBase) < ClosestChokeDist) {
 							ClosestChokeDist = choke->getCenter().getDistance(InfoMan->PosEnemyBase);
 							BunkerPos        = choke->getCenter();
 						}
+						*/ // COMMENTED BY SAM
 					}
 				}
 
+				/*
 				if (TurretLoc.getDistance(BWAPI::TilePosition(BunkerPos)) < TurretLoc2.getDistance(BWAPI::TilePosition(BunkerPos))) {
 					ProdMan->addToQueueTile(BWAPI::UnitTypes::Terran_Missile_Turret, TurretLoc);
 				} else {
 					ProdMan->addToQueueTile(BWAPI::UnitTypes::Terran_Missile_Turret, TurretLoc2);
 				}
-			}
-
-			if (InfoMan->PosOurNat.getDistance(BWAPI::Position(LandLocation)) < 5 * 32) {
-				//MacroMan->PlaceNatBunker();
+				*/
 			}
 
 			/*
-			for(std::set<Unit*>::iterator m=Broodwar->getMinerals().begin();m!=Broodwar->getMinerals().end();m++)
+			if (InfoMan->PosOurNat.getDistance(BWAPI::Position(LandLocation)) < 5 * 32) {
+				// MacroMan->PlaceNatBunker();
+			}
+			*/ // COMMENTED BY SAM
+
+			/*
+			for(std::set<Unit>::iterator m=Broodwar->getMinerals().begin();m!=Broodwar->getMinerals().end();m++)
 			{
 			if ( CommandCenter->getDistance(*m) <  11*32 ){
-			//Minerals.push_back( *m);
+			// Minerals.push_back( *m);
 			addMineralField(*m);
 			}
 			}
 			*/
-			std::set<Unit*> GetMinerals = CommandCenter->getUnitsInRadius(15 * 32);
-			BOOST_FOREACH (Unit* mineral, GetMinerals) {
-				if (mineral->getType() == BWAPI::UnitTypes::Resource_Mineral_Field) {
-					addMineralField(mineral);
+			Unitset GetMinerals = CommandCenter->getUnitsInRadius(15 * 32);
+			// BOOST_FOREACH (Unit mineral, GetMinerals) {
+			for (auto mineral : GetMinerals) {
+				{
+					if (mineral->getType() == BWAPI::UnitTypes::Resource_Mineral_Field) {
+						addMineralField(mineral);
+					}
 				}
-			}
 
-			CalCulateTrickChoice();
-			for (std::set<Unit*>::iterator g = Broodwar->getGeysers().begin(); g != Broodwar->getGeysers().end(); g++) {
-				if (CommandCenter->getDistance(*g) < 11 * 32) {
-					Geysers.push_back(*g);
-					Broodwar->printf("added geyser");
+				CalculateTrickChoice();
+				for (auto geyser : BWAPI::Broodwar->getGeysers()) {
+					if (CommandCenter->getDistance(geyser) < 11 * 32) {
+						Geysers.push_back(geyser);
+						// Broodwar->printf("added geyser");
+					}
 				}
-			}
 
-			//Maynarding
-			//CCmanager[0]->SCVsaturation -= 18;
-			for (int i = 0; i < 8; i++) {
-				addSCV(CCmanager[0]->getBuilder());
-			}
-
-			//add a refinery
-			if (Geysers.size() > 0) {
-				if (Broodwar->enemy()->getRace() != BWAPI::Races::Zerg) {
-					ProdMan->addToQueueTile(BWAPI::UnitTypes::Terran_Refinery, Geysers[0]->getTilePosition());
+				// Maynarding
+				// CCmanager[0]->SCVsaturation -= 18;
+				for (int i = 0; i < 8; i++) {
+					addSCV(CCmanager[0]->getBuilder());
 				}
-			}
 
-			/*
-			//remove initial defence
+				// add a refinery
+				if (Geysers.size() > 0) {
+					if (Broodwar->enemy()->getRace() != BWAPI::Races::Zerg) {
+						//ProdMan->addToQueueTile(BWAPI::UnitTypes::Terran_Refinery, Geysers[0]->getTilePosition()); // COMMENTED BY SAM
+					}
+				}
+
+				/*
+			// remove initial defence
 			IDMan->stopDefence = true;
-			BOOST_FOREACH( Unit* unit, IDMan->DFunits ){
+			BOOST_FOREACH( Unit unit, IDMan->DFunits ){
 			AMan->AddUnit(unit);
 			}
-			BOOST_FOREACH( Unit* unit, IDMan->Vultures ){
+			BOOST_FOREACH( Unit unit, IDMan->Vultures ){
 			AMan->AddUnit(unit);
 			}
 			IDMan->DFunits.clear();
 			IDMan->Vultures.clear();
 			*/
 
-			return;
-		} //if ( lanlocation == CC.landposition
+				return;
+			} // if ( lanlocation == CC.landposition
 
-		if (MacroMan->PState == P_Push || MacroMan->PState == P_Defend_Nat) {
-			LiftToNat();
+			/*
+			if (MacroMan->PState == P_Push || MacroMan->PState == P_Defend_Nat) {
+				LiftToNat();
+			*/ // COMMENTED BY SAM
+
 			/*
 			if( !CommandCenter->isLifted() ){
 			CommandCenter->lift();
@@ -804,7 +833,7 @@ void BaseManager::onFrame()
 			}
 			*/
 		}
-		if (Broodwar->enemy()->getRace() == BWAPI::Races::Zerg) { //MacroMan->ZState == Z_Expand_Defend
+		if (Broodwar->enemy()->getRace() == BWAPI::Races::Zerg) { // MacroMan->ZState == Z_Expand_Defend
 			LiftToNat();
 			/*
 			if( !CommandCenter->isLifted() ){
@@ -822,27 +851,27 @@ void BaseManager::onFrame()
 	}
 
 	if (LanLatency == true) {
-		SCVsaturation = Minerals.size() * 2 + 1; //Update saturation
+		SCVsaturation = Minerals.size() * 2 + 1; // Update saturation
 	} else {
-		SCVsaturation = Minerals.size() * 2.5 + 1; //Update saturation
+		SCVsaturation = Minerals.size() * 2.5 + 1; // Update saturation
 	}
-	//build a comsat station after saturation is complete
+	// build a comsat station after saturation is complete
 	if (MineralSCV.size() >= (SCVsaturation - 2)
 	    && buildComsat == false) {
 		buildComsat = true;
 		Broodwar->printf("Enough SCV, now building comsat");
 	}
 
-	//don't build a comsat station when saturation isn't complete
+	// don't build a comsat station when saturation isn't complete
 	if (MineralSCV.size() < (SCVsaturation - 2)
 	    && buildComsat == true) {
 		buildComsat = false;
-		//Broodwar->printf("Enough SCV, now building comsat");
+		// Broodwar->printf("Enough SCV, now building comsat");
 	}
 
-	//check if there are to many SCVs here, if so let them join the fight
+	// check if there are to many SCVs here, if so let them join the fight
 	if (MineralSCV.size() > SCVsaturation + 3) {
-		//in case of terran, just add SCVs to other CC
+		// in case of terran, just add SCVs to other CC
 		if (Broodwar->enemy()->getRace() == BWAPI::Races::Terran) {
 			bool addedToCC = false;
 			for (int i = 0; i < CCmanager.size(); i++) {
@@ -856,38 +885,40 @@ void BaseManager::onFrame()
 					}
 				}
 			}
-			//if not possible just add it to the fight
+			// if not possible just add it to the fight
 			if (addedToCC == false) {
-				MacroMan->AddSCV(getFullHPSCV());
+				//MacroMan->AddSCV(getFullHPSCV()); // COMMENTED BY SAM
 			}
 		} else {
-			MacroMan->AddSCV(getFullHPSCV());
+			//MacroMan->AddSCV(getFullHPSCV()); // COMMENTED BY SAM
 		}
 	}
 
 	if (BaseReady == true && buildComsat) {
-		//build a comsat station when it is complete
-		if (ProdMan->Academy != NULL && CommandCenter->getAddon() == NULL) {
-			CommandCenter->buildAddon(BWAPI::UnitTypes::Terran_Comsat_Station);
-		}
+		// build a comsat station when it is complete
+		/*
+			if (ProdMan->Academy != NULL && CommandCenter->getAddon() == NULL) {
+				CommandCenter->buildAddon(BWAPI::UnitTypes::Terran_Comsat_Station);
+			}
+			*/ // COMMENTED BY SAM
 	}
 
 	for (unsigned int i = 0; i < Minerals.size(); i++) {
-		if (!Minerals[i].mineralPatch->exists()) { //remove empty mineral field
+		if (!Minerals[i].mineralPatch->exists()) { // remove empty mineral field
 			Minerals.erase(Minerals.begin() + i);
 			i--;
 			continue;
 		}
-		//draw ID data
-		//Broodwar->drawTextMap( Minerals[i].mineralPatch->getPosition().x(),Minerals[i].mineralPatch->getPosition().y(),"%d",Minerals[i].mineralPatch->getID() );
+		// draw ID data
+		// Broodwar->drawTextMap( Minerals[i].mineralPatch->getPosition().x,Minerals[i].mineralPatch->getPosition().y,"%d",Minerals[i].mineralPatch->getID() );
 	}
 
-	//MineralGather();
-	MineralGatherChoice(); //functon used to get SCVs to gather minerals
+	// MineralGather();
+	MineralGatherChoice(); // functon used to get SCVs to gather minerals
 
-	//remove dead SCVs on gas
+	// remove dead SCVs on gas
 	for (unsigned int i = 0; i < GasSCV.size(); i++) {
-		if (!GasSCV[i]->exists()) { //remove dead scv
+		if (!GasSCV[i]->exists()) { // remove dead scv
 			GasSCV.erase(GasSCV.begin() + i);
 			i--;
 			continue;
@@ -910,12 +941,12 @@ void BaseManager::onFrame()
 	}
 }
 
-Unit* BaseManager::getBuilder()
+Unit BaseManager::getBuilder()
 {
 
-	Unit* builder = NULL;
+	Unit builder = NULL;
 	for (int i = 0; i < MineralSCV.size(); i++) {
-		//check if the SCV is not to far away
+		// check if the SCV is not to far away
 		if (MineralSCV[i].scv->getDistance(CommandCenter) < 4 * 32) {
 			builder = MineralSCV[i].scv;
 			MineralSCV.erase(MineralSCV.begin() + i);
@@ -927,19 +958,19 @@ Unit* BaseManager::getBuilder()
 	SCVmineral getBuilder = MineralSCV.back();
 	MineralSCV.pop_back();
 	builder = getBuilder.scv;
-	//builder = MineralSCV[0];
-	//MineralSCV.erase( MineralSCV.begin() );
+	// builder = MineralSCV[0];
+	// MineralSCV.erase( MineralSCV.begin() );
 	}
 	*/
 	return builder;
 }
 
-Unit* BaseManager::getFullHPSCV()
+Unit BaseManager::getFullHPSCV()
 {
 
-	Unit* scv = NULL;
+	Unit scv = NULL;
 	for (int i = 0; i < MineralSCV.size(); i++) {
-		//check if the SCV is not to far away and full hp
+		// check if the SCV is not to far away and full hp
 		if (MineralSCV[i].scv->getDistance(CommandCenter) < 4 * 32
 		    && MineralSCV[i].scv->getHitPoints() == 60) {
 			scv = MineralSCV[i].scv;
@@ -947,12 +978,12 @@ Unit* BaseManager::getFullHPSCV()
 			break;
 		}
 	}
-	//grab the highest hp possible
+	// grab the highest hp possible
 	if (scv == NULL) {
 		int highestHP = 0;
 		int choice    = -1;
 		for (int i = 0; i < MineralSCV.size(); i++) {
-			//check if the SCV is not to far away and full hp
+			// check if the SCV is not to far away and full hp
 			if (MineralSCV[i].scv->getDistance(CommandCenter) < 4 * 32
 			    && MineralSCV[i].scv->getHitPoints() > highestHP) {
 				choice    = i;
@@ -970,25 +1001,25 @@ Unit* BaseManager::getFullHPSCV()
 	SCVmineral getBuilder = MineralSCV.back();
 	MineralSCV.pop_back();
 	builder = getBuilder.scv;
-	//builder = MineralSCV[0];
-	//MineralSCV.erase( MineralSCV.begin() );
+	// builder = MineralSCV[0];
+	// MineralSCV.erase( MineralSCV.begin() );
 	}
 	*/
 	return scv;
 }
 
-//transfer 3 scvs to gas
+// transfer 3 scvs to gas
 void BaseManager::toGas(int ToSend)
 {
-	//int ToSend = 3;
-	//Broodwar->printf("to gas");
+	// int ToSend = 3;
+	// Broodwar->printf("to gas");
 	while (MineralSCV.size() > 0) {
 		if (Refinerys.size() == 1 && GasSCV.size() < 3) {
 			ToSend--;
-			Unit* gasSCV = getBuilder();
+			Unit gasSCV = getBuilder();
 			if (gasSCV == NULL) {
-				//return;
-				//continue;
+				// return;
+				// continue;
 				break;
 			}
 			gasSCV->gather(Refinerys[0]);

@@ -96,13 +96,13 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="BaseManager.cpp" />
+    <ClCompile Include="Source\BaseManager.cpp" />
     <ClCompile Include="Source\DebugMessenger.cpp" />
     <ClCompile Include="Source\Dll.cpp" />
     <ClCompile Include="Source\PeregrineBot.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="BaseManager.h" />
+    <ClInclude Include="Source\BaseManager.h" />
     <ClInclude Include="Source\DebugMessenger.h" />
     <ClInclude Include="Source\PeregrineBot.h" />
   </ItemGroup>

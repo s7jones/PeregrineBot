@@ -4,7 +4,7 @@
 Bot: PeregrineBot
 Author: S Jones (s7jones)
 
-A simple, not very clever, 5 pooling zerg.
+A Zerg bot that is getting cleverer all the time.
 Beats the vanilla AI consistently on the SSCAI maps.
 
 With thanks to Chris Coxe's ZZZKbot @ https://github.com/chriscoxe/ZZZKBot
@@ -12,6 +12,9 @@ for his getPos function and some useful UnitFilters.
 
 With thanks to Dave Churchill's UAlbertaBot @ https://github.com/davechurchill/ualbertabot
 for drawExtendedInterface function and useful onUnitDestroy,etc functions for workers.
+
+With thanks to Martin Rooijackers' LetaBot(CIG2016) @ http://cilab.sejong.ac.kr/sc_competition2016/posting_data/source/LetaBot.rar
+for his BaseManager.
 
 Also thanks to BWAPI, BWTA2, and Teamliquid tutorials:
 https://bwapi.github.io/
@@ -561,6 +564,19 @@ void PeregrineBot::onStart()
 				}
 			}
 		}
+
+		std::set<Unit> bases;
+		for (Unit u : Broodwar->self()->getUnits()) {
+			if (u->getType().isResourceDepot())
+				;
+			bases.insert(u);
+		}
+
+		if (bases.size() != 1) {
+			debugMessenger << "Not exactly one base at the start?!" << std::endl;
+		}
+
+		BaseManager BM = BaseManager(*bases.begin(), Broodwar->self()->getStartLocation());
 	}
 }
 
