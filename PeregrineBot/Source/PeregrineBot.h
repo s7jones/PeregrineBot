@@ -10,9 +10,11 @@
 #include <iostream>
 #include <map>
 #include <string>
+#include <memory>
 //#include <sqlite3.h>
 #include "DebugMessenger.h"
 #include "BaseManager.h"
+#include "ProductionManager.h"
 
 // Remember not to use "Broodwar" in any global class constructor!
 

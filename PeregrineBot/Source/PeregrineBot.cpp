@@ -72,6 +72,8 @@ std::set<TilePosition> otherStarts;
 std::set<Position> unscoutedPositions;
 std::set<Position> scoutedPositions;
 std::map<Unit, int> unitsToWaitAfterOrder;
+ProductionManager* productionManager;
+BaseManager* baseManager;
 
 struct ScoutingOptionFor4 {
 	std::array<TilePosition, 3> startToP1ToP2;
@@ -566,17 +568,26 @@ void PeregrineBot::onStart()
 		}
 
 		std::set<Unit> bases;
+		std::set<Unit> workers;
 		for (Unit u : Broodwar->self()->getUnits()) {
 			if (u->getType().isResourceDepot())
-				;
-			bases.insert(u);
+				bases.insert(u);
+			if (u->getType().isWorker())
+				workers.insert(u);
 		}
 
 		if (bases.size() != 1) {
 			debugMessenger << "Not exactly one base at the start?!" << std::endl;
 		}
 
-		BaseManager BM = BaseManager(*bases.begin(), Broodwar->self()->getStartLocation());
+		//baseManager = std::make_shared<BaseManager>(*bases.begin(), Broodwar->self()->getStartLocation());
+		baseManager = new BaseManager(*bases.begin(), Broodwar->self()->getStartLocation());
+		for (auto u : workers) {
+			baseManager->addWorker(u);
+		}
+
+		//productionManager = std::make_shared<ProductionManager>(baseManager);
+		productionManager = new ProductionManager();
 	}
 }
 
@@ -767,33 +778,40 @@ void PeregrineBot::onFrame()
 		// Finally make the unit do some stuff!
 		// If the unit is a worker unit
 		if (u->getType().isWorker()) {
-			// if our worker is idle
-			if (u->isIdle()) {
-				// Order workers carrying a resource to return them to the center,
-				// otherwise find a mineral patch to harvest.
-				if (u->isCarryingGas() || u->isCarryingMinerals()) {
-					u->returnCargo();
-				}
-				// The worker cannot harvest anything if it
-				// is carrying a powerup such as a flag
-				else if (!u->getPowerUp()) {
-					// Harvest from the nearest mineral patch or gas refinery
-					if (!u->gather(u->getClosestUnit(IsMineralField || IsRefinery))) {
-						// If the call fails, then print the last error message
-						/*if (MY_DEBUG) {
-						Broodwar << Broodwar->getLastError() << std::endl;
-						}*/
-						debugMessenger << Broodwar->getLastError() << std::endl;
-					}
+			//// if our worker is idle
+			//if (u->isIdle()) {
+			//	// Order workers carrying a resource to return them to the center,
+			//	// otherwise find a mineral patch to harvest.
+			//	if (u->isCarryingGas() || u->isCarryingMinerals()) {
+			//		u->returnCargo();
+			//	}
+			//	// The worker cannot harvest anything if it
+			//	// is carrying a powerup such as a flag
+			//	else if (!u->getPowerUp()) {
+			//		// Harvest from the nearest mineral patch or gas refinery
+			//		if (!u->gather(u->getClosestUnit(IsMineralField || IsRefinery))) {
+			//			// If the call fails, then print the last error message
+			//			/*if (MY_DEBUG) {
+			//			Broodwar << Broodwar->getLastError() << std::endl;
+			//			}*/
+			//			debugMessenger << Broodwar->getLastError() << std::endl;
+			//		}
 
-				} // closure: has no powerup
-				else {
-					/*if (MY_DEBUG) {
-					Broodwar << "is idle and has power up?" << std::endl;
-					}*/
-					debugMessenger << "is idle and has power up?" << std::endl;
-				}
+			//	} // closure: has no powerup
+			//	else {
+			//		/*if (MY_DEBUG) {
+			//		Broodwar << "is idle and has power up?" << std::endl;
+			//		}*/
+			//		debugMessenger << "is idle and has power up?" << std::endl;
+			//	}
+			//}
+
+			if (baseManager != NULL) {
+				baseManager->addWorker(u);
+			} else {
+				debugMessenger << "No base manager!" << std::endl;
 			}
+
 			if (bo[indx] == UnitTypes::Zerg_Spawning_Pool) {
 				if ((!pool) && (Broodwar->self()->minerals() >= UnitTypes::Zerg_Spawning_Pool.mineralPrice())) {
 					if ((poolLastChecked + 115) < Broodwar->getFrameCount()) {
@@ -814,6 +832,8 @@ void PeregrineBot::onFrame()
 					lastChecked = Broodwar->getFrameCount();
 				}
 			}
+
+			continue;
 		}
 
 		//if ((bo[indx] == UnitTypes::Zerg_Spawning_Pool) && (u->getType().isBuilding()) && (u->isConstructing())) {
@@ -1101,6 +1121,10 @@ void PeregrineBot::onFrame()
 		}
 	} // closure: unit iterator
 
+	productionManager->onFrame();
+
+	baseManager->onFrame();
+
 	if (Broodwar->getFrameCount() > 86400) Broodwar->leaveGame();
 }
 
@@ -1276,7 +1300,7 @@ void PeregrineBot::drawAdditionalInformation()
 	Broodwar->drawTextScreen(1, 40, "Enemy Army: %i", enemyArmy.size());
 	Broodwar->drawTextScreen(1, 50, "Htchrs/Wrkrs: %i/%i", hatcheries.size(), workerList.size());
 
-	Broodwar->drawTextScreen(100, 0, "BO index: %i", indx);
+	Broodwar->drawTextScreen(100, 0, "IndividualBuildOrder index: %i", indx);
 	Broodwar->drawTextScreen(100, 10, "Pool: %i", pool);
 
 	int screenVPos = 20;
