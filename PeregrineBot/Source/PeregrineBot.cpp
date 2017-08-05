@@ -21,15 +21,15 @@ http://www.teamliquid.net/blogs/485544-intro-to-scbw-ai-development
 
 //#ifdef NDEBUG
 #ifndef _DEBUG
-bool MY_DEBUG = false;
-#else
 bool MY_DEBUG = true;
+#else
+bool MY_DEBUG = false;
 #endif
 
 using namespace BWAPI;
 using namespace Filter;
 
-DebugMessenger debugMessenger = DebugMessenger(MY_DEBUG);
+DebugMessenger debugMessenger(MY_DEBUG);
 
 bool analyzed;
 bool analysis_just_finished;
