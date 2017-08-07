@@ -566,28 +566,6 @@ void PeregrineBot::onStart()
 				}
 			}
 		}
-
-		std::set<Unit> bases;
-		std::set<Unit> workers;
-		for (Unit u : Broodwar->self()->getUnits()) {
-			if (u->getType().isResourceDepot())
-				bases.insert(u);
-			if (u->getType().isWorker())
-				workers.insert(u);
-		}
-
-		if (bases.size() != 1) {
-			debugMessenger << "Not exactly one base at the start?!" << std::endl;
-		}
-
-		//baseManager = std::make_shared<BaseManager>(*bases.begin(), Broodwar->self()->getStartLocation());
-		//baseManager = new BaseManager(*bases.begin(), Broodwar->self()->getStartLocation());
-		//for (auto u : workers) {
-		//	baseManager->addWorker(u);
-		//}
-
-		////productionManager = std::make_shared<ProductionManager>(baseManager);
-		//productionManager = new ProductionManager();
 	}
 }
 
@@ -805,13 +783,6 @@ void PeregrineBot::onFrame()
 					debugMessenger << "is idle and has power up?" << std::endl;
 				}
 			}
-
-			//if (baseManager != NULL) {
-			//	baseManager->addWorker(u);
-			//} else {
-			//	debugMessenger << "No base manager!" << std::endl;
-			//}
-
 			if (bo[indx] == UnitTypes::Zerg_Spawning_Pool) {
 				if ((!pool) && (Broodwar->self()->minerals() >= UnitTypes::Zerg_Spawning_Pool.mineralPrice())) {
 					if ((poolLastChecked + 115) < Broodwar->getFrameCount()) {
@@ -1121,10 +1092,6 @@ void PeregrineBot::onFrame()
 		}
 	} // closure: unit iterator
 
-	//productionManager->onFrame();
-
-	//baseManager->onFrame();
-
 	if (Broodwar->getFrameCount() > 86400) Broodwar->leaveGame();
 }
 
@@ -1300,7 +1267,7 @@ void PeregrineBot::drawAdditionalInformation()
 	Broodwar->drawTextScreen(1, 40, "Enemy Army: %i", enemyArmy.size());
 	Broodwar->drawTextScreen(1, 50, "Htchrs/Wrkrs: %i/%i", hatcheries.size(), workerList.size());
 
-	Broodwar->drawTextScreen(100, 0, "IndividualBuildOrder index: %i", indx);
+	Broodwar->drawTextScreen(100, 0, "BO index: %i", indx);
 	Broodwar->drawTextScreen(100, 10, "Pool: %i", pool);
 
 	int screenVPos = 20;
