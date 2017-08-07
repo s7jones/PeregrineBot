@@ -33,7 +33,7 @@ public:
 
 	void returnBuilderWorker(BWAPI::Unit Worker);
 	BWAPI::Unit getWorkerBuilder(BWAPI::UnitType type, BWAPI::TilePosition position);
-	void checkWorkerbuild();
+	void checkWorkerBuild();
 	void onUnitComplete(BWAPI::Unit unit);
 	int TotalTypeInQueue(BWAPI::UnitType type);
 	int TotalUnitInProduction(BWAPI::UnitType type);

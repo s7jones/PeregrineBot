@@ -289,7 +289,7 @@ void ProductionManager::returnBuilderWorker(BWAPI::Unit Worker)
 	baseManager->addWorker(Worker);
 }
 
-void ProductionManager::checkWorkerbuild()
+void ProductionManager::checkWorkerBuild()
 {
 
 	if (Broodwar->getFrameCount() % Broodwar->getLatencyFrames() != 0) {
@@ -417,7 +417,7 @@ void ProductionManager::checkWorkerbuild()
 //void ProductionManager::onFrameMain()
 //{
 //
-//	checkWorkerbuild();
+//	checkWorkerBuild();
 //
 //	if (BuildingOrder.size() > 0 && BuildingOrder[0].mineralPrice() <= (Broodwar->self()->minerals() - reservedMinerals)) {
 //		//Broodwar->printf("adding possible");
@@ -492,7 +492,7 @@ void ProductionManager::checkWorkerbuild()
 void ProductionManager::onFrameMacro()
 {
 
-	checkWorkerbuild();
+	checkWorkerBuild();
 
 	//if (Broodwar->enemy()->getRace() == BWAPI::Races::Zerg
 	//    && BuildingAtSupplyOrder.size() > 0) {
@@ -505,8 +505,8 @@ void ProductionManager::onFrameMacro()
 
 	//if( BuildingAtSupplyOrder.size() > 0 && BuildingAtSupplyOrder[0].supply <=  Broodwar->self()->supplyUsed()/2 ){ // && bManager->WallCalculated
 	if (BuildingAtSupplyOrder.size() > 0
-	    && BuildingAtSupplyOrder[0].type.mineralPrice() <= getAvailableMinerals()
-	    && BuildingAtSupplyOrder[0].type.gasPrice() <= getAvailableGas()) {
+		&& BuildingAtSupplyOrder[0].type.mineralPrice() <= getAvailableMinerals()
+		&& BuildingAtSupplyOrder[0].type.gasPrice() <= getAvailableGas()) {
 
 		addToQueue(BuildingAtSupplyOrder[0].type);
 		BuildingAtSupplyOrder.erase(BuildingAtSupplyOrder.begin());
@@ -516,47 +516,47 @@ void ProductionManager::onFrameMacro()
 	if (BuildingAtSupplyOrder.size() == 0) {
 
 		bool buildingDepot = false;
-		if (TotalTypeInQueue(BWAPI::UnitTypes::Terran_Supply_Depot) > 0) {
-			buildingDepot = true;
-		}
+		//if (TotalTypeInQueue(BWAPI::UnitTypes::Terran_Supply_Depot) > 0) {
+		//	buildingDepot = true;
+		//}
 
 		int DoubleSupplyCount = 140;
 
-		if ((Broodwar->self()->supplyTotal() - Broodwar->self()->supplyUsed()) < 10 && !buildingDepot
-		    && Broodwar->self()->supplyUsed() < DoubleSupplyCount) {
-			//if( !buildingDepot ){
-			addToQueue(BWAPI::UnitTypes::Terran_Supply_Depot);
-		}
-		if ((Broodwar->self()->supplyTotal() - Broodwar->self()->supplyUsed()) < 20 && !buildingDepot
-		    && Broodwar->self()->supplyUsed() >= DoubleSupplyCount
-		    && Broodwar->self()->supplyTotal() != 400) {
-			//if( !buildingDepot ){
-			Broodwar->printf("Double supply");
-			addToQueue(BWAPI::UnitTypes::Terran_Supply_Depot);
-			addToQueue(BWAPI::UnitTypes::Terran_Supply_Depot);
-		}
+		//if ((Broodwar->self()->supplyTotal() - Broodwar->self()->supplyUsed()) < 10 && !buildingDepot
+		//	&& Broodwar->self()->supplyUsed() < DoubleSupplyCount) {
+		//	//if( !buildingDepot ){
+		//	addToQueue(BWAPI::UnitTypes::Terran_Supply_Depot);
+		//}
+		//if ((Broodwar->self()->supplyTotal() - Broodwar->self()->supplyUsed()) < 20 && !buildingDepot
+		//	&& Broodwar->self()->supplyUsed() >= DoubleSupplyCount
+		//	&& Broodwar->self()->supplyTotal() != 400) {
+		//	//if( !buildingDepot ){
+		//	Broodwar->printf("Double supply");
+		//	addToQueue(BWAPI::UnitTypes::Terran_Supply_Depot);
+		//	addToQueue(BWAPI::UnitTypes::Terran_Supply_Depot);
+		//}
 
 		//extra buildings
 
 		//expand
 		if (getAvailableMinerals() > 300) {
 			if (TotalTypeInQueue(BWAPI::UnitTypes::Zerg_Hatchery) == 0) {
-				double ClosestToBase              = 99999;
+				double ClosestToBase = 99999;
 				TilePosition newBaseLoc = BWAPI::TilePositions::None;
-				//BOOST_FOREACH (BWTA::BaseLocation* loc, BWTA::getBaseLocations()) {
-				for (auto loc : BWTA::getBaseLocations()) {
+				//BOOST_FOREACH (BWTA::BaseLocation* BaseLocation, BWTA::getBaseLocations()) {
+				for (auto BaseLocation : BWTA::getBaseLocations()) {
 					bool already = false;
 					//for (int j = 0; j < CCmanager.size(); j++) {
-					//	if (BWAPI::Position(CCmanager[j]->LandLocation).getDistance(loc->getPosition()) < 7 * 32) {
+					//	if (BWAPI::Position(CCmanager[j]->LandLocation).getDistance(BaseLocation->getPosition()) < 7 * 32) {
 					//		already = true;
 					//	}
 					//}
-					if (Position(baseManager->LandLocation).getDistance(loc->getPosition()) < 7 * 32)
+					if (Position(baseManager->LandLocation).getDistance(BaseLocation->getPosition()) < 7 * 32)
 						already = true;
 					if (already == false
-					    && ClosestToBase > loc->getPosition().getDistance(baseManager->CommandCenter->getPosition())) {
-						ClosestToBase = loc->getPosition().getDistance(baseManager->CommandCenter->getPosition());
-						newBaseLoc    = loc->getTilePosition();
+						&& ClosestToBase > BaseLocation->getPosition().getDistance(baseManager->CommandCenter->getPosition())) {
+						ClosestToBase = BaseLocation->getPosition().getDistance(baseManager->CommandCenter->getPosition());
+						newBaseLoc = BaseLocation->getTilePosition();
 					}
 				}
 				if (newBaseLoc != TilePositions::None) {
@@ -585,148 +585,150 @@ void ProductionManager::onFrameMacro()
 	//	}
 	//}
 
-	if (baseManager->WorkerAndMineralList.size() < baseManager->WorkerSaturation) 
-
-	for (int i = 0; i < Barracks.size(); i++) {
-
-		//&&  (GMan->stillLifting == true || GMan->BarracksLift == true )
-
-		if (i == 0
-		    && (GMan->stillLifting == true)
-		    && bManager->WallSound) {
-			if (Barracks[i]->getTrainingQueue().size() != 0) {
-				Barracks[i]->cancelTrain();
-			}
-			continue;
-		}
-
-		BWAPI::UnitType toTrain = MacroMan->BarrackSuggest();
-		if (toTrain != BWAPI::UnitTypes::None && Barracks[i]->getTrainingQueue().size() == 0) {
-			Barracks[i]->train(toTrain);
-		}
+	if (baseManager->WorkerAndMineralList.size() < baseManager->WorkerSaturation) {
+		baseManager->buildWorker();
 	}
 
-	for (int i = 0; i < FactoryNoAddon.size(); i++) {
-		BWAPI::UnitType getSug = MacroMan->FactorySuggest();
-		if (getSug == BWAPI::UnitTypes::None) {
-			continue;
-		}
-		if (getSug == BWAPI::UnitTypes::Terran_Machine_Shop) {
-			FactoryNoAddon[i]->buildAddon(BWAPI::UnitTypes::Terran_Machine_Shop);
-			continue;
-		}
-		if (FactoryNoAddon[i]->getTrainingQueue().size() == 0) {
-			FactoryNoAddon[i]->train(getSug);
-		}
-	}
+	//for (int i = 0; i < Barracks.size(); i++) {
 
-	for (int i = 0; i < FactoryShop.size(); i++) {
-		BWAPI::UnitType getSug = MacroMan->FactorySuggestShop();
-		if (FactoryShop[i]->getTrainingQueue().size() == 0) {
-			FactoryShop[i]->train(getSug);
-		}
-		if (FactoryShop[i]->getAddon() != NULL) {
-			if (Broodwar->enemy()->getRace() == BWAPI::Races::Protoss) {
-				if (!Broodwar->self()->hasResearched(BWAPI::TechTypes::Tank_Siege_Mode)) {
-					FactoryShop[i]->getAddon()->research(BWAPI::TechTypes::Tank_Siege_Mode);
-				}
-			}
-			if (MacroMan->CurrentStrat == "2 rax FE") {
-				if (MacroMan->Squads[0].Tanks.size() > 0 && !Broodwar->self()->hasResearched(BWAPI::TechTypes::Tank_Siege_Mode)) {
-					FactoryShop[i]->getAddon()->research(BWAPI::TechTypes::Tank_Siege_Mode);
-				}
-			} else if (MacroMan->CurrentStrat == "Goliath M&M") {
-				if (Broodwar->self()->getUpgradeLevel(BWAPI::UpgradeTypes::Charon_Boosters) == 0) {
-					FactoryShop[i]->getAddon()->upgrade(BWAPI::UpgradeTypes::Charon_Boosters);
-				} else if (!Broodwar->self()->hasResearched(BWAPI::TechTypes::Tank_Siege_Mode)) {
-					FactoryShop[i]->getAddon()->research(BWAPI::TechTypes::Tank_Siege_Mode);
-				}
-			}
+	//	//&&  (GMan->stillLifting == true || GMan->BarracksLift == true )
 
-			if (Broodwar->enemy()->getRace() == BWAPI::Races::Terran) {
-				if (!Broodwar->self()->hasResearched(BWAPI::TechTypes::Tank_Siege_Mode)) {
-					FactoryShop[i]->getAddon()->research(BWAPI::TechTypes::Tank_Siege_Mode);
-				} else if (!Broodwar->self()->hasResearched(BWAPI::TechTypes::Spider_Mines)) {
-					FactoryShop[i]->getAddon()->research(BWAPI::TechTypes::Spider_Mines);
-				}
-			}
-		}
-	}
+	//	if (i == 0
+	//	    && (GMan->stillLifting == true)
+	//	    && bManager->WallSound) {
+	//		if (Barracks[i]->getTrainingQueue().size() != 0) {
+	//			Barracks[i]->cancelTrain();
+	//		}
+	//		continue;
+	//	}
 
-	for (int i = 0; i < StarportNoAddon.size(); i++) {
-		StarportNoAddon[i]->buildAddon(BWAPI::UnitTypes::Terran_Control_Tower);
-		/*
-		if( StarportNoAddon[i]->getTrainingQueue().size() == 0){
-		BWAPI::UnitType getSug = MacroMan->StarPortNoTSuggest();
-		StarportNoAddon[i]->train( getSug);
-		}
-		*/
-	}
+	//	BWAPI::UnitType toTrain = MacroMan->BarrackSuggest();
+	//	if (toTrain != BWAPI::UnitTypes::None && Barracks[i]->getTrainingQueue().size() == 0) {
+	//		Barracks[i]->train(toTrain);
+	//	}
+	//}
 
-	for (int i = 0; i < StarportCtower.size(); i++) {
-		if (StarportCtower[i]->getTrainingQueue().size() == 0) {
-			BWAPI::UnitType getSug = MacroMan->StarPortCTSuggest();
-			StarportCtower[i]->train(getSug);
-		}
-	}
+	//for (int i = 0; i < FactoryNoAddon.size(); i++) {
+	//	BWAPI::UnitType getSug = MacroMan->FactorySuggest();
+	//	if (getSug == BWAPI::UnitTypes::None) {
+	//		continue;
+	//	}
+	//	if (getSug == BWAPI::UnitTypes::Terran_Machine_Shop) {
+	//		FactoryNoAddon[i]->buildAddon(BWAPI::UnitTypes::Terran_Machine_Shop);
+	//		continue;
+	//	}
+	//	if (FactoryNoAddon[i]->getTrainingQueue().size() == 0) {
+	//		FactoryNoAddon[i]->train(getSug);
+	//	}
+	//}
 
-	if (Academy != NULL) {
-		if (Broodwar->enemy()->getRace() == BWAPI::Races::Zerg) {
-			if (!Broodwar->self()->hasResearched(BWAPI::TechTypes::Stim_Packs)) {
-				Academy->research(BWAPI::TechTypes::Stim_Packs);
-			} else if (Broodwar->self()->getUpgradeLevel(BWAPI::UpgradeTypes::U_238_Shells) == 0) {
-				Academy->upgrade(BWAPI::UpgradeTypes::U_238_Shells);
-			}
-		}
+	//for (int i = 0; i < FactoryShop.size(); i++) {
+	//	BWAPI::UnitType getSug = MacroMan->FactorySuggestShop();
+	//	if (FactoryShop[i]->getTrainingQueue().size() == 0) {
+	//		FactoryShop[i]->train(getSug);
+	//	}
+	//	if (FactoryShop[i]->getAddon() != NULL) {
+	//		if (Broodwar->enemy()->getRace() == BWAPI::Races::Protoss) {
+	//			if (!Broodwar->self()->hasResearched(BWAPI::TechTypes::Tank_Siege_Mode)) {
+	//				FactoryShop[i]->getAddon()->research(BWAPI::TechTypes::Tank_Siege_Mode);
+	//			}
+	//		}
+	//		if (MacroMan->CurrentStrat == "2 rax FE") {
+	//			if (MacroMan->Squads[0].Tanks.size() > 0 && !Broodwar->self()->hasResearched(BWAPI::TechTypes::Tank_Siege_Mode)) {
+	//				FactoryShop[i]->getAddon()->research(BWAPI::TechTypes::Tank_Siege_Mode);
+	//			}
+	//		} else if (MacroMan->CurrentStrat == "Goliath M&M") {
+	//			if (Broodwar->self()->getUpgradeLevel(BWAPI::UpgradeTypes::Charon_Boosters) == 0) {
+	//				FactoryShop[i]->getAddon()->upgrade(BWAPI::UpgradeTypes::Charon_Boosters);
+	//			} else if (!Broodwar->self()->hasResearched(BWAPI::TechTypes::Tank_Siege_Mode)) {
+	//				FactoryShop[i]->getAddon()->research(BWAPI::TechTypes::Tank_Siege_Mode);
+	//			}
+	//		}
 
-		if (Broodwar->enemy()->getRace() == BWAPI::Races::Protoss) {
-			if (!Broodwar->self()->hasResearched(BWAPI::TechTypes::Stim_Packs)) {
-				Academy->research(BWAPI::TechTypes::Stim_Packs);
-			} else if (Broodwar->self()->getUpgradeLevel(BWAPI::UpgradeTypes::U_238_Shells) == 0) {
-				Academy->upgrade(BWAPI::UpgradeTypes::U_238_Shells);
-			}
-		}
-	}
+	//		if (Broodwar->enemy()->getRace() == BWAPI::Races::Terran) {
+	//			if (!Broodwar->self()->hasResearched(BWAPI::TechTypes::Tank_Siege_Mode)) {
+	//				FactoryShop[i]->getAddon()->research(BWAPI::TechTypes::Tank_Siege_Mode);
+	//			} else if (!Broodwar->self()->hasResearched(BWAPI::TechTypes::Spider_Mines)) {
+	//				FactoryShop[i]->getAddon()->research(BWAPI::TechTypes::Spider_Mines);
+	//			}
+	//		}
+	//	}
+	//}
 
-	if (EngineeringBay != NULL) {
-		if (Broodwar->enemy()->getRace() == BWAPI::Races::Protoss) {
-			if (Broodwar->self()->getUpgradeLevel(BWAPI::UpgradeTypes::Terran_Infantry_Weapons) == 0) {
-				EngineeringBay->upgrade(BWAPI::UpgradeTypes::Terran_Infantry_Weapons);
-			} else if (Broodwar->self()->getUpgradeLevel(BWAPI::UpgradeTypes::Terran_Infantry_Armor) == 0) {
-				EngineeringBay->upgrade(BWAPI::UpgradeTypes::Terran_Infantry_Armor);
-			}
-		}
-		if (Broodwar->enemy()->getRace() == BWAPI::Races::Zerg) {
-			if (Broodwar->self()->getUpgradeLevel(BWAPI::UpgradeTypes::Terran_Infantry_Weapons) == 0) {
-				EngineeringBay->upgrade(BWAPI::UpgradeTypes::Terran_Infantry_Weapons);
-			} else if (Broodwar->self()->getUpgradeLevel(BWAPI::UpgradeTypes::Terran_Infantry_Armor) == 0) {
-				EngineeringBay->upgrade(BWAPI::UpgradeTypes::Terran_Infantry_Armor);
-			}
-		}
-	}
+	//for (int i = 0; i < StarportNoAddon.size(); i++) {
+	//	StarportNoAddon[i]->buildAddon(BWAPI::UnitTypes::Terran_Control_Tower);
+	//	/*
+	//	if( StarportNoAddon[i]->getTrainingQueue().size() == 0){
+	//	BWAPI::UnitType getSug = MacroMan->StarPortNoTSuggest();
+	//	StarportNoAddon[i]->train( getSug);
+	//	}
+	//	*/
+	//}
 
-	if (ScienceFacility != NULL) {
+	//for (int i = 0; i < StarportCtower.size(); i++) {
+	//	if (StarportCtower[i]->getTrainingQueue().size() == 0) {
+	//		BWAPI::UnitType getSug = MacroMan->StarPortCTSuggest();
+	//		StarportCtower[i]->train(getSug);
+	//	}
+	//}
 
-		if (Broodwar->enemy()->getRace() == BWAPI::Races::Zerg) {
-			if (!Broodwar->self()->hasResearched(BWAPI::TechTypes::Irradiate)) {
-				ScienceFacility->research(BWAPI::TechTypes::Irradiate);
-			} else if (ScienceFacility->getAddon() == NULL) {
-				ScienceFacility->buildAddon(BWAPI::UnitTypes::Terran_Physics_Lab);
-			}
-			if (ScienceFacility->getAddon() != NULL) {
-				//ScienceFacility->getAddon()->research( BWAPI::TechTypes::Yamato_Gun);
-			}
-		}
+	//if (Academy != NULL) {
+	//	if (Broodwar->enemy()->getRace() == BWAPI::Races::Zerg) {
+	//		if (!Broodwar->self()->hasResearched(BWAPI::TechTypes::Stim_Packs)) {
+	//			Academy->research(BWAPI::TechTypes::Stim_Packs);
+	//		} else if (Broodwar->self()->getUpgradeLevel(BWAPI::UpgradeTypes::U_238_Shells) == 0) {
+	//			Academy->upgrade(BWAPI::UpgradeTypes::U_238_Shells);
+	//		}
+	//	}
 
-		if (Broodwar->enemy()->getRace() == BWAPI::Races::Terran) {
-			if (ScienceFacility->getAddon() == NULL) {
-				ScienceFacility->buildAddon(BWAPI::UnitTypes::Terran_Physics_Lab);
-			}
-			if (ScienceFacility->getAddon() != NULL) {
-				//ScienceFacility->getAddon()->research( BWAPI::TechTypes::Yamato_Gun);
-			}
-		}
-	}
+	//	if (Broodwar->enemy()->getRace() == BWAPI::Races::Protoss) {
+	//		if (!Broodwar->self()->hasResearched(BWAPI::TechTypes::Stim_Packs)) {
+	//			Academy->research(BWAPI::TechTypes::Stim_Packs);
+	//		} else if (Broodwar->self()->getUpgradeLevel(BWAPI::UpgradeTypes::U_238_Shells) == 0) {
+	//			Academy->upgrade(BWAPI::UpgradeTypes::U_238_Shells);
+	//		}
+	//	}
+	//}
+
+	//if (EngineeringBay != NULL) {
+	//	if (Broodwar->enemy()->getRace() == BWAPI::Races::Protoss) {
+	//		if (Broodwar->self()->getUpgradeLevel(BWAPI::UpgradeTypes::Terran_Infantry_Weapons) == 0) {
+	//			EngineeringBay->upgrade(BWAPI::UpgradeTypes::Terran_Infantry_Weapons);
+	//		} else if (Broodwar->self()->getUpgradeLevel(BWAPI::UpgradeTypes::Terran_Infantry_Armor) == 0) {
+	//			EngineeringBay->upgrade(BWAPI::UpgradeTypes::Terran_Infantry_Armor);
+	//		}
+	//	}
+	//	if (Broodwar->enemy()->getRace() == BWAPI::Races::Zerg) {
+	//		if (Broodwar->self()->getUpgradeLevel(BWAPI::UpgradeTypes::Terran_Infantry_Weapons) == 0) {
+	//			EngineeringBay->upgrade(BWAPI::UpgradeTypes::Terran_Infantry_Weapons);
+	//		} else if (Broodwar->self()->getUpgradeLevel(BWAPI::UpgradeTypes::Terran_Infantry_Armor) == 0) {
+	//			EngineeringBay->upgrade(BWAPI::UpgradeTypes::Terran_Infantry_Armor);
+	//		}
+	//	}
+	//}
+
+	//if (ScienceFacility != NULL) {
+
+	//	if (Broodwar->enemy()->getRace() == BWAPI::Races::Zerg) {
+	//		if (!Broodwar->self()->hasResearched(BWAPI::TechTypes::Irradiate)) {
+	//			ScienceFacility->research(BWAPI::TechTypes::Irradiate);
+	//		} else if (ScienceFacility->getAddon() == NULL) {
+	//			ScienceFacility->buildAddon(BWAPI::UnitTypes::Terran_Physics_Lab);
+	//		}
+	//		if (ScienceFacility->getAddon() != NULL) {
+	//			//ScienceFacility->getAddon()->research( BWAPI::TechTypes::Yamato_Gun);
+	//		}
+	//	}
+
+	//	if (Broodwar->enemy()->getRace() == BWAPI::Races::Terran) {
+	//		if (ScienceFacility->getAddon() == NULL) {
+	//			ScienceFacility->buildAddon(BWAPI::UnitTypes::Terran_Physics_Lab);
+	//		}
+	//		if (ScienceFacility->getAddon() != NULL) {
+	//			//ScienceFacility->getAddon()->research( BWAPI::TechTypes::Yamato_Gun);
+	//		}
+	//	}
+	//}
 }
 
 void ProductionManager::onFrame()
