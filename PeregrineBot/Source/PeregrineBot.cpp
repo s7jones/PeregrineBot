@@ -581,13 +581,13 @@ void PeregrineBot::onStart()
 		}
 
 		//baseManager = std::make_shared<BaseManager>(*bases.begin(), Broodwar->self()->getStartLocation());
-		baseManager = new BaseManager(*bases.begin(), Broodwar->self()->getStartLocation());
-		for (auto u : workers) {
-			baseManager->addWorker(u);
-		}
+		//baseManager = new BaseManager(*bases.begin(), Broodwar->self()->getStartLocation());
+		//for (auto u : workers) {
+		//	baseManager->addWorker(u);
+		//}
 
-		//productionManager = std::make_shared<ProductionManager>(baseManager);
-		productionManager = new ProductionManager();
+		////productionManager = std::make_shared<ProductionManager>(baseManager);
+		//productionManager = new ProductionManager();
 	}
 }
 
@@ -778,39 +778,39 @@ void PeregrineBot::onFrame()
 		// Finally make the unit do some stuff!
 		// If the unit is a worker unit
 		if (u->getType().isWorker()) {
-			//// if our worker is idle
-			//if (u->isIdle()) {
-			//	// Order workers carrying a resource to return them to the center,
-			//	// otherwise find a mineral patch to harvest.
-			//	if (u->isCarryingGas() || u->isCarryingMinerals()) {
-			//		u->returnCargo();
-			//	}
-			//	// The worker cannot harvest anything if it
-			//	// is carrying a powerup such as a flag
-			//	else if (!u->getPowerUp()) {
-			//		// Harvest from the nearest mineral patch or gas refinery
-			//		if (!u->gather(u->getClosestUnit(IsMineralField || IsRefinery))) {
-			//			// If the call fails, then print the last error message
-			//			/*if (MY_DEBUG) {
-			//			Broodwar << Broodwar->getLastError() << std::endl;
-			//			}*/
-			//			debugMessenger << Broodwar->getLastError() << std::endl;
-			//		}
+			// if our worker is idle
+			if (u->isIdle()) {
+				// Order workers carrying a resource to return them to the center,
+				// otherwise find a mineral patch to harvest.
+				if (u->isCarryingGas() || u->isCarryingMinerals()) {
+					u->returnCargo();
+				}
+				// The worker cannot harvest anything if it
+				// is carrying a powerup such as a flag
+				else if (!u->getPowerUp()) {
+					// Harvest from the nearest mineral patch or gas refinery
+					if (!u->gather(u->getClosestUnit(IsMineralField || IsRefinery))) {
+						// If the call fails, then print the last error message
+						/*if (MY_DEBUG) {
+						Broodwar << Broodwar->getLastError() << std::endl;
+						}*/
+						debugMessenger << Broodwar->getLastError() << std::endl;
+					}
 
-			//	} // closure: has no powerup
-			//	else {
-			//		/*if (MY_DEBUG) {
-			//		Broodwar << "is idle and has power up?" << std::endl;
-			//		}*/
-			//		debugMessenger << "is idle and has power up?" << std::endl;
-			//	}
-			//}
-
-			if (baseManager != NULL) {
-				baseManager->addWorker(u);
-			} else {
-				debugMessenger << "No base manager!" << std::endl;
+				} // closure: has no powerup
+				else {
+					/*if (MY_DEBUG) {
+					Broodwar << "is idle and has power up?" << std::endl;
+					}*/
+					debugMessenger << "is idle and has power up?" << std::endl;
+				}
 			}
+
+			//if (baseManager != NULL) {
+			//	baseManager->addWorker(u);
+			//} else {
+			//	debugMessenger << "No base manager!" << std::endl;
+			//}
 
 			if (bo[indx] == UnitTypes::Zerg_Spawning_Pool) {
 				if ((!pool) && (Broodwar->self()->minerals() >= UnitTypes::Zerg_Spawning_Pool.mineralPrice())) {
@@ -1121,9 +1121,9 @@ void PeregrineBot::onFrame()
 		}
 	} // closure: unit iterator
 
-	productionManager->onFrame();
+	//productionManager->onFrame();
 
-	baseManager->onFrame();
+	//baseManager->onFrame();
 
 	if (Broodwar->getFrameCount() > 86400) Broodwar->leaveGame();
 }
