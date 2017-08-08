@@ -3,9 +3,15 @@
 #include <BWAPI/Game.h>
 
 class DebugMessenger {
+private:
+	DebugMessenger();
+	bool my_debug;
+	std::ostringstream ss;
+
 public:
-	DebugMessenger(bool debug);
+	static DebugMessenger& Instance();
 	~DebugMessenger();
+	void SetDebugMode(bool debug);
 
 	template <class T>
 	inline DebugMessenger& operator<<(const T& in)
@@ -16,10 +22,5 @@ public:
 	};
 
 	DebugMessenger& operator<<(BWAPI::GameWrapper::ostream_manipulator fn);
-
 	void DebugMessenger::flush();
-
-private:
-	bool my_debug;
-	std::ostringstream ss;
 };

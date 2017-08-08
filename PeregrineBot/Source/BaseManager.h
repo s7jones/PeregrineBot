@@ -2,6 +2,8 @@
 #include "Common.h"
 
 class BaseManager {
-public:
 	BaseManager();
+
+public:
+	static BaseManager& Instance();
 };

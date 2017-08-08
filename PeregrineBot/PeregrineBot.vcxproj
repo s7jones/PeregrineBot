@@ -96,17 +96,26 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Source\ArmyManager.cpp" />
     <ClCompile Include="Source\BaseManager.cpp" />
     <ClCompile Include="Source\DebugMessenger.cpp" />
     <ClCompile Include="Source\Dll.cpp" />
+    <ClCompile Include="Source\InformationManager.cpp" />
+    <ClCompile Include="Source\OrderManager.cpp" />
     <ClCompile Include="Source\PeregrineBot.cpp" />
     <ClCompile Include="Source\ProductionManager.cpp" />
+    <ClCompile Include="Source\WorkerManager.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Source\ArmyManager.h" />
     <ClInclude Include="Source\BaseManager.h" />
+    <ClInclude Include="Source\Common.h" />
     <ClInclude Include="Source\DebugMessenger.h" />
+    <ClInclude Include="Source\InformationManager.h" />
+    <ClInclude Include="Source\OrderManager.h" />
     <ClInclude Include="Source\PeregrineBot.h" />
     <ClInclude Include="Source\ProductionManager.h" />
+    <ClInclude Include="Source\WorkerManager.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

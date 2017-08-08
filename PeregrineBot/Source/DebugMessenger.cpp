@@ -1,12 +1,22 @@
 #include "DebugMessenger.h"
 
-DebugMessenger::DebugMessenger(bool debug)
+DebugMessenger::DebugMessenger()
 {
-	DebugMessenger::my_debug = debug;
+}
+
+DebugMessenger& DebugMessenger::Instance()
+{
+	static DebugMessenger instance;
+	return instance;
 }
 
 DebugMessenger::~DebugMessenger()
 {
+}
+
+void DebugMessenger::SetDebugMode(bool debug)
+{
+	DebugMessenger::my_debug = debug;
 }
 
 DebugMessenger& DebugMessenger::operator<<(BWAPI::GameWrapper::ostream_manipulator fn)

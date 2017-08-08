@@ -1,20 +1,9 @@
 #pragma once
-#include <BWAPI.h>
-#include <BWTA.h>
-#include <array>
-#include <boost/filesystem.hpp>
-#include <boost/filesystem/fstream.hpp>
-#include <boost/range/adaptor/reversed.hpp> // for reverse for each loop
-#include <chrono>
-#include <fstream>
-#include <iostream>
-#include <map>
-#include <string>
-#include <memory>
-//#include <sqlite3.h>
+#include "ArmyManager.h"
+#include "Common.h"
 #include "DebugMessenger.h"
-#include "BaseManager.h"
-#include "ProductionManager.h"
+#include "InformationManager.h"
+#include "OrderManager.h"
 
 // Remember not to use "Broodwar" in any global class constructor!
 
@@ -45,8 +34,8 @@ public:
 	void drawExtendedInterface();
 	//void scout(BWAPI::Unit* u);
 	//void scoutOverlord(BWAPI::Unit* u);
-	void move(BWAPI::Unit* u, const BWAPI::Position& pos);
-	void setMoveTo(BWAPI::Unit* u, const BWAPI::Position& pos);
+	//void move(BWAPI::Unit* u, const BWAPI::Position& pos);
+	//void setMoveTo(BWAPI::Unit* u, const BWAPI::Position& pos);
 
 	bool MY_DEBUG;
 };

@@ -2,6 +2,8 @@
 #include "Common.h"
 
 class ProductionManager {
-public:
 	ProductionManager();
+
+public:
+	static ProductionManager& Instance();
 };
