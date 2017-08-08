@@ -4,6 +4,7 @@
 #include "DebugMessenger.h"
 #include "InformationManager.h"
 #include "OrderManager.h"
+#include "WorkerManager.h"
 
 // Remember not to use "Broodwar" in any global class constructor!
 
@@ -32,10 +33,4 @@ public:
 	void drawAdditionalInformation();
 	void drawTerrainData();
 	void drawExtendedInterface();
-	//void scout(BWAPI::Unit* u);
-	//void scoutOverlord(BWAPI::Unit* u);
-	//void move(BWAPI::Unit* u, const BWAPI::Position& pos);
-	//void setMoveTo(BWAPI::Unit* u, const BWAPI::Position& pos);
-
-	bool MY_DEBUG;
 };

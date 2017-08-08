@@ -31,120 +31,18 @@ bool MY_DEBUG = false;
 using namespace BWAPI;
 using namespace Filter;
 
-//DebugMessenger* DebugMessenger::Instance() = new DebugMessenger(MY_DEBUG);
-//DebugMessenger::Instance().SetDebugMode(MY_DEBUG);
-//DebugMessenger& DebugMessenger::Instance() = DebugMessenger::Instance();
-
-bool analyzed;
-bool analysis_just_finished;
-bool analyzing;
-const bool analysis            = true;
-const std::vector<UnitType> bo = { UnitType(UnitTypes::Zerg_Drone),
-	                               UnitType(UnitTypes::Zerg_Spawning_Pool),
-	                               UnitType(UnitTypes::Zerg_Drone),
-	                               UnitType(UnitTypes::Zerg_Drone),
-	                               UnitType(UnitTypes::Zerg_Zergling),
-	                               UnitType(UnitTypes::Zerg_Zergling),
-	                               UnitType(UnitTypes::Zerg_Zergling),
-	                               UnitType(UnitTypes::Zerg_Overlord),
-	                               UnitType(UnitTypes::Zerg_Zergling),
-	                               UnitType(UnitTypes::Zerg_Zergling),
-	                               UnitType(UnitTypes::Zerg_Zergling) };
-int indx            = 0;
-bool pool           = false;
-bool poolready      = false;
-int lastChecked     = 0;
-int poolLastChecked = 0;
-int frameCount      = 1;
+bool analyzed               = false;
+bool analysis_just_finished = false;
+bool analyzing              = false;
+const bool analysis         = true;
+int frameCount              = 1;
 int i;
 std::string Version = "v4";
 Error lastError     = Errors::None;
 std::set<Unit> hatcheries;
 std::set<Unit> workerList;
-
-//OrderManager* orderManager = new OrderManager;
-//ProductionManager* productionManager;
-//BaseManager* baseManager;
-//InformationManager* informationManager = new InformationManager;
-
-std::map<int, std::pair<char*, int>> msgList;
-std::map<Unit, std::pair<std::vector<TilePosition>, int>> movelists;
 double duration = 0;
 std::chrono::steady_clock::time_point start;
-
-// not working for some reason
-//bool DrawUnitHealthBars = true;
-
-//void scout(Unit* u) {
-//	Broodwar->sendText("Scouting!");
-//
-//	BWTA::Region* region = BWTA::getRegion(u->getPosition());
-//
-//	//for (const auto& region : BWTA::getRegions()) {
-//	// draw the polygon outline of it in green
-//	BWTA::Polygon poly = region->getPolygon();
-//	for (size_t j = 0; j < poly.size(); ++j) {
-//		Position point1 = poly[j];
-//		u->move(point1, true);
-//	}
-//	//}
-//}
-//
-//void scoutOverlord(Unit* u) {
-//	Broodwar->sendText("Overlord Scouting!");
-//
-//	for (const auto& region : BWTA::getRegions()) {
-//		//for (const auto& region : BWTA::getRegions()) {
-//		// draw the polygon outline of it in green
-//		BWTA::Polygon poly = region->getPolygon();
-//		for (size_t j = 0; j < poly.size(); ++j) {
-//			Position point1 = poly[j];
-//			u->move(point1, true);
-//		}
-//	}
-//}
-
-//void setMoveTo(BWAPI::Unit* u, const BWAPI::Position& pos)
-//{
-//	std::vector<TilePosition> movelist = BWTA::getShortestPath((*u)->getTilePosition(), (TilePosition)pos);
-//	movelists.erase(*u);
-//	movelists[*u] = std::make_pair(movelist, 0);
-//}
-//
-//void move(BWAPI::Unit* u, const BWAPI::Position& pos)
-//{
-//	if ((*u)->isMoving()) {
-//		return;
-//	} else {
-//		if (movelists.count(*u)) { // if we have a movelist for that unit
-//			auto it                            = movelists.find(*u);
-//			int i                              = it->second.second;
-//			std::vector<TilePosition> movelist = it->second.first;
-//			for (int j = 0; j < ((movelist.size() < 8) ? movelist.size() : 8); j++) {
-//				if (i >= movelist.size()) {
-//					movelists.erase(*u);
-//					break;
-//				}
-//				(*u)->move(Position(movelist[i]), true);
-//				i++;
-//			}
-//		} else { // we have no movelist for that unit
-//			setMoveTo(u, pos);
-//		}
-//	}
-//}
-
-//void sendText(int key, char* msg)
-//{
-//	std::pair<char*, int> value(msg, Broodwar->getFrameCount());
-//
-//	if (msgList.insert(std::map<int, std::pair<char*, int>>::value_type(key, value)).second == false) {
-//		msgList[key].first = msg;
-//	}
-//	//int lastChecked = msglist[key].second
-//	//msgList[key] == std::pair<msg, msgList[key].second
-//	//msgList.insert_or_assign(key, );
-//}
 
 void PeregrineBot::onStart()
 {
@@ -152,9 +50,6 @@ void PeregrineBot::onStart()
 
 	// Print the map name.
 	// BWAPI returns std::string when retrieving a string, don't forget to add .c_str() when printing!
-	/*if (MY_DEBUG) {
-	Broodwar << "The map is " << Broodwar->mapName() << "!" << std::endl;
-	}*/
 	DebugMessenger::Instance() << "The map is " << Broodwar->mapName() << "!" << std::endl;
 
 	// Enable the UserInput flag, which allows us to control the bot and type messages.
@@ -191,19 +86,7 @@ void PeregrineBot::onStart()
 		Broodwar->setLocalSpeed(0);
 		//Broodwar->setGUI(false);
 
-		//if (Broodwar->mapFileName() == "(4)Andromeda.scx") {
-		//	Broodwar->leaveGame();
-		//}
-
-		//BWTA::readMap();
-		//analyzed = false;
-		//analysis_just_finished = false;
-		//analyzing = false;
-
 		if (analysis) {
-			/*if (MY_DEBUG) {
-			Broodwar << "Begin analyzing map." << std::endl;
-			}*/
 			DebugMessenger::Instance() << "Begin analyzing map." << std::endl;
 
 			BWTA::readMap();
@@ -211,7 +94,6 @@ void PeregrineBot::onStart()
 			analyzed               = true;
 			analysis_just_finished = true;
 		}
-
 		bool islandFound = false;
 		for (auto bl : BWTA::getBaseLocations()) {
 			if (bl->isIsland()) {
@@ -219,11 +101,7 @@ void PeregrineBot::onStart()
 				break;
 			}
 		}
-
 		if (islandFound) {
-			/*if (MY_DEBUG) {
-			Broodwar << "Islands on map!" << std::endl;
-			}*/
 			DebugMessenger::Instance() << "Islands on map!" << std::endl;
 		}
 
@@ -234,7 +112,6 @@ void PeregrineBot::onStart()
 void PeregrineBot::onEnd(bool isWinner)
 {
 	// Called when the game ends
-
 	if (!Broodwar->isReplay()) {
 		struct Scores {
 			std::string name;
@@ -354,14 +231,12 @@ void PeregrineBot::onFrame()
 	if (InformationManager::Instance().enemyRace != Races::Terran || Races::Zerg || Races::Protoss)
 		InformationManager::Instance().enemyRace = Broodwar->enemy()->getRace();
 
-	static char msg[100];
-
 	int number_of_starts = Broodwar->getStartLocations().size();
 
 	InformationManager::Instance().UpdateScouting();
 
-	if (indx > (bo.size() * 2))
-		indx = bo.size() * 2;
+	if (WorkerManager::Instance().indx > (WorkerManager::Instance().bo.size() * 2))
+		WorkerManager::Instance().indx = WorkerManager::Instance().bo.size() * 2;
 
 	// Iterate through all the units that we own
 	for (auto& u : Broodwar->self()->getUnits()) {
@@ -382,16 +257,7 @@ void PeregrineBot::onFrame()
 		/* if ( !u->isCompleted() || u->isConstructing() )
 		continue;*/
 
-		//// If unit has been given an order in the last 8 frames
-		//auto unitIterator = unitsToWaitAfterOrder.find(u);
-		//if (unitIterator != unitsToWaitAfterOrder.end()) {
-		//	++(unitIterator->second);
-		//	if (unitIterator->second >= 8) {
-		//		unitsToWaitAfterOrder.erase(u);
-		//	} else {
-		//		continue;
-		//	}
-		//}
+		// If unit has been given an order in the last 8 frames
 		bool unitNeedsToWait = OrderManager::Instance().UpdateUnitsWaitingSinceLastOrder(u);
 		if (unitNeedsToWait) {
 			continue;
@@ -400,102 +266,34 @@ void PeregrineBot::onFrame()
 		// Finally make the unit do some stuff!
 		// If the unit is a worker unit
 		if (u->getType().isWorker()) {
-			// if our worker is idle
-			if (u->isIdle()) {
-				// Order workers carrying a resource to return them to the center,
-				// otherwise find a mineral patch to harvest.
-				if (u->isCarryingGas() || u->isCarryingMinerals()) {
-					u->returnCargo();
-				}
-				// The worker cannot harvest anything if it
-				// is carrying a powerup such as a flag
-				else if (!u->getPowerUp()) {
-					// Harvest from the nearest mineral patch or gas refinery
-					if (!u->gather(u->getClosestUnit(IsMineralField || IsRefinery))) {
-						// If the call fails, then print the last error message
-						/*if (MY_DEBUG) {
-						Broodwar << Broodwar->getLastError() << std::endl;
-						}*/
-						DebugMessenger::Instance() << Broodwar->getLastError() << std::endl;
-					}
-
-				} // closure: has no powerup
-				else {
-					/*if (MY_DEBUG) {
-					Broodwar << "is idle and has power up?" << std::endl;
-					}*/
-					DebugMessenger::Instance() << "is idle and has power up?" << std::endl;
-				}
-			}
-			if (bo[indx] == UnitTypes::Zerg_Spawning_Pool) {
-				if ((!pool) && (Broodwar->self()->minerals() >= UnitTypes::Zerg_Spawning_Pool.mineralPrice())) {
-					if ((poolLastChecked + 115) < Broodwar->getFrameCount()) {
-						//find a location for spawning pool and construct it
-						TilePosition buildPosition = Broodwar->getBuildLocation(UnitTypes::Zerg_Spawning_Pool, u->getTilePosition());
-						//u->build(UnitTypes::Zerg_Spawning_Pool, buildPosition);
-						//unitsToWaitAfterOrder.insert({ u, 0 });
-						OrderManager::Instance().Build(u, UnitTypes::Zerg_Spawning_Pool, buildPosition);
-						poolLastChecked = Broodwar->getFrameCount();
-						continue;
-					}
-				}
-			}
-
-			if ((Broodwar->self()->minerals() >= UnitTypes::Zerg_Hatchery.mineralPrice()) && (indx >= bo.size())) {
-				if ((lastChecked + 400) < Broodwar->getFrameCount()) {
-					TilePosition buildPosition = Broodwar->getBuildLocation(UnitTypes::Zerg_Hatchery, u->getTilePosition());
-					//u->build(UnitTypes::Zerg_Hatchery, buildPosition);
-					//unitsToWaitAfterOrder.insert({ u, 0 });
-					OrderManager::Instance().Build(u, UnitTypes::Zerg_Hatchery, buildPosition);
-					lastChecked = Broodwar->getFrameCount();
-					continue;
-				}
-			}
-
+			WorkerManager::Instance().DoAllWorkerTasks(u);
 			continue;
 		}
 
-		//if ((bo[indx] == UnitTypes::Zerg_Spawning_Pool) && (u->getType().isBuilding()) && (u->isConstructing())) {
-		//	indx++;
-		//	Broodwar << "pool isConstructing" << std::endl;
-		//}
-
-		if ((bo[indx] == UnitTypes::Zerg_Spawning_Pool) && (u->getType() == UnitTypes::Zerg_Spawning_Pool) && (u->isBeingConstructed())) {
-			indx++;
-			pool = true;
-			/*if (MY_DEBUG) {
-			Broodwar << "pool isBeingConstructed: " << Broodwar->getFrameCount() << std::endl;
-			}*/
+		if ((WorkerManager::Instance().bo[WorkerManager::Instance().indx] == UnitTypes::Zerg_Spawning_Pool) && (u->getType() == UnitTypes::Zerg_Spawning_Pool) && (u->isBeingConstructed())) {
+			WorkerManager::Instance().indx++;
+			WorkerManager::Instance().pool = true;
 			DebugMessenger::Instance() << "pool isBeingConstructed: " << Broodwar->getFrameCount() << std::endl;
 		}
 
-		if ((!poolready) && (u->getType() == UnitTypes::Zerg_Spawning_Pool) && (u->isCompleted())) {
-			/*if (MY_DEBUG) {
-			Broodwar << "pool ready: " << Broodwar->getFrameCount() << std::endl;
-			}*/
+		if ((!WorkerManager::Instance().poolready) && (u->getType() == UnitTypes::Zerg_Spawning_Pool) && (u->isCompleted())) {
+			WorkerManager::Instance().poolready = true;
 			DebugMessenger::Instance() << "pool ready: " << Broodwar->getFrameCount() << std::endl;
-
-			poolready = true;
 		}
 
 		if (u->getType().isResourceDepot()) {
 			hatcheries.insert(u);
-
-			/*UnitType type = bo[indx];
-			std::string msg = std::to_string(type);
-			Broodwar->sendText(msg.c_str());*/
-
-			if ((Broodwar->self()->minerals() >= UnitTypes::Zerg_Drone.mineralPrice()) && (bo[indx] == UnitTypes::Zerg_Drone)) {
+			if ((Broodwar->self()->minerals() >= UnitTypes::Zerg_Drone.mineralPrice()) && (WorkerManager::Instance().bo[WorkerManager::Instance().indx] == UnitTypes::Zerg_Drone)) {
 				if (!u->getLarva().empty()) {
 					u->train(UnitTypes::Zerg_Drone);
-					indx++;
+					WorkerManager::Instance().indx++;
 				}
 			}
 
-			if ((Broodwar->self()->minerals() >= UnitTypes::Zerg_Overlord.mineralPrice()) && ((bo[indx] == UnitTypes::Zerg_Overlord) || ((indx >= bo.size()) && (Broodwar->self()->supplyTotal() - Broodwar->self()->supplyUsed() <= 1)))) {
+			if ((Broodwar->self()->minerals() >= UnitTypes::Zerg_Overlord.mineralPrice()) && ((WorkerManager::Instance().bo[WorkerManager::Instance().indx] == UnitTypes::Zerg_Overlord) || ((WorkerManager::Instance().indx >= WorkerManager::Instance().bo.size()) && (Broodwar->self()->supplyTotal() - Broodwar->self()->supplyUsed() <= 1)))) {
 				if (!u->getLarva().empty()) {
 					u->train(UnitTypes::Zerg_Overlord);
-					indx++;
+					WorkerManager::Instance().indx++;
 				}
 			}
 
@@ -507,22 +305,20 @@ void PeregrineBot::onFrame()
 			if ((workerList.size() < (hatcheries.size() * 3)) && (Broodwar->self()->minerals() >= UnitTypes::Zerg_Drone.mineralPrice())) {
 				if (!u->getLarva().empty()) {
 					u->train(UnitTypes::Zerg_Drone);
-					/*if (MY_DEBUG) {
-					Broodwar << "droning up from " << workerList.size() << " to " << (hatcheries.size() * 3) << std::endl;
-					}*/
 					DebugMessenger::Instance() << "droning up from " << workerList.size() << " to " << (hatcheries.size() * 3) << std::endl;
 				}
 			}
 
-			if ((poolready) && (Broodwar->self()->minerals() >= UnitTypes::Zerg_Zergling.mineralPrice())
+			if ((WorkerManager::Instance().poolready) && (Broodwar->self()->minerals() >= UnitTypes::Zerg_Zergling.mineralPrice())
 			    && (Broodwar->self()->supplyTotal() - Broodwar->self()->supplyUsed() > 0)
-			    && ((bo[indx] == UnitTypes::Zerg_Zergling)
-			        || (indx >= bo.size()))) {
+			    && ((WorkerManager::Instance().bo[WorkerManager::Instance().indx] == UnitTypes::Zerg_Zergling)
+			        || (WorkerManager::Instance().indx >= WorkerManager::Instance().bo.size()))) {
 				if (!u->getLarva().empty()) {
 					u->train(UnitTypes::Zerg_Zergling);
-					indx++;
+					WorkerManager::Instance().indx++;
 				}
 			}
+			continue;
 		}
 
 		if (u->getType() == UnitTypes::Zerg_Overlord) {
@@ -540,7 +336,6 @@ void PeregrineBot::onFrame()
 
 void PeregrineBot::onSendText(std::string text)
 {
-
 	// Send the text to the game if it is not being processed.
 	Broodwar->sendText("%s", text.c_str());
 
@@ -601,8 +396,7 @@ void PeregrineBot::onUnitShow(BWAPI::Unit unit)
 	}
 
 	// if something morphs into a worker, add it
-	if (unit->getType().isWorker() && unit->getPlayer() == BWAPI::Broodwar->self() && unit->getHitPoints() >= 0) {
-		//BWAPI::Broodwar->printf("A worker was shown %d", unit->getID());
+	if (unit->getType().isWorker() && unit->getPlayer() == Broodwar->self() && unit->getHitPoints() >= 0) {
 		workerList.insert(unit);
 	}
 }
@@ -614,7 +408,7 @@ void PeregrineBot::onUnitHide(BWAPI::Unit unit)
 void PeregrineBot::onUnitCreate(BWAPI::Unit unit)
 {
 	// if something morphs into a worker, add it
-	if (unit->getType().isWorker() && unit->getPlayer() == BWAPI::Broodwar->self() && unit->getHitPoints() >= 0) {
+	if (unit->getType().isWorker() && unit->getPlayer() == Broodwar->self() && unit->getHitPoints() >= 0) {
 		workerList.insert(unit);
 	}
 
@@ -634,23 +428,21 @@ void PeregrineBot::onUnitDestroy(BWAPI::Unit unit)
 	if ((IsEnemy)(unit)) {
 		if ((IsBuilding)(unit)) {
 			InformationManager::Instance().enemyBuildings.erase(unit);
-		} else
+		} else {
 			InformationManager::Instance().enemyArmy.erase(unit);
+		}
 	}
 
-	if (unit->getType().isResourceDepot() && unit->getPlayer() == BWAPI::Broodwar->self()) {
+	if (unit->getType().isResourceDepot() && unit->getPlayer() == Broodwar->self()) {
 		hatcheries.erase(unit);
 	}
 
-	if (unit->getType().isWorker() && unit->getPlayer() == BWAPI::Broodwar->self()) {
+	if (unit->getType().isWorker() && unit->getPlayer() == Broodwar->self()) {
 		workerList.erase(unit);
 	}
 
 	if (unit->getPosition() == InformationManager::Instance().enemyBase) {
 		InformationManager::Instance().destroyEnemyBase = true;
-		/*if (MY_DEBUG) {
-		Broodwar << "destroyed enemy base: " << Broodwar->getFrameCount() << std::endl;
-		}*/
 		DebugMessenger::Instance() << "destroyed enemy base: " << Broodwar->getFrameCount() << std::endl;
 	}
 	InformationManager::Instance().enemyBuildings.erase(unit);
@@ -659,12 +451,12 @@ void PeregrineBot::onUnitDestroy(BWAPI::Unit unit)
 void PeregrineBot::onUnitMorph(BWAPI::Unit unit)
 {
 	// if something morphs into a worker, add it
-	if (unit->getType().isWorker() && unit->getPlayer() == BWAPI::Broodwar->self() && unit->getHitPoints() >= 0) {
+	if (unit->getType().isWorker() && unit->getPlayer() == Broodwar->self() && unit->getHitPoints() >= 0) {
 		workerList.insert(unit);
 	}
 
 	// if something morphs into a building, it was a worker?
-	if (unit->getType().isBuilding() && unit->getPlayer() == BWAPI::Broodwar->self() && unit->getPlayer()->getRace() == BWAPI::Races::Zerg) {
+	if (unit->getType().isBuilding() && unit->getPlayer() == Broodwar->self() && unit->getPlayer()->getRace() == Races::Zerg) {
 		workerList.erase(unit);
 	}
 
@@ -681,12 +473,8 @@ void PeregrineBot::onUnitMorph(BWAPI::Unit unit)
 
 void PeregrineBot::onUnitRenegade(BWAPI::Unit unit)
 {
-	/*if (MY_DEBUG) {
-	Broodwar << unit->getType() << ", " << unit->getPlayer()->getName() << ": was renegaded!" << std::endl;
-	}*/
 	DebugMessenger::Instance() << unit->getType() << ", " << unit->getPlayer()->getName() << ": was renegaded!" << std::endl;
-
-	if (unit->getType().isWorker() && unit->getPlayer() == BWAPI::Broodwar->self()) {
+	if (unit->getType().isWorker() && unit->getPlayer() == Broodwar->self()) {
 		workerList.erase(unit);
 	}
 }
@@ -710,8 +498,8 @@ void PeregrineBot::drawAdditionalInformation()
 	Broodwar->drawTextScreen(1, 40, "Enemy Army: %i", InformationManager::Instance().enemyArmy.size());
 	Broodwar->drawTextScreen(1, 50, "Htchrs/Wrkrs: %i/%i", hatcheries.size(), workerList.size());
 
-	Broodwar->drawTextScreen(100, 0, "BO index: %i", indx);
-	Broodwar->drawTextScreen(100, 10, "Pool: %i", pool);
+	Broodwar->drawTextScreen(100, 0, "BO index: %i", WorkerManager::Instance().indx);
+	Broodwar->drawTextScreen(100, 10, "Pool: %i", WorkerManager::Instance().pool);
 
 	int screenVPos = 20;
 	int count      = 1;
@@ -743,17 +531,14 @@ void PeregrineBot::drawAdditionalInformation()
 	//	analyzing = true;
 	//}
 
-	if (analyzed)
+	if (analyzed) {
 		drawTerrainData();
+	}
 
 	drawExtendedInterface();
 
 	if (analysis_just_finished) {
-		/*if (MY_DEBUG) {
-		Broodwar << "Finished analyzing map." << std::endl;
-		}*/
 		DebugMessenger::Instance() << "Finished analyzing map." << std::endl;
-
 		analysis_just_finished = false;
 	}
 }
@@ -808,27 +593,18 @@ void PeregrineBot::drawTerrainData()
 
 void PeregrineBot::drawExtendedInterface()
 {
-	//if (DrawUnitHealthBars)
-	//{
-	//	return;
-	//}
-
 	int verticalOffset = -10;
 
 	// draw enemy units
-	//for (const auto & kv : getUnitData(BWAPI::Broodwar->enemy()).getUnits())
-	for (auto& unit : BWAPI::Broodwar->enemy()->getUnits()) {
-		//const UnitInfo & ui(kv.second);
-		//BWAPI::UnitType type(ui.type);
-		BWAPI::UnitType type = unit->getType();
+	for (auto& unit : Broodwar->enemy()->getUnits()) {
+		UnitType type = unit->getType();
 		if (type == UnitTypes::Unknown)
 			continue;
 
 		//int hitPoints = ui.lastHealth;
 		//int shields = ui.lastShields;
 
-		//const BWAPI::Position & pos = ui.lastPosition;
-		const BWAPI::Position pos = unit->getPosition();
+		const Position pos = unit->getPosition();
 
 		if (pos == Positions::Unknown)
 			continue;
@@ -841,30 +617,30 @@ void PeregrineBot::drawExtendedInterface()
 		int hitPoints = unit->getHitPoints();
 		int shields   = unit->getShields();
 
-		if (!BWAPI::Broodwar->isVisible(BWAPI::TilePosition(pos))) {
-			BWAPI::Broodwar->drawBoxMap(BWAPI::Position(left, top), BWAPI::Position(right, bottom), BWAPI::Colors::Grey, false);
-			BWAPI::Broodwar->drawTextMap(BWAPI::Position(left + 3, top + 4), "%s", type.getName().c_str());
+		if (!Broodwar->isVisible(TilePosition(pos))) {
+			Broodwar->drawBoxMap(Position(left, top), Position(right, bottom), Colors::Grey, false);
+			Broodwar->drawTextMap(Position(left + 3, top + 4), "%s", type.getName().c_str());
 		}
 
 		if (!type.isResourceContainer() && type.maxHitPoints() > 0) {
 			double hpRatio = (double)hitPoints / (double)type.maxHitPoints();
 
-			BWAPI::Color hpColor         = BWAPI::Colors::Green;
-			if (hpRatio <= 0.67) hpColor = BWAPI::Colors::Orange;
-			if (hpRatio <= 0.33) hpColor = BWAPI::Colors::Red;
+			Color hpColor                = Colors::Green;
+			if (hpRatio <= 0.67) hpColor = Colors::Orange;
+			if (hpRatio <= 0.33) hpColor = Colors::Red;
 
 			int ratioRight = left + (int)((right - left) * hpRatio);
 			int hpTop      = top + verticalOffset;
 			int hpBottom   = top + 4 + verticalOffset;
 
-			BWAPI::Broodwar->drawBoxMap(BWAPI::Position(left, hpTop), BWAPI::Position(right, hpBottom), BWAPI::Colors::Grey, true);
-			BWAPI::Broodwar->drawBoxMap(BWAPI::Position(left, hpTop), BWAPI::Position(ratioRight, hpBottom), hpColor, true);
-			BWAPI::Broodwar->drawBoxMap(BWAPI::Position(left, hpTop), BWAPI::Position(right, hpBottom), BWAPI::Colors::Black, false);
+			Broodwar->drawBoxMap(Position(left, hpTop), Position(right, hpBottom), Colors::Grey, true);
+			Broodwar->drawBoxMap(Position(left, hpTop), Position(ratioRight, hpBottom), hpColor, true);
+			Broodwar->drawBoxMap(Position(left, hpTop), Position(right, hpBottom), Colors::Black, false);
 
 			int ticWidth = 3;
 
 			for (int i(left); i < right - 1; i += ticWidth) {
-				BWAPI::Broodwar->drawLineMap(BWAPI::Position(i, hpTop), BWAPI::Position(i, hpBottom), BWAPI::Colors::Black);
+				Broodwar->drawLineMap(Position(i, hpTop), Position(i, hpBottom), Colors::Black);
 			}
 		}
 
@@ -875,52 +651,52 @@ void PeregrineBot::drawExtendedInterface()
 			int hpTop      = top - 3 + verticalOffset;
 			int hpBottom   = top + 1 + verticalOffset;
 
-			BWAPI::Broodwar->drawBoxMap(BWAPI::Position(left, hpTop), BWAPI::Position(right, hpBottom), BWAPI::Colors::Grey, true);
-			BWAPI::Broodwar->drawBoxMap(BWAPI::Position(left, hpTop), BWAPI::Position(ratioRight, hpBottom), BWAPI::Colors::Blue, true);
-			BWAPI::Broodwar->drawBoxMap(BWAPI::Position(left, hpTop), BWAPI::Position(right, hpBottom), BWAPI::Colors::Black, false);
+			Broodwar->drawBoxMap(Position(left, hpTop), Position(right, hpBottom), Colors::Grey, true);
+			Broodwar->drawBoxMap(Position(left, hpTop), Position(ratioRight, hpBottom), Colors::Blue, true);
+			Broodwar->drawBoxMap(Position(left, hpTop), Position(right, hpBottom), Colors::Black, false);
 
 			int ticWidth = 3;
 
 			for (int i(left); i < right - 1; i += ticWidth) {
-				BWAPI::Broodwar->drawLineMap(BWAPI::Position(i, hpTop), BWAPI::Position(i, hpBottom), BWAPI::Colors::Black);
+				Broodwar->drawLineMap(Position(i, hpTop), Position(i, hpBottom), Colors::Black);
 			}
 		}
 	}
 
 	// draw neutral units and our units
-	for (auto& unit : BWAPI::Broodwar->getAllUnits()) {
-		if (unit->getPlayer() == BWAPI::Broodwar->enemy()) {
+	for (auto& unit : Broodwar->getAllUnits()) {
+		if (unit->getPlayer() == Broodwar->enemy()) {
 			continue;
 		}
 
-		const BWAPI::Position& pos = unit->getPosition();
+		const Position& pos = unit->getPosition();
 
 		int left   = pos.x - unit->getType().dimensionLeft();
 		int right  = pos.x + unit->getType().dimensionRight();
 		int top    = pos.y - unit->getType().dimensionUp();
 		int bottom = pos.y + unit->getType().dimensionDown();
 
-		//BWAPI::Broodwar->drawBoxMap(BWAPI::Position(left, top), BWAPI::Position(right, bottom), BWAPI::Colors::Grey, false);
+		//Broodwar->drawBoxMap(Position(left, top), Position(right, bottom), Colors::Grey, false);
 
 		if (!unit->getType().isResourceContainer() && unit->getType().maxHitPoints() > 0) {
 			double hpRatio = (double)unit->getHitPoints() / (double)unit->getType().maxHitPoints();
 
-			BWAPI::Color hpColor        = BWAPI::Colors::Green;
-			if (hpRatio < 0.66) hpColor = BWAPI::Colors::Orange;
-			if (hpRatio < 0.33) hpColor = BWAPI::Colors::Red;
+			Color hpColor               = Colors::Green;
+			if (hpRatio < 0.66) hpColor = Colors::Orange;
+			if (hpRatio < 0.33) hpColor = Colors::Red;
 
 			int ratioRight = left + (int)((right - left) * hpRatio);
 			int hpTop      = top + verticalOffset;
 			int hpBottom   = top + 4 + verticalOffset;
 
-			BWAPI::Broodwar->drawBoxMap(BWAPI::Position(left, hpTop), BWAPI::Position(right, hpBottom), BWAPI::Colors::Grey, true);
-			BWAPI::Broodwar->drawBoxMap(BWAPI::Position(left, hpTop), BWAPI::Position(ratioRight, hpBottom), hpColor, true);
-			BWAPI::Broodwar->drawBoxMap(BWAPI::Position(left, hpTop), BWAPI::Position(right, hpBottom), BWAPI::Colors::Black, false);
+			Broodwar->drawBoxMap(Position(left, hpTop), Position(right, hpBottom), Colors::Grey, true);
+			Broodwar->drawBoxMap(Position(left, hpTop), Position(ratioRight, hpBottom), hpColor, true);
+			Broodwar->drawBoxMap(Position(left, hpTop), Position(right, hpBottom), Colors::Black, false);
 
 			int ticWidth = 3;
 
 			for (int i(left); i < right - 1; i += ticWidth) {
-				BWAPI::Broodwar->drawLineMap(BWAPI::Position(i, hpTop), BWAPI::Position(i, hpBottom), BWAPI::Colors::Black);
+				Broodwar->drawLineMap(Position(i, hpTop), Position(i, hpBottom), Colors::Black);
 			}
 		}
 
@@ -931,14 +707,14 @@ void PeregrineBot::drawExtendedInterface()
 			int hpTop      = top - 3 + verticalOffset;
 			int hpBottom   = top + 1 + verticalOffset;
 
-			BWAPI::Broodwar->drawBoxMap(BWAPI::Position(left, hpTop), BWAPI::Position(right, hpBottom), BWAPI::Colors::Grey, true);
-			BWAPI::Broodwar->drawBoxMap(BWAPI::Position(left, hpTop), BWAPI::Position(ratioRight, hpBottom), BWAPI::Colors::Blue, true);
-			BWAPI::Broodwar->drawBoxMap(BWAPI::Position(left, hpTop), BWAPI::Position(right, hpBottom), BWAPI::Colors::Black, false);
+			Broodwar->drawBoxMap(Position(left, hpTop), Position(right, hpBottom), Colors::Grey, true);
+			Broodwar->drawBoxMap(Position(left, hpTop), Position(ratioRight, hpBottom), Colors::Blue, true);
+			Broodwar->drawBoxMap(Position(left, hpTop), Position(right, hpBottom), Colors::Black, false);
 
 			int ticWidth = 3;
 
 			for (int i(left); i < right - 1; i += ticWidth) {
-				BWAPI::Broodwar->drawLineMap(BWAPI::Position(i, hpTop), BWAPI::Position(i, hpBottom), BWAPI::Colors::Black);
+				Broodwar->drawLineMap(Position(i, hpTop), Position(i, hpBottom), Colors::Black);
 			}
 		}
 
@@ -950,14 +726,14 @@ void PeregrineBot::drawExtendedInterface()
 			int hpTop      = top + verticalOffset;
 			int hpBottom   = top + 4 + verticalOffset;
 
-			BWAPI::Broodwar->drawBoxMap(BWAPI::Position(left, hpTop), BWAPI::Position(right, hpBottom), BWAPI::Colors::Grey, true);
-			BWAPI::Broodwar->drawBoxMap(BWAPI::Position(left, hpTop), BWAPI::Position(ratioRight, hpBottom), BWAPI::Colors::Cyan, true);
-			BWAPI::Broodwar->drawBoxMap(BWAPI::Position(left, hpTop), BWAPI::Position(right, hpBottom), BWAPI::Colors::Black, false);
+			Broodwar->drawBoxMap(Position(left, hpTop), Position(right, hpBottom), Colors::Grey, true);
+			Broodwar->drawBoxMap(Position(left, hpTop), Position(ratioRight, hpBottom), Colors::Cyan, true);
+			Broodwar->drawBoxMap(Position(left, hpTop), Position(right, hpBottom), Colors::Black, false);
 
 			int ticWidth = 3;
 
 			for (int i(left); i < right - 1; i += ticWidth) {
-				BWAPI::Broodwar->drawLineMap(BWAPI::Position(i, hpTop), BWAPI::Position(i, hpBottom), BWAPI::Colors::Black);
+				Broodwar->drawLineMap(Position(i, hpTop), Position(i, hpBottom), Colors::Black);
 			}
 		}
 	}
