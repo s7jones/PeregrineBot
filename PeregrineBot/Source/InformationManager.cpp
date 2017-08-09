@@ -13,12 +13,29 @@ InformationManager& InformationManager::Instance()
 	return instance;
 }
 
+// Thanks to meatshield262 for this:
+// https://gist.github.com/anonymous/e529dae7f8b5968f0c21cefc3bde32e5
+// Updates the static locations of minerals and gas on the map. Should only be called on game start.
+void InformationManager::GetStartingResources() {
+
+	initialMinerals = Broodwar->getStaticMinerals();
+	initialGeysers = Broodwar->getStaticGeysers();
+
+	//for (auto m = min.begin(); m != min.end(); ++m) {
+	//	resource_positions_.push_back((*m)->getPosition());
+	//}
+	//for (auto g = geysers.begin(); g != geysers.end(); ++g) {
+	//	resource_positions_.push_back((*g)->getPosition());
+	//}
+}
+
 void InformationManager::SetupScouting()
 {
 	std::set<Unit> overlords;
 	for (Unit u : Broodwar->self()->getUnits()) {
-		if (u->getType() == UnitTypes::Zerg_Overlord)
+		if (u->getType() == UnitTypes::Zerg_Overlord) {
 			overlords.insert(u);
+		}
 	}
 
 	TilePosition airOrigin;
@@ -26,9 +43,6 @@ void InformationManager::SetupScouting()
 		airOrigin = (TilePosition)(*overlords.begin())->getPosition();
 	} else {
 		airOrigin = Broodwar->self()->getStartLocation();
-		/*if (MY_DEBUG) {
-		Broodwar << "Not exactly 1 Overlord at start?!" << std::endl;
-		}*/
 		DebugMessenger::Instance() << "Not exactly 1 Overlord at start?!" << std::endl;
 	}
 
@@ -81,15 +95,9 @@ void InformationManager::SetupScouting()
 
 	int nodes       = Broodwar->getStartLocations().size();
 	int networkSize = nodes * (nodes - 1) / 2;
-	/*if (MY_DEBUG) {
-	Broodwar << "Network size from maths = " << networkSize << std::endl;
-	}*/
 	DebugMessenger::Instance() << "Network size from maths = " << networkSize << std::endl;
 
 	if (zerglingNetwork.size() != networkSize || overlordNetwork.size() != networkSize) {
-		/*if (MY_DEBUG) {
-		Broodwar << "Network size does not match maths." << std::endl;
-		}*/
 		DebugMessenger::Instance() << "Network size does not match maths." << std::endl;
 	}
 	std::map<std::array<TilePosition, 3>, std::array<double, 3>> scoutingNetwork;
@@ -106,22 +114,13 @@ void InformationManager::SetupScouting()
 		unscoutedPositions.insert(getBasePos(otherStart));
 	}
 
-	/*if (MY_DEBUG) {
-	Broodwar << allStarts.size() << " starts / " << otherStarts.size() << " otherstarts" << std::endl;
-	}*/
 	DebugMessenger::Instance() << allStarts.size() << " starts / " << otherStarts.size() << " otherstarts" << std::endl;
 
 	for (TilePosition p1 : otherStarts) {
 		std::set<TilePosition, sortByMostTopThenLeft> startToP1 = { Broodwar->self()->getStartLocation(), p1 };
-		/*if (MY_DEBUG) {
-		Broodwar << "ad" << overlordNetwork.find(startToP1)->second.distance << "   at" << overlordNetwork.find(startToP1)->second.time << std::endl;
-		}*/
 		DebugMessenger::Instance() << "ad" << overlordNetwork.find(startToP1)->second.distance << "   at" << overlordNetwork.find(startToP1)->second.time << std::endl;
 
 		if (Broodwar->getStartLocations().size() != 4) {
-			/*if (MY_DEBUG) {
-			Broodwar << "less than 4 start positions" << std::endl;
-			}*/
 			DebugMessenger::Instance() << "less than 4 start positions" << std::endl;
 
 		} else {
@@ -135,9 +134,6 @@ void InformationManager::SetupScouting()
 				remainingPlaces.erase(p1);
 				remainingPlaces.erase(p2);
 				if (remainingPlaces.size() != 1) {
-					/*if (MY_DEBUG) {
-					Broodwar << "remaining places not equal to 1" << std::endl;
-					}*/
 					DebugMessenger::Instance() << "remaining places not equal to 1" << std::endl;
 
 					continue;
@@ -225,9 +221,6 @@ void InformationManager::OverlordScouting(BWAPI::Unit overlord)
 			}
 		} else if (enemyRace != Races::Terran) { // enemy race isn't terran
 			// Overlord scouting perimeter of all regions
-			/*if (MY_DEBUG) {
-			Broodwar << "Overlord Scouting!" << std::endl;
-			}*/
 			DebugMessenger::Instance() << "Overlord Scouting!" << std::endl;
 
 			static std::deque<Position> scoutLocations;

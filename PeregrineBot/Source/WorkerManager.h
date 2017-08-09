@@ -1,8 +1,22 @@
 #pragma once
 #include "Common.h"
+#include "BaseManager.h"
 #include "OrderManager.h"
+#include "InformationManager.h"
 
 typedef std::vector<BWAPI::UnitType> Vector;
+
+//struct WorkersAssignedToMineral {
+//	Unit mineral;
+//	Unitset workers;
+//};
+
+//struct sortByLeastWorkersThenClosest {
+//	bool operator()(const BWAPI::Unit& lhs, BWAPI::Unit& rhs)
+//	{
+//		if (lhs.)
+//	}
+//};
 
 class WorkerManager {
 	WorkerManager();
@@ -10,6 +24,12 @@ class WorkerManager {
 public:
 	static WorkerManager& Instance();
 	void DoAllWorkerTasks(BWAPI::Unit u);
+	void DoAllWorkerTasks2(BWAPI::Unit u);
+	void WorkerLockGathering(BWAPI::Unit u);
+	BWAPI::Unit GetMineralPatch(BWAPI::Unit u);
+	void UnassignWorkerFromMineral(BWAPI::Unit u);
+	BWAPI::Unit MineralAssociatedWithWorker(BWAPI::Unit u);
+	void AddMinerals(BWAPI::Unitset minerals);
 
 	//const std::vector<BWAPI::UnitType> bo = ( BWAPI::UnitType(BWAPI::UnitTypes::Zerg_Drone),
 	//	                                      BWAPI::UnitType(BWAPI::UnitTypes::Zerg_Spawning_Pool),
@@ -42,4 +62,8 @@ public:
 	bool poolready      = false;
 	int lastChecked     = 0;
 	int poolLastChecked = 0;
+	//std::vector<WorkersAssignedToMineral> assignedWorkersAllMinerals;
+	std::map<BWAPI::Unit, BWAPI::Unitset> assignedWorkersAllMinerals;
+	BWAPI::Unitset builderWorkers;
+	BWAPI::Unitset mineralWorkers;
 };

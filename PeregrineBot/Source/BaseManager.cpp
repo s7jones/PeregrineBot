@@ -13,6 +13,29 @@ BaseManager& BaseManager::Instance()
 	return instance;
 }
 
+void BaseManager::SetupBaseAtStart()
+{
+	std::set<Unit> bases;
+	for (Unit u : Broodwar->self()->getUnits()) {
+		if (u->getType().isResourceDepot()) {
+			bases.insert(u);
+		}
+	}
+
+	if (bases.size() == 1) {
+		mainBase = *bases.begin();
+	} else {
+		for (auto base : bases) {
+			if ((TilePosition)base->getPosition() == Broodwar->self()->getStartLocation()) {
+				mainBase = base;
+				break;
+			}
+		}
+		// Should not reach here
+		DebugMessenger::Instance() << "Couldn't find main base at start" << std::endl;
+	}
+}
+
 void BaseManager::ManageBases(Unit u)
 {
 	hatcheries.insert(u);

@@ -131,6 +131,7 @@ class InformationManager {
 
 public:
 	static InformationManager& Instance();
+	void GetStartingResources();
 	void SetupScouting();
 	void UpdateScouting();
 	void OverlordScouting(BWAPI::Unit overlord);
@@ -149,4 +150,6 @@ public:
 	std::set<ScoutingOptionFor4, sortByMeanTime> scoutingOptions;
 	std::map<std::set<BWAPI::TilePosition, sortByMostTopThenLeft>, distAndTime> zerglingNetwork;
 	std::map<std::set<BWAPI::TilePosition, sortByMostTopThenLeft>, distAndTime> overlordNetwork;
+	BWAPI::Unitset initialMinerals;
+	BWAPI::Unitset initialGeysers;
 };

@@ -42,6 +42,9 @@ Error lastError     = Errors::None;
 double duration     = 0;
 std::chrono::steady_clock::time_point start;
 
+int result = 1 + (rand() % 2);
+int poolReadyAt = 0;
+
 void PeregrineBot::onStart()
 {
 	DebugMessenger::Instance() << "TESTTESTTESTTEST" << std::endl;
@@ -82,7 +85,7 @@ void PeregrineBot::onStart()
 		}
 		// Make our bot run thousands of games as fast as possible!
 		Broodwar->setLocalSpeed(0);
-		//Broodwar->setGUI(false);
+		Broodwar->setGUI(false);
 
 		if (analysis) {
 			DebugMessenger::Instance() << "Begin analyzing map." << std::endl;
@@ -102,8 +105,10 @@ void PeregrineBot::onStart()
 		if (islandFound) {
 			DebugMessenger::Instance() << "Islands on map!" << std::endl;
 		}
-
+		BaseManager::Instance().SetupBaseAtStart();
+		InformationManager::Instance().GetStartingResources();
 		InformationManager::Instance().SetupScouting();
+		WorkerManager::Instance().AddMinerals(InformationManager::Instance().initialMinerals);
 	}
 }
 
@@ -111,66 +116,84 @@ void PeregrineBot::onEnd(bool isWinner)
 {
 	// Called when the game ends
 	if (!Broodwar->isReplay()) {
-		struct Scores {
-			std::string name;
-			int matches;
-			int score;
-			int percent;
-		};
+		
+		std::string filename;
 
-		Scores score[3];
-
-		boost::filesystem::path readDir("./bwapi-data/read");
-		boost::filesystem::path writeDir("./bwapi-data/write");
-		boost::filesystem::path pathIn, pathOut;
-
-		std::stringstream ss;
-		ss << "data_" << Version << ".txt";
-		std::string filename = ss.str();
-
-		pathIn /= readDir /= filename;
-		pathOut /= writeDir /= filename;
-
-		boost::filesystem::ifstream input(pathIn, std::ios::in);
-
-		if (input.fail()) {
-			score[0].name = "z";
-			score[1].name = "t";
-			score[2].name = "p";
-			for (i = 0; i < 3; i++) {
-				score[i].matches = 0;
-				score[i].score   = 0;
-				score[i].percent = 0;
-			}
-		} else if (input.is_open()) {
-			for (i = 0; i < 3; i++) {
-				input >> score[i].name >> score[i].matches >> score[i].score >> score[i].percent;
-			}
+		if (result == 1) {
+			filename = "original.dat";
 		}
-
-		input.close();
-
-		if (Broodwar->enemy()->getRace() == Races::Zerg) score[0].matches++;
-		if (Broodwar->enemy()->getRace() == Races::Terran) score[1].matches++;
-		if (Broodwar->enemy()->getRace() == Races::Protoss) score[2].matches++;
-
-		if (isWinner) {
-			if (Broodwar->enemy()->getRace() == Races::Zerg) score[0].score++;
-			if (Broodwar->enemy()->getRace() == Races::Terran) score[1].score++;
-			if (Broodwar->enemy()->getRace() == Races::Protoss) score[2].score++;
+		else if (result == 2) {
+			filename = "locking.dat";
 		}
+		boost::filesystem::path pathOut("./bwapi-data/write");
+		pathOut /= filename;
 
-		if (Broodwar->enemy()->getRace() == Races::Zerg) score[0].percent    = (int)(100 * score[0].score / score[0].matches);
-		if (Broodwar->enemy()->getRace() == Races::Terran) score[1].percent  = (int)(100 * score[1].score / score[1].matches);
-		if (Broodwar->enemy()->getRace() == Races::Protoss) score[2].percent = (int)(100 * score[2].score / score[2].matches);
+		boost::filesystem::ofstream output(pathOut, std::ios::app);
 
-		boost::filesystem::ofstream output(pathOut, std::ios::trunc);
-
-		for (i = 0; i < 3; i++) {
-			output << score[i].name << "\t" << score[i].matches << "\t" << score[i].score << "\t" << score[i].percent << "\n";
-		}
+		output << Broodwar->mapName() << "\t" << poolReadyAt << std::endl;
 
 		output.close();
+		
+		//struct Scores {
+		//	std::string name;
+		//	int matches;
+		//	int score;
+		//	int percent;
+		//};
+
+		//Scores score[3];
+
+		//boost::filesystem::path readDir("./bwapi-data/read");
+		//boost::filesystem::path writeDir("./bwapi-data/write");
+		//boost::filesystem::path pathIn, pathOut;
+
+		//std::stringstream ss;
+		//ss << "data_" << Version << ".txt";
+		//std::string filename = ss.str();
+
+		//pathIn /= readDir /= filename;
+		//pathOut /= writeDir /= filename;
+
+		//boost::filesystem::ifstream input(pathIn, std::ios::in);
+
+		//if (input.fail()) {
+		//	score[0].name = "z";
+		//	score[1].name = "t";
+		//	score[2].name = "p";
+		//	for (i = 0; i < 3; i++) {
+		//		score[i].matches = 0;
+		//		score[i].score   = 0;
+		//		score[i].percent = 0;
+		//	}
+		//} else if (input.is_open()) {
+		//	for (i = 0; i < 3; i++) {
+		//		input >> score[i].name >> score[i].matches >> score[i].score >> score[i].percent;
+		//	}
+		//}
+
+		//input.close();
+
+		//if (Broodwar->enemy()->getRace() == Races::Zerg) score[0].matches++;
+		//if (Broodwar->enemy()->getRace() == Races::Terran) score[1].matches++;
+		//if (Broodwar->enemy()->getRace() == Races::Protoss) score[2].matches++;
+
+		//if (isWinner) {
+		//	if (Broodwar->enemy()->getRace() == Races::Zerg) score[0].score++;
+		//	if (Broodwar->enemy()->getRace() == Races::Terran) score[1].score++;
+		//	if (Broodwar->enemy()->getRace() == Races::Protoss) score[2].score++;
+		//}
+
+		//if (Broodwar->enemy()->getRace() == Races::Zerg) score[0].percent    = (int)(100 * score[0].score / score[0].matches);
+		//if (Broodwar->enemy()->getRace() == Races::Terran) score[1].percent  = (int)(100 * score[1].score / score[1].matches);
+		//if (Broodwar->enemy()->getRace() == Races::Protoss) score[2].percent = (int)(100 * score[2].score / score[2].matches);
+
+		//boost::filesystem::ofstream output(pathOut, std::ios::trunc);
+
+		//for (i = 0; i < 3; i++) {
+		//	output << score[i].name << "\t" << score[i].matches << "\t" << score[i].score << "\t" << score[i].percent << "\n";
+		//}
+
+		//output.close();
 
 		BWTA::cleanMemory();
 	}
@@ -263,8 +286,13 @@ void PeregrineBot::onFrame()
 
 		// Finally make the unit do some stuff!
 		// If the unit is a worker unit
-		if (u->getType().isWorker()) {
-			WorkerManager::Instance().DoAllWorkerTasks(u);
+		if (u->getType().isWorker()) {			
+			if (result == 1) {
+				WorkerManager::Instance().DoAllWorkerTasks(u);
+			}
+			else if (result == 2) {
+				WorkerManager::Instance().DoAllWorkerTasks2(u);
+			}
 			continue;
 		}
 
@@ -277,6 +305,7 @@ void PeregrineBot::onFrame()
 		if ((!WorkerManager::Instance().poolready) && (u->getType() == UnitTypes::Zerg_Spawning_Pool) && (u->isCompleted())) {
 			WorkerManager::Instance().poolready = true;
 			DebugMessenger::Instance() << "pool ready: " << Broodwar->getFrameCount() << std::endl;
+			poolReadyAt = Broodwar->getFrameCount();
 		}
 
 		if (u->getType().isResourceDepot()) {
@@ -295,6 +324,9 @@ void PeregrineBot::onFrame()
 		}
 
 	} // closure: unit iterator
+
+	//CHANGEME
+	if (Broodwar->getFrameCount() > 5000) Broodwar->leaveGame();
 
 	if (Broodwar->getFrameCount() > 86400) Broodwar->leaveGame();
 }
