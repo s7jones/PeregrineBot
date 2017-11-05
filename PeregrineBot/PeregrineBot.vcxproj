@@ -42,12 +42,14 @@
     <NuGetPackageImportStamp>a31143e8</NuGetPackageImportStamp>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <IncludePath>C:\Program Files %28x86%29\BWAPI\include;$(IncludePath)</IncludePath>
-    <LibraryPath>C:\Program Files %28x86%29\BWAPI\lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>%BWAPI_DIR%\include;%BWTA_DIR%\include;$(IncludePath)</IncludePath>
+    <LibraryPath>%BWAPI_DIR%\lib;%BWTA_DIR%\lib;$(LibraryPath)</LibraryPath>
     <PostBuildEventUseInBuild>false</PostBuildEventUseInBuild>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <PostBuildEventUseInBuild>false</PostBuildEventUseInBuild>
+    <IncludePath>%BWAPI_DIR%\include;%BWTA_DIR%\include;$(IncludePath)</IncludePath>
+    <LibraryPath>%BWAPI_DIR%\lib;%BWTA_DIR%\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
