@@ -39,23 +39,14 @@ void ArmyManager::ZerglingScout(Unit u)
 			Position buildingPos = building->getPosition();
 			// if building isn't reachable then skip
 			if (!BWTA::getRegion(u->getPosition())->isReachable(BWTA::getRegion(buildingPos))) {
-				/*if (MY_DEBUG) {
-				Broodwar << "unaccessible building" << std::endl;
-				}*/
 				DebugMessenger::Instance() << "unaccessible building" << std::endl;
 				continue;
 			}
-			/*if (MY_DEBUG) {
-			Broodwar << "scoutable building" << std::endl;
-			}*/
 			DebugMessenger::Instance() << "scoutable building" << std::endl;
 			auto it = ZerglingScoutLocations.begin();
 			it      = ZerglingScoutLocations.insert(it, buildingPos);
 		}
 	} else {
-		/*if (MY_DEBUG) {
-		Broodwar << "Zergling Scouting!" << std::endl;
-		}*/
 		DebugMessenger::Instance() << "Zergling Scouting!" << std::endl;
 
 		auto it                 = ZerglingScoutLocations.begin();
@@ -78,9 +69,6 @@ void ArmyManager::ZerglingAttack(Unit u)
 	auto unscoutedPositions = InformationManager::Instance().unscoutedPositions;
 	if ((enemyBase.x != 0) && (enemyBase.y != 0)) {
 		if ((!reachEnemyBase) && (BWTA::getRegion(u->getPosition()) == BWTA::getRegion(enemyBase))) {
-			/*if (MY_DEBUG) {
-				Broodwar << "reach enemy base: " << Broodwar->getFrameCount() << std::endl;
-				}*/
 			DebugMessenger::Instance() << "reach enemy base: " << Broodwar->getFrameCount() << std::endl;
 
 			reachEnemyBase = true;
@@ -189,9 +177,6 @@ void ArmyManager::ZerglingAttack(Unit u)
 			Position targetPos = lastCmd.getTargetPosition();
 			//if (unscoutedOtherPositions.find(targetPos) == unscoutedOtherPositions.end()) {
 			if ((unscoutedPositions.count(targetPos) == 0) && (!unscoutedPositions.empty())) {
-				/*if (MY_DEBUG) {
-					Broodwar << "recalculate scouting" << std::endl;
-					}*/
 				DebugMessenger::Instance() << "recalculate scouting" << std::endl;
 
 				u->stop();

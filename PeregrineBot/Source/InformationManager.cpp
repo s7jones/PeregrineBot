@@ -26,9 +26,6 @@ void InformationManager::SetupScouting()
 		airOrigin = (TilePosition)(*overlords.begin())->getPosition();
 	} else {
 		airOrigin = Broodwar->self()->getStartLocation();
-		/*if (MY_DEBUG) {
-		Broodwar << "Not exactly 1 Overlord at start?!" << std::endl;
-		}*/
 		DebugMessenger::Instance() << "Not exactly 1 Overlord at start?!" << std::endl;
 	}
 
@@ -50,8 +47,8 @@ void InformationManager::SetupScouting()
 	for (auto iter1 = Broodwar->getStartLocations().begin(); iter1 != (Broodwar->getStartLocations().end() - 1); ++iter1) {
 		for (auto iter2 = iter1 + 1; iter2 != Broodwar->getStartLocations().end(); ++iter2) {
 			std::set<TilePosition, sortByMostTopThenLeft> zerglingLink = { *iter1, *iter2 };
-			double zerglingDist = groundDistance(*iter1, *iter2);
-			double zerglingTime = groundTime(*iter1, *iter2);
+			double zerglingDist                                        = groundDistance(*iter1, *iter2);
+			double zerglingTime                                        = groundTime(*iter1, *iter2);
 
 			// calculate airDistance from firstOverlordPosition
 			TilePosition p1, p2;
@@ -68,8 +65,8 @@ void InformationManager::SetupScouting()
 			}
 
 			std::set<TilePosition, sortByMostTopThenLeft> overlordLink = { *iter1, *iter2 };
-			double overlordDist = airDistance(p1, p2);
-			double overlordTime = airTime(p1, p2);
+			double overlordDist                                        = airDistance(p1, p2);
+			double overlordTime                                        = airTime(p1, p2);
 
 			distAndTime zerglingDnT = { zerglingDist, zerglingTime };
 			distAndTime overlordDnT = { overlordDist, overlordTime };
@@ -81,15 +78,9 @@ void InformationManager::SetupScouting()
 
 	int nodes       = Broodwar->getStartLocations().size();
 	int networkSize = nodes * (nodes - 1) / 2;
-	/*if (MY_DEBUG) {
-	Broodwar << "Network size from maths = " << networkSize << std::endl;
-	}*/
 	DebugMessenger::Instance() << "Network size from maths = " << networkSize << std::endl;
 
 	if (zerglingNetwork.size() != networkSize || overlordNetwork.size() != networkSize) {
-		/*if (MY_DEBUG) {
-		Broodwar << "Network size does not match maths." << std::endl;
-		}*/
 		DebugMessenger::Instance() << "Network size does not match maths." << std::endl;
 	}
 	std::map<std::array<TilePosition, 3>, std::array<double, 3>> scoutingNetwork;
@@ -106,22 +97,13 @@ void InformationManager::SetupScouting()
 		unscoutedPositions.insert(getBasePos(otherStart));
 	}
 
-	/*if (MY_DEBUG) {
-	Broodwar << allStarts.size() << " starts / " << otherStarts.size() << " otherstarts" << std::endl;
-	}*/
 	DebugMessenger::Instance() << allStarts.size() << " starts / " << otherStarts.size() << " otherstarts" << std::endl;
 
 	for (TilePosition p1 : otherStarts) {
 		std::set<TilePosition, sortByMostTopThenLeft> startToP1 = { Broodwar->self()->getStartLocation(), p1 };
-		/*if (MY_DEBUG) {
-		Broodwar << "ad" << overlordNetwork.find(startToP1)->second.distance << "   at" << overlordNetwork.find(startToP1)->second.time << std::endl;
-		}*/
 		DebugMessenger::Instance() << "ad" << overlordNetwork.find(startToP1)->second.distance << "   at" << overlordNetwork.find(startToP1)->second.time << std::endl;
 
 		if (Broodwar->getStartLocations().size() != 4) {
-			/*if (MY_DEBUG) {
-			Broodwar << "less than 4 start positions" << std::endl;
-			}*/
 			DebugMessenger::Instance() << "less than 4 start positions" << std::endl;
 
 		} else {
@@ -135,9 +117,6 @@ void InformationManager::SetupScouting()
 				remainingPlaces.erase(p1);
 				remainingPlaces.erase(p2);
 				if (remainingPlaces.size() != 1) {
-					/*if (MY_DEBUG) {
-					Broodwar << "remaining places not equal to 1" << std::endl;
-					}*/
 					DebugMessenger::Instance() << "remaining places not equal to 1" << std::endl;
 
 					continue;
@@ -225,9 +204,6 @@ void InformationManager::OverlordScouting(BWAPI::Unit overlord)
 			}
 		} else if (enemyRace != Races::Terran) { // enemy race isn't terran
 			// Overlord scouting perimeter of all regions
-			/*if (MY_DEBUG) {
-			Broodwar << "Overlord Scouting!" << std::endl;
-			}*/
 			DebugMessenger::Instance() << "Overlord Scouting!" << std::endl;
 
 			static std::deque<Position> scoutLocations;

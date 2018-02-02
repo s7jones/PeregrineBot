@@ -5,7 +5,7 @@
 class DebugMessenger {
 private:
 	DebugMessenger();
-	bool my_debug;
+	bool debug_enabled;
 	std::ostringstream ss;
 
 public:
@@ -22,5 +22,5 @@ public:
 	};
 
 	DebugMessenger& operator<<(BWAPI::GameWrapper::ostream_manipulator fn);
-	void DebugMessenger::flush();
+	void flush(BWAPI::GameWrapper::ostream_manipulator fn);
 };

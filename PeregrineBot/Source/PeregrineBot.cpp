@@ -23,9 +23,9 @@ http://www.teamliquid.net/blogs/485544-intro-to-scbw-ai-development
 */
 
 #ifdef _DEBUG
-bool MY_DEBUG = true;
+bool debug_flag = true;
 #else
-bool MY_DEBUG = false;
+bool debug_flag = false;
 #endif
 
 using namespace BWAPI;
@@ -44,6 +44,7 @@ std::chrono::steady_clock::time_point start;
 
 void PeregrineBot::onStart()
 {
+	DebugMessenger::Instance().SetDebugMode(debug_flag);
 	DebugMessenger::Instance() << "TESTTESTTESTTEST" << std::endl;
 
 	// Print the map name.
@@ -160,8 +161,8 @@ void PeregrineBot::onEnd(bool isWinner)
 			if (Broodwar->enemy()->getRace() == Races::Protoss) score[2].score++;
 		}
 
-		if (Broodwar->enemy()->getRace() == Races::Zerg) score[0].percent    = (int)(100 * score[0].score / score[0].matches);
-		if (Broodwar->enemy()->getRace() == Races::Terran) score[1].percent  = (int)(100 * score[1].score / score[1].matches);
+		if (Broodwar->enemy()->getRace() == Races::Zerg) score[0].percent = (int)(100 * score[0].score / score[0].matches);
+		if (Broodwar->enemy()->getRace() == Races::Terran) score[1].percent = (int)(100 * score[1].score / score[1].matches);
 		if (Broodwar->enemy()->getRace() == Races::Protoss) score[2].percent = (int)(100 * score[2].score / score[2].matches);
 
 		boost::filesystem::ofstream output(pathOut, std::ios::trunc);
@@ -203,8 +204,8 @@ void PeregrineBot::onFrame()
 
 		//double duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() / 24;
 		std::chrono::duration<double, std::milli> fp_ms = end - start;
-		duration   = fp_ms.count() / 24;
-		frameCount = 1;
+		duration                                        = fp_ms.count() / 24;
+		frameCount                                      = 1;
 	} else {
 		if (frameCount == 1) {
 			start = std::chrono::steady_clock::now();
@@ -311,9 +312,6 @@ void PeregrineBot::onSendText(std::string text)
 void PeregrineBot::onReceiveText(BWAPI::Player player, std::string text)
 {
 	// Parse the received text
-	/*if (MY_DEBUG) {
-	Broodwar << player->getName() << " said \"" << text << "\"" << std::endl;
-	}*/
 	DebugMessenger::Instance() << player->getName() << " said \"" << text << "\"" << std::endl;
 }
 
@@ -330,9 +328,6 @@ void PeregrineBot::onNukeDetect(BWAPI::Position target)
 	// Check if the target is a valid position
 	if (target) {
 		// if so, print the location of the nuclear strike target
-		/*if (MY_DEBUG) {
-		Broodwar << "Nuclear Launch Detected at " << target << std::endl;
-		}*/
 		DebugMessenger::Instance() << "Nuclear Launch Detected at " << target << std::endl;
 
 	} else {
@@ -590,7 +585,7 @@ void PeregrineBot::drawExtendedInterface()
 		if (!type.isResourceContainer() && type.maxHitPoints() > 0) {
 			double hpRatio = (double)hitPoints / (double)type.maxHitPoints();
 
-			Color hpColor                = Colors::Green;
+			Color hpColor = Colors::Green;
 			if (hpRatio <= 0.67) hpColor = Colors::Orange;
 			if (hpRatio <= 0.33) hpColor = Colors::Red;
 
@@ -646,7 +641,7 @@ void PeregrineBot::drawExtendedInterface()
 		if (!unit->getType().isResourceContainer() && unit->getType().maxHitPoints() > 0) {
 			double hpRatio = (double)unit->getHitPoints() / (double)unit->getType().maxHitPoints();
 
-			Color hpColor               = Colors::Green;
+			Color hpColor = Colors::Green;
 			if (hpRatio < 0.66) hpColor = Colors::Orange;
 			if (hpRatio < 0.33) hpColor = Colors::Red;
 
