@@ -44,7 +44,7 @@ std::chrono::steady_clock::time_point start;
 
 void PeregrineBot::onStart()
 {
-	DebugMessenger::Instance().SetDebugMode(debug_flag);
+	DebugMessenger::Instance().Setup(debug_flag);
 	DebugMessenger::Instance() << "TESTTESTTESTTEST" << std::endl;
 
 	// Print the map name.

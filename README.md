@@ -14,3 +14,4 @@ A C++ AI bot that plays the game Starcraft Broodwar using a "Zerg 5-pool" strate
 * BWAPI v4.1.2 (VS2013).
 * BWTA2 v2.2 (has it own version of Boost).
 * Boost v1.63.
+* RapidJSON v1.0.2.

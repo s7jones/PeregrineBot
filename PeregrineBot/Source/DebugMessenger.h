@@ -1,6 +1,7 @@
 #pragma once
 #include <BWAPI.h>
 #include <BWAPI/Game.h>
+#include <boost/filesystem.hpp>
 
 class DebugMessenger {
 private:
@@ -11,7 +12,7 @@ private:
 public:
 	static DebugMessenger& Instance();
 	~DebugMessenger();
-	void SetDebugMode(bool debug);
+	void Setup(bool debug_flag_define);
 
 	template <class T>
 	inline DebugMessenger& operator<<(const T& in)
