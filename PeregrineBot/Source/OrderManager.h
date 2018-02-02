@@ -10,5 +10,6 @@ public:
 	void Move(BWAPI::Unit mover, BWAPI::Position p);
 	void Move(BWAPI::Unit mover, BWAPI::Position p, bool shiftClick);
 	void Build(BWAPI::Unit builder, BWAPI::UnitType buildingType, BWAPI::TilePosition buildPosition);
+	void Stop(BWAPI::Unit stopper);
 	bool UpdateUnitsWaitingSinceLastOrder(BWAPI::Unit u);
 };

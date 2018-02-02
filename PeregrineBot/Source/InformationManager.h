@@ -132,13 +132,15 @@ class InformationManager {
 public:
 	static InformationManager& Instance();
 	void SetupScouting();
+	void Update();
 	void UpdateScouting();
 	void OverlordScouting(BWAPI::Unit overlord);
 
 	std::set<BWAPI::Unit> enemyBuildings;
 	BWAPI::Position enemyBase = { 0, 0 };
-	bool reachEnemyBase       = false;
-	bool destroyEnemyBase     = false;
+	bool enemyBaseFound       = false;
+	bool enemyBaseReached     = false;
+	bool enemyBaseDestroyed   = false;
 	BWAPI::Race enemyRace     = BWAPI::Races::Unknown;
 	std::set<BWAPI::Unit> enemyArmy;
 	std::map<BWAPI::TilePosition, std::array<double, 6>> scoutingInfo;

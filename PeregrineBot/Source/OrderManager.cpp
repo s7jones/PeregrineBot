@@ -38,6 +38,12 @@ void OrderManager::Build(BWAPI::Unit builder, BWAPI::UnitType buildingType, BWAP
 	builder->build(buildingType, buildPosition);
 }
 
+void OrderManager::Stop(BWAPI::Unit stopper)
+{
+	unitsToWaitAfterOrder.insert({ stopper, 0 });
+	stopper->stop();
+}
+
 bool OrderManager::UpdateUnitsWaitingSinceLastOrder(Unit u)
 {
 	bool unitNeedsToWait = false;

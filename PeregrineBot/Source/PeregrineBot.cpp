@@ -227,12 +227,7 @@ void PeregrineBot::onFrame()
 	if (Broodwar->getFrameCount() % Broodwar->getLatencyFrames() != 0)
 		return;
 
-	if (InformationManager::Instance().enemyRace != Races::Terran || Races::Zerg || Races::Protoss)
-		InformationManager::Instance().enemyRace = Broodwar->enemy()->getRace();
-
-	int number_of_starts = Broodwar->getStartLocations().size();
-
-	InformationManager::Instance().UpdateScouting();
+	InformationManager::Instance().Update();
 
 	if (WorkerManager::Instance().indx > (WorkerManager::Instance().bo.size() * 2))
 		WorkerManager::Instance().indx = WorkerManager::Instance().bo.size() * 2;
@@ -402,7 +397,7 @@ void PeregrineBot::onUnitDestroy(BWAPI::Unit unit)
 	}
 
 	if (unit->getPosition() == InformationManager::Instance().enemyBase) {
-		InformationManager::Instance().destroyEnemyBase = true;
+		InformationManager::Instance().enemyBaseDestroyed = true;
 		DebugMessenger::Instance() << "destroyed enemy base: " << Broodwar->getFrameCount() << std::endl;
 	}
 	InformationManager::Instance().enemyBuildings.erase(unit);

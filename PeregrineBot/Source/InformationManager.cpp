@@ -149,9 +149,23 @@ void InformationManager::SetupScouting()
 	}
 }
 
+void InformationManager::Update()
+{
+	if (!enemyBaseFound) {
+		if ((InformationManager::Instance().enemyBase.x != 0) && (InformationManager::Instance().enemyBase.y != 0)) {
+			enemyBaseFound = true;
+		}
+	}
+
+	if (InformationManager::Instance().enemyRace != Races::Terran || Races::Zerg || Races::Protoss)
+		enemyRace = Broodwar->enemy()->getRace();
+
+	UpdateScouting();
+}
+
 void InformationManager::UpdateScouting()
 {
-	if ((InformationManager::Instance().enemyBase.x != 0) && (InformationManager::Instance().enemyBase.y != 0)) {
+	if (enemyBaseFound) {
 		for (auto otherPos : unscoutedPositions) {
 			scoutedPositions.insert(otherPos);
 			unscoutedPositions.erase(otherPos);
@@ -164,7 +178,7 @@ void InformationManager::UpdateScouting()
 				scoutedPositions.insert(otherPos);
 				unscoutedPositions.erase(otherPos);
 			} else {
-				if (!((InformationManager::Instance().enemyBase.x != 0) && (InformationManager::Instance().enemyBase.y != 0))) {
+				if (!enemyBaseFound) {
 					DebugMessenger::Instance() << "enemy base is (0, 0)" << std::endl;
 				}
 				InformationManager::Instance().enemyBase = otherPos;
@@ -177,7 +191,7 @@ void InformationManager::OverlordScouting(BWAPI::Unit overlord)
 {
 	auto u = overlord;
 	if (u->isIdle()) {
-		if (!((InformationManager::Instance().enemyBase.x != 0) && (InformationManager::Instance().enemyBase.y != 0))) {
+		if (!enemyBaseFound) {
 			if (Broodwar->getStartLocations().size() == 4) { // map size is 4, use new scouting
 				auto tp                       = scoutingOptions.begin()->POther;
 				auto p                        = getBasePos(tp);
@@ -227,7 +241,7 @@ void InformationManager::OverlordScouting(BWAPI::Unit overlord)
 	} else if (u->isUnderAttack()) { // if overlord is under attack run back to own base
 		auto ownBasePos = getBasePos(Broodwar->self()->getStartLocation());
 		OrderManager::Instance().Move(u, ownBasePos);
-	} else if ((InformationManager::Instance().enemyBase.x != 0) && (InformationManager::Instance().enemyBase.y != 0)) {
-		u->stop();
+	} else if (enemyBaseFound) {
+		OrderManager::Instance().Stop(u);
 	}
 }
