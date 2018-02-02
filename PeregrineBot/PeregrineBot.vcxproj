@@ -121,6 +121,7 @@
     <ClInclude Include="Source\WorkerManager.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="..\.clang-format" />
     <None Include="..\README.md" />
     <None Include="packages.config" />
   </ItemGroup>
