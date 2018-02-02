@@ -51,8 +51,6 @@ void ArmyManager::ZerglingScout(Unit u)
 
 		auto it                 = ZerglingScoutLocations.begin();
 		Position perimeterPoint = (*it);
-		//u->move(perimeterPoint, false);
-		//unitsToWaitAfterOrder.insert({ u, 0 });
 		OrderManager::Instance().Move(u, perimeterPoint);
 		ZerglingScoutLocations.erase(it);
 	}
