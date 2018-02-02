@@ -67,9 +67,8 @@ void ArmyManager::ZerglingAttack(Unit u)
 	auto unscoutedPositions = InformationManager::Instance().unscoutedPositions;
 	if ((enemyBase.x != 0) && (enemyBase.y != 0)) {
 		if ((!reachEnemyBase) && (BWTA::getRegion(u->getPosition()) == BWTA::getRegion(enemyBase))) {
+			InformationManager::Instance().reachEnemyBase = true;
 			DebugMessenger::Instance() << "reach enemy base: " << Broodwar->getFrameCount() << std::endl;
-
-			reachEnemyBase = true;
 		}
 	}
 	//Broodwar->setLocalSpeed(23);
