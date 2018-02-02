@@ -60,9 +60,9 @@ void DebugMessenger::Setup(bool debug_flag_define)
 
 	bool debug_flag_json = false;
 
-	if (d.HasMember("debug")) {
-		if (d["debug"].IsBool()) {
-			debug_flag_json = d["debug"].GetBool();
+	if (d.HasMember("debug_msgs_enabled")) {
+		if (d["debug_msgs_enabled"].IsBool()) {
+			debug_flag_json = d["debug_msgs_enabled"].GetBool();
 		}
 	}
 
