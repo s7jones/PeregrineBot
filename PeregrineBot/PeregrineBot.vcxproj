@@ -45,6 +45,7 @@
     <IncludePath>%BWAPI_DIR%\include;%BWTA_DIR%\include;$(IncludePath)</IncludePath>
     <LibraryPath>%BWAPI_DIR%\lib;%BWTA_DIR%\lib;$(LibraryPath)</LibraryPath>
     <PostBuildEventUseInBuild>false</PostBuildEventUseInBuild>
+    <TargetName>$(ProjectName)d</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <PostBuildEventUseInBuild>false</PostBuildEventUseInBuild>
