@@ -1,5 +1,6 @@
 #pragma once
 #include "ArmyManager.h"
+#include "BaseManager.h"
 #include "Common.h"
 #include "DebugMessenger.h"
 #include "InformationManager.h"

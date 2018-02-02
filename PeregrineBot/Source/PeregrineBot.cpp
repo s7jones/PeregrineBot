@@ -39,9 +39,7 @@ int frameCount              = 1;
 int i;
 std::string Version = "v4";
 Error lastError     = Errors::None;
-std::set<Unit> hatcheries;
-std::set<Unit> workerList;
-double duration = 0;
+double duration     = 0;
 std::chrono::steady_clock::time_point start;
 
 void PeregrineBot::onStart()
@@ -282,51 +280,18 @@ void PeregrineBot::onFrame()
 		}
 
 		if (u->getType().isResourceDepot()) {
-			hatcheries.insert(u);
-			if ((Broodwar->self()->minerals() >= UnitTypes::Zerg_Drone.mineralPrice()) && (WorkerManager::Instance().bo[WorkerManager::Instance().indx] == UnitTypes::Zerg_Drone)) {
-				if (!u->getLarva().empty()) {
-					u->train(UnitTypes::Zerg_Drone);
-					WorkerManager::Instance().indx++;
-				}
-			}
-
-			if ((Broodwar->self()->minerals() >= UnitTypes::Zerg_Overlord.mineralPrice()) && ((WorkerManager::Instance().bo[WorkerManager::Instance().indx] == UnitTypes::Zerg_Overlord) || ((WorkerManager::Instance().indx >= WorkerManager::Instance().bo.size()) && (Broodwar->self()->supplyTotal() - Broodwar->self()->supplyUsed() <= 1)))) {
-				if (!u->getLarva().empty()) {
-					u->train(UnitTypes::Zerg_Overlord);
-					WorkerManager::Instance().indx++;
-				}
-			}
-
-			for (auto& u2 : Broodwar->self()->getUnits()) {
-				if ((IsWorker)(u2))
-					workerList.insert(u2);
-			}
-
-			if ((workerList.size() < (hatcheries.size() * 3)) && (Broodwar->self()->minerals() >= UnitTypes::Zerg_Drone.mineralPrice())) {
-				if (!u->getLarva().empty()) {
-					u->train(UnitTypes::Zerg_Drone);
-					DebugMessenger::Instance() << "droning up from " << workerList.size() << " to " << (hatcheries.size() * 3) << std::endl;
-				}
-			}
-
-			if ((WorkerManager::Instance().poolready) && (Broodwar->self()->minerals() >= UnitTypes::Zerg_Zergling.mineralPrice())
-			    && (Broodwar->self()->supplyTotal() - Broodwar->self()->supplyUsed() > 0)
-			    && ((WorkerManager::Instance().bo[WorkerManager::Instance().indx] == UnitTypes::Zerg_Zergling)
-			        || (WorkerManager::Instance().indx >= WorkerManager::Instance().bo.size()))) {
-				if (!u->getLarva().empty()) {
-					u->train(UnitTypes::Zerg_Zergling);
-					WorkerManager::Instance().indx++;
-				}
-			}
+			BaseManager::Instance().ManageBases(u);
 			continue;
 		}
 
 		if (u->getType() == UnitTypes::Zerg_Overlord) {
 			InformationManager::Instance().OverlordScouting(u);
+			continue;
 		}
 
 		if (u->getType() == UnitTypes::Zerg_Zergling) {
 			ArmyManager::Instance().ZerglingAttack(u);
+			continue;
 		}
 
 	} // closure: unit iterator
@@ -397,7 +362,7 @@ void PeregrineBot::onUnitShow(BWAPI::Unit unit)
 
 	// if something morphs into a worker, add it
 	if (unit->getType().isWorker() && unit->getPlayer() == Broodwar->self() && unit->getHitPoints() >= 0) {
-		workerList.insert(unit);
+		BaseManager::Instance().workerList.insert(unit);
 	}
 }
 
@@ -409,7 +374,7 @@ void PeregrineBot::onUnitCreate(BWAPI::Unit unit)
 {
 	// if something morphs into a worker, add it
 	if (unit->getType().isWorker() && unit->getPlayer() == Broodwar->self() && unit->getHitPoints() >= 0) {
-		workerList.insert(unit);
+		BaseManager::Instance().workerList.insert(unit);
 	}
 
 	if (Broodwar->isReplay()) {
@@ -434,11 +399,11 @@ void PeregrineBot::onUnitDestroy(BWAPI::Unit unit)
 	}
 
 	if (unit->getType().isResourceDepot() && unit->getPlayer() == Broodwar->self()) {
-		hatcheries.erase(unit);
+		BaseManager::Instance().hatcheries.erase(unit);
 	}
 
 	if (unit->getType().isWorker() && unit->getPlayer() == Broodwar->self()) {
-		workerList.erase(unit);
+		BaseManager::Instance().workerList.erase(unit);
 	}
 
 	if (unit->getPosition() == InformationManager::Instance().enemyBase) {
@@ -452,12 +417,12 @@ void PeregrineBot::onUnitMorph(BWAPI::Unit unit)
 {
 	// if something morphs into a worker, add it
 	if (unit->getType().isWorker() && unit->getPlayer() == Broodwar->self() && unit->getHitPoints() >= 0) {
-		workerList.insert(unit);
+		BaseManager::Instance().workerList.insert(unit);
 	}
 
 	// if something morphs into a building, it was a worker?
 	if (unit->getType().isBuilding() && unit->getPlayer() == Broodwar->self() && unit->getPlayer()->getRace() == Races::Zerg) {
-		workerList.erase(unit);
+		BaseManager::Instance().workerList.erase(unit);
 	}
 
 	if (Broodwar->isReplay()) {
@@ -475,7 +440,7 @@ void PeregrineBot::onUnitRenegade(BWAPI::Unit unit)
 {
 	DebugMessenger::Instance() << unit->getType() << ", " << unit->getPlayer()->getName() << ": was renegaded!" << std::endl;
 	if (unit->getType().isWorker() && unit->getPlayer() == Broodwar->self()) {
-		workerList.erase(unit);
+		BaseManager::Instance().workerList.erase(unit);
 	}
 }
 
@@ -496,7 +461,7 @@ void PeregrineBot::drawAdditionalInformation()
 	Broodwar->drawTextScreen(1, 20, "Last Error: %i", lastError);
 	Broodwar->drawTextScreen(1, 30, "Enemy Buildings: %i", InformationManager::Instance().enemyBuildings.size());
 	Broodwar->drawTextScreen(1, 40, "Enemy Army: %i", InformationManager::Instance().enemyArmy.size());
-	Broodwar->drawTextScreen(1, 50, "Htchrs/Wrkrs: %i/%i", hatcheries.size(), workerList.size());
+	Broodwar->drawTextScreen(1, 50, "Htchrs/Wrkrs: %i/%i", BaseManager::Instance().hatcheries.size(), BaseManager::Instance().workerList.size());
 
 	Broodwar->drawTextScreen(100, 0, "BO index: %i", WorkerManager::Instance().indx);
 	Broodwar->drawTextScreen(100, 10, "Pool: %i", WorkerManager::Instance().pool);
