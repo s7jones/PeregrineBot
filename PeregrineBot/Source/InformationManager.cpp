@@ -32,14 +32,14 @@ void InformationManager::SetupScouting()
 	for (TilePosition p : Broodwar->getStartLocations()) {
 		if (p == Broodwar->self()->getStartLocation())
 			continue;
-		auto groundd = groundDistance(Broodwar->self()->getStartLocation(), p);
-		auto aird    = airDistance(airOrigin, p);
-		auto groundt = groundTime(Broodwar->self()->getStartLocation(), p);
-		auto airt    = airTime(airOrigin, p);
-		auto metricd = groundd - aird;
-		auto metrict = groundt - airt;
+		auto dist_ground = DistanceGround(Broodwar->self()->getStartLocation(), p);
+		auto dist_air    = DistanceAir(airOrigin, p);
+		auto time_ground = TimeGround(Broodwar->self()->getStartLocation(), p);
+		auto time_air    = TimeAir(airOrigin, p);
+		auto metric_dist = dist_ground - dist_air;
+		auto metric_time = time_ground - time_air;
 
-		std::array<double, 6> arr = { groundd, aird, metricd, groundt, airt, metrict };
+		std::array<double, 6> arr = { dist_ground, dist_air, metric_dist, time_ground, time_air, metric_time };
 
 		scoutingInfo.insert(std::pair<TilePosition, std::array<double, 6>>(p, arr));
 	}
@@ -47,10 +47,10 @@ void InformationManager::SetupScouting()
 	for (auto iter1 = Broodwar->getStartLocations().begin(); iter1 != (Broodwar->getStartLocations().end() - 1); ++iter1) {
 		for (auto iter2 = iter1 + 1; iter2 != Broodwar->getStartLocations().end(); ++iter2) {
 			std::set<TilePosition, sortByMostTopThenLeft> zerglingLink = { *iter1, *iter2 };
-			double zerglingDist                                        = groundDistance(*iter1, *iter2);
-			double zerglingTime                                        = groundTime(*iter1, *iter2);
+			double zerglingDist                                        = DistanceGround(*iter1, *iter2);
+			double zerglingTime                                        = TimeGround(*iter1, *iter2);
 
-			// calculate airDistance from firstOverlordPosition
+			// calculate DistanceAir from firstOverlordPosition
 			TilePosition p1, p2;
 			if (*iter1 == Broodwar->self()->getStartLocation()) {
 				p1 = airOrigin;
@@ -65,8 +65,8 @@ void InformationManager::SetupScouting()
 			}
 
 			std::set<TilePosition, sortByMostTopThenLeft> overlordLink = { *iter1, *iter2 };
-			double overlordDist                                        = airDistance(p1, p2);
-			double overlordTime                                        = airTime(p1, p2);
+			double overlordDist                                        = DistanceAir(p1, p2);
+			double overlordTime                                        = TimeAir(p1, p2);
 
 			distAndTime zerglingDnT = { zerglingDist, zerglingTime };
 			distAndTime overlordDnT = { overlordDist, overlordTime };

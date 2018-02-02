@@ -61,13 +61,13 @@ struct distAndTime {
 	double time;
 };
 
-const auto groundDistance =
+const auto DistanceGround =
     [](const BWAPI::TilePosition start, const BWAPI::TilePosition end) {
 	    auto dist = BWTA::getGroundDistance(start, end);
 	    return dist;
     };
 
-const auto airDistance =
+const auto DistanceAir =
     [](const BWAPI::TilePosition start, const BWAPI::TilePosition end) {
 	    auto p1   = getBasePos(start);
 	    auto p2   = getBasePos(end);
@@ -77,10 +77,10 @@ const auto airDistance =
 	    return dist;
     };
 
-/*auto groundTime =
+/*auto TimeGround =
 [](const BWAPI::TilePosition start, const BWAPI::TilePosition end, const UnitType ut, const bool reach)
 {
-auto gdist = groundDistance(start, end);
+auto gdist = DistanceGround(start, end);
 
 if (!reach) {
 gdist -= ut.sightRange();
@@ -90,16 +90,16 @@ double time = gdist / ut.topSpeed();
 return time;
 };
 
-auto groundTime =
+auto TimeGround =
 [](const BWAPI::TilePosition start, const BWAPI::TilePosition end, const bool reach)
 {
-auto time = groundTime(start, end, UnitTypes::Zerg_Zergling, true);
+auto time = TimeGround(start, end, UnitTypes::Zerg_Zergling, true);
 return time;
 }; */
 
-const auto groundTime =
+const auto TimeGround =
     [](const BWAPI::TilePosition start, const BWAPI::TilePosition end) {
-	    auto gdist = groundDistance(start, end);
+	    auto gdist = DistanceGround(start, end);
 
 	    //if (!reach) {
 	    //	gdist -= ut.sightRange();
@@ -109,16 +109,16 @@ const auto groundTime =
 	    return time;
     };
 
-//auto airTime =
+//auto TimeAir =
 //[](const BWAPI::TilePosition start, const BWAPI::TilePosition end, const bool reach)
 //{
-//	auto time = groundTime(start, end, UnitTypes::Zerg_Zergling, true);
+//	auto time = TimeGround(start, end, UnitTypes::Zerg_Zergling, true);
 //	return time;
 //};
 
-const auto airTime =
+const auto TimeAir =
     [](const BWAPI::TilePosition start, const BWAPI::TilePosition end) {
-	    auto adist = airDistance(start, end)
+	    auto adist = DistanceAir(start, end)
 	        - BWAPI::UnitTypes::Zerg_Overlord.sightRange();
 
 	    double travelTime = adist / BWAPI::UnitTypes::Zerg_Overlord.topSpeed();
