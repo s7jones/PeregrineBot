@@ -14,6 +14,12 @@ OrderManager& OrderManager::Instance()
 	return instance;
 }
 
+bool OrderManager::DoesUnitHasOrder(BWAPI::Unit unit)
+{
+	auto it = unitsToWaitAfterOrder.find(unit);
+	return (it != unitsToWaitAfterOrder.end());
+}
+
 void OrderManager::Attack(BWAPI::Unit attacker, BWAPI::PositionOrUnit u)
 {
 	unitsToWaitAfterOrder.insert({ attacker, 0 });
