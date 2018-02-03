@@ -8,7 +8,7 @@ A Zerg bot that is getting cleverer all the time.
 Beats the vanilla AI consistently on the SSCAI maps.
 
 With thanks to Chris Coxe's ZZZKbot @ https://github.com/chriscoxe/ZZZKBot
-for his getPos function and some useful UnitFilters.
+for his GetPos function and some useful UnitFilters.
 
 With thanks to Dave Churchill's UAlbertaBot @ https://github.com/davechurchill/ualbertabot
 for drawExtendedInterface function and useful onUnitDestroy,etc functions for workers.
@@ -93,18 +93,8 @@ void PeregrineBot::onStart()
 			analyzed               = true;
 			analysis_just_finished = true;
 		}
-		bool islandFound = false;
-		for (auto bl : BWTA::getBaseLocations()) {
-			if (bl->isIsland()) {
-				islandFound = true;
-				break;
-			}
-		}
-		if (islandFound) {
-			DebugMessenger::Instance() << "Islands on map!" << std::endl;
-		}
 
-		InformationManager::Instance().SetupScouting();
+		InformationManager::Instance().Setup();
 	}
 }
 

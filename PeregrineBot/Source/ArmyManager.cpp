@@ -140,10 +140,10 @@ void ArmyManager::ZerglingAttack(Unit u)
 			else {
 				if (Broodwar->getStartLocations().size() == 4) { // map size is 4, use new scouting
 					auto tp1                       = scoutingOptions.begin()->startToP1ToP2[1];
-					auto p1                        = getBasePos(tp1);
+					auto p1                        = GetBasePos(tp1);
 					const bool firstOptionScouted  = scoutedPositions.find(p1) != scoutedPositions.end();
 					auto tp2                       = scoutingOptions.begin()->startToP1ToP2[2];
-					auto p2                        = getBasePos(tp2);
+					auto p2                        = GetBasePos(tp2);
 					const bool secondOptionScouted = scoutedPositions.find(p2) != scoutedPositions.end();
 					if (!firstOptionScouted) {
 						OrderManager::Instance().Move(u, p1);

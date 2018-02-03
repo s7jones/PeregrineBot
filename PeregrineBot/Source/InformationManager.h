@@ -23,21 +23,21 @@ struct sortByMeanTime {
 	}
 };
 
-const auto getPos =
+const auto GetPos =
     [](const BWAPI::TilePosition tp, const BWAPI::UnitType ut) {
 	    return BWAPI::Position(BWAPI::Position(tp) + BWAPI::Position((ut.tileWidth() * BWAPI::TILEPOSITION_SCALE) / 2, (ut.tileHeight() * BWAPI::TILEPOSITION_SCALE) / 2));
     };
 
-const auto getBasePos =
+const auto GetBasePos =
     [](const BWAPI::TilePosition tp) {
-	    return getPos(tp, BWAPI::UnitTypes::Special_Start_Location);
+	    return GetPos(tp, BWAPI::UnitTypes::Special_Start_Location);
     };
 
 struct sortByMostTopThenLeft {
 	bool operator()(const BWAPI::TilePosition& lhs_tp, const BWAPI::TilePosition& rhs_tp)
 	{
-		BWAPI::Position lhs = getBasePos(lhs_tp);
-		BWAPI::Position rhs = getBasePos(rhs_tp);
+		BWAPI::Position lhs = GetBasePos(lhs_tp);
+		BWAPI::Position rhs = GetBasePos(rhs_tp);
 		if (lhs.y <= rhs.y) {
 			if (lhs.y == rhs.y) {
 				if (lhs.x <= rhs.x) {
@@ -69,8 +69,8 @@ const auto DistanceGround =
 
 const auto DistanceAir =
     [](const BWAPI::TilePosition start, const BWAPI::TilePosition end) {
-	    auto p1   = getBasePos(start);
-	    auto p2   = getBasePos(end);
+	    auto p1   = GetBasePos(start);
+	    auto p2   = GetBasePos(end);
 	    auto dx   = abs(p1.x - p2.x);
 	    auto dy   = abs(p1.y - p2.y);
 	    auto dist = sqrt(pow(dx, 2) + pow(dy, 2));
@@ -131,6 +131,7 @@ class InformationManager {
 
 public:
 	static InformationManager& Instance();
+	void Setup();
 	void SetupScouting();
 	void Update();
 	void UpdateScouting();
@@ -138,10 +139,14 @@ public:
 
 	std::set<BWAPI::Unit> enemyBuildings;
 	BWAPI::Position enemyBase = { 0, 0 };
+	bool enemyBaseDeduced     = false;
 	bool enemyBaseFound       = false;
 	bool enemyBaseReached     = false;
 	bool enemyBaseDestroyed   = false;
 	BWAPI::Race enemyRace     = BWAPI::Races::Unknown;
+	bool enemyPickedRandom    = false;
+	bool enemyRaceIsUnknown   = false;
+	bool islandsOnMap         = false;
 	std::set<BWAPI::Unit> enemyArmy;
 	std::map<BWAPI::TilePosition, std::array<double, 6>> scoutingInfo;
 	std::set<BWAPI::TilePosition> allStarts;

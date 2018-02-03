@@ -13,6 +13,29 @@ InformationManager& InformationManager::Instance()
 	return instance;
 }
 
+void InformationManager::Setup()
+{
+	auto race = Broodwar->enemy()->getRace();
+	if (race == Races::Unknown) {
+		enemyPickedRandom  = true;
+		enemyRaceIsUnknown = true;
+		DebugMessenger::Instance() << "Enemy is Random" << std::endl;
+	} else {
+		enemyRace = race;
+	}
+
+	bool islandsOnMap = false;
+	for (auto bl : BWTA::getBaseLocations()) {
+		if (bl->isIsland()) {
+			islandsOnMap = true;
+			DebugMessenger::Instance() << "Islands on map!" << std::endl;
+			break;
+		}
+	}
+
+	SetupScouting();
+}
+
 void InformationManager::SetupScouting()
 {
 	std::set<Unit> overlords;
@@ -94,7 +117,7 @@ void InformationManager::SetupScouting()
 	//unscoutedPositions(otherStarts);
 	//std::copy(otherStarts.begin(), otherStarts.end(), std::inserter(unscoutedPositions, unscoutedPositions.end()));
 	for (auto otherStart : otherStarts) {
-		unscoutedPositions.insert(getBasePos(otherStart));
+		unscoutedPositions.insert(GetBasePos(otherStart));
 	}
 
 	DebugMessenger::Instance() << allStarts.size() << " starts / " << otherStarts.size() << " otherstarts" << std::endl;
@@ -151,39 +174,40 @@ void InformationManager::SetupScouting()
 
 void InformationManager::Update()
 {
-	if (!enemyBaseFound) {
-		if ((InformationManager::Instance().enemyBase.x != 0) && (InformationManager::Instance().enemyBase.y != 0)) {
-			enemyBaseFound = true;
+	if (enemyRaceIsUnknown) {
+		auto race = Broodwar->enemy()->getRace();
+		if ((race == Races::Terran) || (race == Races::Zerg) || (race == Races::Protoss)) {
+			enemyRace          = race;
+			enemyRaceIsUnknown = false;
+			DebugMessenger::Instance() << "Enemy is " << enemyRace.c_str() << std::endl;
 		}
 	}
-
-	if (InformationManager::Instance().enemyRace != Races::Terran || Races::Zerg || Races::Protoss)
-		enemyRace = Broodwar->enemy()->getRace();
 
 	UpdateScouting();
 }
 
 void InformationManager::UpdateScouting()
 {
-	if (enemyBaseFound) {
-		for (auto otherPos : unscoutedPositions) {
-			scoutedPositions.insert(otherPos);
-			unscoutedPositions.erase(otherPos);
+	for (auto p : unscoutedPositions) {
+		if (Broodwar->isVisible(TilePosition(p))) {
+			scoutedPositions.insert(p);
+			unscoutedPositions.erase(p);
+			// replace IsBuilding by IsResourceDepot?
+			if (Broodwar->getUnitsOnTile(TilePosition(p),
+			                             IsEnemy && IsVisible && Exists && IsBuilding && !IsLifted)
+			        .size()
+			    > 0) {
+				enemyBase        = p;
+				enemyBaseDeduced = true;
+				enemyBaseFound   = true;
+			}
 		}
 	}
 
-	for (auto otherPos : unscoutedPositions) {
-		if (Broodwar->isVisible(TilePosition(otherPos))) {
-			if (Broodwar->getUnitsOnTile(TilePosition(otherPos), IsEnemy && IsVisible && Exists && IsBuilding && !IsLifted).empty()) {
-				scoutedPositions.insert(otherPos);
-				unscoutedPositions.erase(otherPos);
-			} else {
-				if (!enemyBaseFound) {
-					DebugMessenger::Instance() << "enemy base is (0, 0)" << std::endl;
-				}
-				InformationManager::Instance().enemyBase = otherPos;
-			}
-		}
+	if (!(enemyBaseDeduced || enemyBaseFound) && unscoutedPositions.size() == 1) {
+		enemyBaseDeduced     = true;
+		BWAPI::Position base = (*unscoutedPositions.begin());
+		DebugMessenger::Instance() << "Enemy base deduced to be at (" << base.x << ", " << base.y << ")" << std::endl;
 	}
 }
 
@@ -194,7 +218,7 @@ void InformationManager::OverlordScouting(BWAPI::Unit overlord)
 		if (!enemyBaseFound) {
 			if (Broodwar->getStartLocations().size() == 4) { // map size is 4, use new scouting
 				auto tp                       = scoutingOptions.begin()->POther;
-				auto p                        = getBasePos(tp);
+				auto p                        = GetBasePos(tp);
 				const bool firstOptionScouted = scoutedPositions.find(p) != scoutedPositions.end();
 				if (!firstOptionScouted) {
 					OrderManager::Instance().Move(u, p, true);
@@ -212,13 +236,15 @@ void InformationManager::OverlordScouting(BWAPI::Unit overlord)
 			}
 		} else if (enemyRace != Races::Terran) { // enemy race isn't terran
 			// Overlord scouting perimeter of all regions
-			DebugMessenger::Instance() << "Overlord Scouting!" << std::endl;
+			// Might be more useful to have this as a text hovering over overlord.
+			//DebugMessenger::Instance() << "Overlord Scouting!" << std::endl;
 
 			static std::deque<Position> scoutLocations;
 			if (scoutLocations.empty()) {
-				BWTA::Region* enemyRegion = BWTA::getRegion(InformationManager::Instance().enemyBase);
+				BWTA::Region* enemyRegion = BWTA::getRegion(enemyBase);
 				BWTA::Polygon poly        = enemyRegion->getPolygon();
 				for (size_t j = 0; j < poly.size(); ++j) {
+					// The points in Polygon appear to be all along the perimeter.
 					Position point1 = poly[j];
 					scoutLocations.push_back(point1);
 				}
@@ -235,13 +261,11 @@ void InformationManager::OverlordScouting(BWAPI::Unit overlord)
 				scoutLocations.erase(it);
 			}
 		} else { // enemy race is terran, move back to our own base
-			auto ownBasePos = getBasePos(Broodwar->self()->getStartLocation());
+			auto ownBasePos = GetBasePos(Broodwar->self()->getStartLocation());
 			OrderManager::Instance().Move(u, ownBasePos);
 		}
 	} else if (u->isUnderAttack()) { // if overlord is under attack run back to own base
-		auto ownBasePos = getBasePos(Broodwar->self()->getStartLocation());
+		auto ownBasePos = GetBasePos(Broodwar->self()->getStartLocation());
 		OrderManager::Instance().Move(u, ownBasePos);
-	} else if (enemyBaseFound) {
-		OrderManager::Instance().Stop(u);
 	}
 }
