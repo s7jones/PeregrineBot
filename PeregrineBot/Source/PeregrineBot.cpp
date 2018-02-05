@@ -217,6 +217,8 @@ void PeregrineBot::onFrame()
 	if (Broodwar->getFrameCount() % Broodwar->getLatencyFrames() != 0)
 		return;
 
+	// Update waiting units
+	OrderManager::Instance().Update();
 	InformationManager::Instance().Update();
 
 	if (WorkerManager::Instance().indx > (WorkerManager::Instance().bo.size() * 2))
@@ -241,8 +243,7 @@ void PeregrineBot::onFrame()
 		/* if ( !u->isCompleted() || u->isConstructing() )
 		continue;*/
 
-		// If unit has been given an order in the last 8 frames
-		bool unitNeedsToWait = OrderManager::Instance().UpdateUnitsWaitingSinceLastOrder(u);
+		bool unitNeedsToWait = OrderManager::Instance().DoesUnitHasOrder(u);
 		if (unitNeedsToWait) {
 			continue;
 		}

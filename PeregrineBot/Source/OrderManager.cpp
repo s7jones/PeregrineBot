@@ -2,8 +2,6 @@
 
 using namespace BWAPI;
 
-std::map<Unit, int> unitsToWaitAfterOrder;
-
 OrderManager::OrderManager()
 {
 }
@@ -12,6 +10,21 @@ OrderManager& OrderManager::Instance()
 {
 	static OrderManager instance;
 	return instance;
+}
+
+void OrderManager::Update()
+{
+	UpdateUnitsWaitingSinceLastOrder();
+}
+
+void OrderManager::UpdateUnitsWaitingSinceLastOrder()
+{
+	for (auto unitIterator = unitsToWaitAfterOrder.begin(); unitIterator != unitsToWaitAfterOrder.end(); unitIterator++) {
+		++(unitIterator->second); // increment counter
+		if (unitIterator->second >= 8) {
+			unitsToWaitAfterOrder.erase(unitIterator->first);
+		}
+	}
 }
 
 bool OrderManager::DoesUnitHasOrder(BWAPI::Unit unit)
@@ -48,20 +61,4 @@ void OrderManager::Stop(BWAPI::Unit stopper)
 {
 	unitsToWaitAfterOrder.insert({ stopper, 0 });
 	stopper->stop();
-}
-
-bool OrderManager::UpdateUnitsWaitingSinceLastOrder(Unit u)
-{
-	bool unitNeedsToWait = false;
-	// If unit has been given an order in the last 8 frames
-	auto unitIterator = unitsToWaitAfterOrder.find(u);
-	if (unitIterator != unitsToWaitAfterOrder.end()) {
-		++(unitIterator->second);
-		if (unitIterator->second >= 8) {
-			unitsToWaitAfterOrder.erase(u);
-		} else {
-			unitNeedsToWait = true;
-		}
-	}
-	return unitNeedsToWait;
 }
