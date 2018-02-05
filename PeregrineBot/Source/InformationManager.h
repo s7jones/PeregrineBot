@@ -136,6 +136,9 @@ public:
 	void Update();
 	void UpdateScouting();
 	void OverlordScouting(BWAPI::Unit overlord);
+	void OverlordScoutingAtGameStart(BWAPI::Unit overlord);
+	void OverlordScoutingAfterBaseFound(BWAPI::Unit overlord);
+	void OverlordRetreatToHome(BWAPI::Unit overlord);
 
 	std::set<BWAPI::Unit> enemyBuildings;
 	BWAPI::Position enemyBase = { 0, 0 };

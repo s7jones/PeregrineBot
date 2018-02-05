@@ -213,32 +213,49 @@ void InformationManager::UpdateScouting()
 
 void InformationManager::OverlordScouting(BWAPI::Unit overlord)
 {
-	auto u = overlord;
-	if (u->isIdle()) {
-		if (!enemyBaseFound) {
-			if (Broodwar->getStartLocations().size() == 4) { // map size is 4, use new scouting
-				auto tp                       = scoutingOptions.begin()->POther;
-				auto p                        = GetBasePos(tp);
-				const bool firstOptionScouted = scoutedPositions.find(p) != scoutedPositions.end();
-				if (!firstOptionScouted) {
-					OrderManager::Instance().Move(u, p, true);
-				} else {
-					for (auto p2 : boost::adaptors::reverse(unscoutedPositions)) { //https://stackoverflow.com/questions/8542591/c11-reverse-range-based-for-loop
-						if (p2 == p)
-							continue;
-						OrderManager::Instance().Move(u, p2, true);
-					}
-				}
-			} else {                                                          // map size isn't 4, so use old scouting
-				for (auto p : boost::adaptors::reverse(unscoutedPositions)) { //https://stackoverflow.com/questions/8542591/c11-reverse-range-based-for-loop
-					OrderManager::Instance().Move(u, p, true);
+	if (overlord->isUnderAttack()) { // if overlord is under attack run back to own base
+		OverlordRetreatToHome(overlord);
+		return;
+	}
+
+	if (!enemyBaseFound) {
+		OverlordScoutingAtGameStart(overlord);
+	} else {
+		OverlordScoutingAfterBaseFound(overlord);
+	}
+}
+
+void InformationManager::OverlordScoutingAtGameStart(BWAPI::Unit overlord)
+{
+	if (overlord->isIdle()) {
+		if (Broodwar->getStartLocations().size() == 4) { // map size is 4, use new scouting
+			auto tp                       = scoutingOptions.begin()->POther;
+			auto p                        = GetBasePos(tp);
+			const bool firstOptionScouted = scoutedPositions.find(p) != scoutedPositions.end();
+			if (!firstOptionScouted) {
+				OrderManager::Instance().Move(overlord, p, true);
+			} else {
+				for (auto p2 : boost::adaptors::reverse(unscoutedPositions)) { //https://stackoverflow.com/questions/8542591/c11-reverse-range-based-for-loop
+					if (p2 == p)
+						continue;
+					OrderManager::Instance().Move(overlord, p2, true);
 				}
 			}
-		} else if (enemyRace != Races::Terran) { // enemy race isn't terran
+		} else {                                                          // map size isn't 4, so use old scouting
+			for (auto p : boost::adaptors::reverse(unscoutedPositions)) { //https://stackoverflow.com/questions/8542591/c11-reverse-range-based-for-loop
+				OrderManager::Instance().Move(overlord, p, true);
+			}
+		}
+	}
+}
+
+void InformationManager::OverlordScoutingAfterBaseFound(BWAPI::Unit overlord)
+{
+	if (overlord->isIdle()) {
+		if (enemyRace != Races::Terran) {
 			// Overlord scouting perimeter of all regions
 			// Might be more useful to have this as a text hovering over overlord.
 			//DebugMessenger::Instance() << "Overlord Scouting!" << std::endl;
-
 			static std::deque<Position> scoutLocations;
 			if (scoutLocations.empty()) {
 				BWTA::Region* enemyRegion = BWTA::getRegion(enemyBase);
@@ -257,15 +274,23 @@ void InformationManager::OverlordScouting(BWAPI::Unit overlord)
 			} else {
 				auto it              = scoutLocations.begin();
 				Position baseToScout = (*it);
-				OrderManager::Instance().Move(u, baseToScout);
+				OrderManager::Instance().Move(overlord, baseToScout);
 				scoutLocations.erase(it);
 			}
 		} else { // enemy race is terran, move back to our own base
-			auto ownBasePos = GetBasePos(Broodwar->self()->getStartLocation());
-			OrderManager::Instance().Move(u, ownBasePos);
+			OverlordRetreatToHome(overlord);
 		}
-	} else if (u->isUnderAttack()) { // if overlord is under attack run back to own base
-		auto ownBasePos = GetBasePos(Broodwar->self()->getStartLocation());
-		OrderManager::Instance().Move(u, ownBasePos);
+	}
+}
+
+void InformationManager::OverlordRetreatToHome(BWAPI::Unit overlord)
+{
+	auto ownBasePos          = GetBasePos(Broodwar->self()->getStartLocation());
+	auto distanceFromOwnBase = overlord->getDistance(ownBasePos);
+	if (distanceFromOwnBase > 128) {
+		DebugMessenger::Instance() << "Retreat overlord." << std::endl;
+		OrderManager::Instance().Move(overlord, ownBasePos);
+	} else {
+		DebugMessenger::Instance() << "Overlord being attacked in base." << std::endl;
 	}
 }
