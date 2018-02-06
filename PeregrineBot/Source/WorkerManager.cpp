@@ -29,6 +29,7 @@ void WorkerManager::DoAllWorkerTasks(Unit u)
 			if (!u->gather(u->getClosestUnit(IsMineralField || IsRefinery))) {
 				// If the call fails, then print the last error message
 				DebugMessenger::Instance() << Broodwar->getLastError() << std::endl;
+				DebugMessenger::Instance() << "Worker couldn't gather mineral or from refinery" << std::endl;
 			}
 
 		} // closure: has no powerup

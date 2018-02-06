@@ -59,15 +59,15 @@ void ArmyManager::ZerglingScout(Unit u)
 void ArmyManager::ZerglingAttack(Unit u)
 {
 	auto enemyBase          = InformationManager::Instance().enemyBase;
-	auto reachEnemyBase     = InformationManager::Instance().reachEnemyBase;
+	auto isEnemyBaseReached   = InformationManager::Instance().isEnemyBaseReached;
 	auto enemyRace          = InformationManager::Instance().enemyRace;
-	auto destroyEnemyBase   = InformationManager::Instance().destroyEnemyBase;
+	auto isEnemyBaseDestroyed = InformationManager::Instance().isEnemyBaseDestroyed;
 	auto scoutingOptions    = InformationManager::Instance().scoutingOptions;
 	auto scoutedPositions   = InformationManager::Instance().scoutedPositions;
 	auto unscoutedPositions = InformationManager::Instance().unscoutedPositions;
 	if ((enemyBase.x != 0) && (enemyBase.y != 0)) {
-		if ((!reachEnemyBase) && (BWTA::getRegion(u->getPosition()) == BWTA::getRegion(enemyBase))) {
-			InformationManager::Instance().reachEnemyBase = true;
+		if ((!isEnemyBaseReached) && (BWTA::getRegion(u->getPosition()) == BWTA::getRegion(enemyBase))) {
+			InformationManager::Instance().isEnemyBaseReached = true;
 			DebugMessenger::Instance() << "reach enemy base: " << Broodwar->getFrameCount() << std::endl;
 		}
 	}
@@ -124,7 +124,7 @@ void ArmyManager::ZerglingAttack(Unit u)
 			OrderManager::Instance().Attack(u, enemy_atall);
 		} else {
 			if ((enemyBase.x != 0) && (enemyBase.y != 0)) {
-				if (!destroyEnemyBase) {
+				if (!isEnemyBaseDestroyed) {
 					if (!Broodwar->isVisible(TilePosition(enemyBase))) {
 						OrderManager::Instance().Attack(u, enemyBase);
 					} else if (!Broodwar->getUnitsOnTile(TilePosition(enemyBase), IsEnemy && IsVisible && Exists && IsBuilding && !IsLifted).empty()) {
@@ -140,10 +140,10 @@ void ArmyManager::ZerglingAttack(Unit u)
 			else {
 				if (Broodwar->getStartLocations().size() == 4) { // map size is 4, use new scouting
 					auto tp1                       = scoutingOptions.begin()->startToP1ToP2[1];
-					auto p1                        = getBasePos(tp1);
+					auto p1                        = GetBasePos(tp1);
 					const bool firstOptionScouted  = scoutedPositions.find(p1) != scoutedPositions.end();
 					auto tp2                       = scoutingOptions.begin()->startToP1ToP2[2];
-					auto p2                        = getBasePos(tp2);
+					auto p2                        = GetBasePos(tp2);
 					const bool secondOptionScouted = scoutedPositions.find(p2) != scoutedPositions.end();
 					if (!firstOptionScouted) {
 						OrderManager::Instance().Move(u, p1);

@@ -8,7 +8,7 @@ A Zerg bot that is getting cleverer all the time.
 Beats the vanilla AI consistently on the SSCAI maps.
 
 With thanks to Chris Coxe's ZZZKbot @ https://github.com/chriscoxe/ZZZKBot
-for his getPos function and some useful UnitFilters.
+for his GetPos function and some useful UnitFilters.
 
 With thanks to Dave Churchill's UAlbertaBot @ https://github.com/davechurchill/ualbertabot
 for drawExtendedInterface function and useful onUnitDestroy,etc functions for workers.
@@ -93,18 +93,8 @@ void PeregrineBot::onStart()
 			analyzed               = true;
 			analysis_just_finished = true;
 		}
-		bool islandFound = false;
-		for (auto bl : BWTA::getBaseLocations()) {
-			if (bl->isIsland()) {
-				islandFound = true;
-				break;
-			}
-		}
-		if (islandFound) {
-			DebugMessenger::Instance() << "Islands on map!" << std::endl;
-		}
 
-		InformationManager::Instance().SetupScouting();
+		InformationManager::Instance().Setup();
 	}
 }
 
@@ -227,12 +217,9 @@ void PeregrineBot::onFrame()
 	if (Broodwar->getFrameCount() % Broodwar->getLatencyFrames() != 0)
 		return;
 
-	if (InformationManager::Instance().enemyRace != Races::Terran || Races::Zerg || Races::Protoss)
-		InformationManager::Instance().enemyRace = Broodwar->enemy()->getRace();
-
-	int number_of_starts = Broodwar->getStartLocations().size();
-
-	InformationManager::Instance().UpdateScouting();
+	// Update waiting units
+	OrderManager::Instance().Update();
+	InformationManager::Instance().Update();
 
 	if (WorkerManager::Instance().indx > (WorkerManager::Instance().bo.size() * 2))
 		WorkerManager::Instance().indx = WorkerManager::Instance().bo.size() * 2;
@@ -256,8 +243,7 @@ void PeregrineBot::onFrame()
 		/* if ( !u->isCompleted() || u->isConstructing() )
 		continue;*/
 
-		// If unit has been given an order in the last 8 frames
-		bool unitNeedsToWait = OrderManager::Instance().UpdateUnitsWaitingSinceLastOrder(u);
+		bool unitNeedsToWait = OrderManager::Instance().DoesUnitHasOrder(u);
 		if (unitNeedsToWait) {
 			continue;
 		}
@@ -402,7 +388,7 @@ void PeregrineBot::onUnitDestroy(BWAPI::Unit unit)
 	}
 
 	if (unit->getPosition() == InformationManager::Instance().enemyBase) {
-		InformationManager::Instance().destroyEnemyBase = true;
+		InformationManager::Instance().isEnemyBaseDestroyed = true;
 		DebugMessenger::Instance() << "destroyed enemy base: " << Broodwar->getFrameCount() << std::endl;
 	}
 	InformationManager::Instance().enemyBuildings.erase(unit);
