@@ -1,7 +1,6 @@
 #pragma once
 #include "Common.h"
 #include "OrderManager.h"
-#include "InformationManager.h"
 #include "Utility.h"
 
 struct ScoutingOptionFor4 {

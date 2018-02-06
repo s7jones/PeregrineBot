@@ -41,10 +41,7 @@ void InformationManager::Setup()
 			auto base2tp = *iter2;
 			auto base1   = GetBasePos(base1tp);
 			auto base2   = GetBasePos(base2tp);
-			auto dx      = abs(base1.x - base2.x); // put into it's own function (lambda maybe?)
-			auto dy      = abs(base1.y - base2.y);
-			auto dist    = sqrt(pow(dx, 2) + pow(dy, 2));
-
+			auto dist    = DistanceAir(base1, base2);
 			if (dist > maxBaseToBaseDistance) {
 				maxBaseToBaseDistance = dist;
 			}
@@ -290,10 +287,7 @@ void InformationManager::OverlordScoutingAtGameStart(BWAPI::Unit overlord)
 
 						for (auto tp : otherStarts) {
 							auto pB          = GetBasePos(tp);
-							auto dx          = abs(pB.x - pO.x); // put into it's own function (lambda maybe?)
-							auto dy          = abs(pB.y - pO.y);
-							auto distToStart = sqrt(pow(dx, 2) + pow(dy, 2));
-
+							auto distToStart = DistanceAir(pB, pO);
 							if (distToStart < searchRadius) {
 								potentialStartsFromSpotting.insert(tp);
 							}
