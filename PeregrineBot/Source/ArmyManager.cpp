@@ -132,7 +132,7 @@ void ArmyManager::ZerglingAttack(Unit u)
 					auto p = *unscoutedPositions.begin();
 					OrderManager::Instance().Move(u, p);
 					DebugMessenger::Instance() << "recalculate scouting" << std::endl;
-				} else if ((isEnemyBaseFromOverlordSpotting) && (GetBasePos(enemyBaseSpottingGuess) != targetPos)) {
+				} else if ((!isEnemyBaseFound) && (isEnemyBaseFromOverlordSpotting) && (GetBasePos(enemyBaseSpottingGuess) != targetPos)) {
 					OrderManager::Instance().Move(u, GetBasePos(enemyBaseSpottingGuess));
 					DebugMessenger::Instance() << "recalculate scouting (overlord guess)" << std::endl;
 				}
