@@ -388,7 +388,7 @@ void PeregrineBot::onUnitDestroy(BWAPI::Unit unit)
 	}
 
 	if (unit->getPosition() == InformationManager::Instance().enemyBase) {
-		InformationManager::Instance().enemyBaseDestroyed = true;
+		InformationManager::Instance().isEnemyBaseDestroyed = true;
 		DebugMessenger::Instance() << "destroyed enemy base: " << Broodwar->getFrameCount() << std::endl;
 	}
 	InformationManager::Instance().enemyBuildings.erase(unit);

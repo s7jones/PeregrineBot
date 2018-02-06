@@ -59,15 +59,15 @@ void ArmyManager::ZerglingScout(Unit u)
 void ArmyManager::ZerglingAttack(Unit u)
 {
 	auto enemyBase          = InformationManager::Instance().enemyBase;
-	auto enemyBaseReached   = InformationManager::Instance().enemyBaseReached;
+	auto isEnemyBaseReached   = InformationManager::Instance().isEnemyBaseReached;
 	auto enemyRace          = InformationManager::Instance().enemyRace;
-	auto enemyBaseDestroyed = InformationManager::Instance().enemyBaseDestroyed;
+	auto isEnemyBaseDestroyed = InformationManager::Instance().isEnemyBaseDestroyed;
 	auto scoutingOptions    = InformationManager::Instance().scoutingOptions;
 	auto scoutedPositions   = InformationManager::Instance().scoutedPositions;
 	auto unscoutedPositions = InformationManager::Instance().unscoutedPositions;
 	if ((enemyBase.x != 0) && (enemyBase.y != 0)) {
-		if ((!enemyBaseReached) && (BWTA::getRegion(u->getPosition()) == BWTA::getRegion(enemyBase))) {
-			InformationManager::Instance().enemyBaseReached = true;
+		if ((!isEnemyBaseReached) && (BWTA::getRegion(u->getPosition()) == BWTA::getRegion(enemyBase))) {
+			InformationManager::Instance().isEnemyBaseReached = true;
 			DebugMessenger::Instance() << "reach enemy base: " << Broodwar->getFrameCount() << std::endl;
 		}
 	}
@@ -124,7 +124,7 @@ void ArmyManager::ZerglingAttack(Unit u)
 			OrderManager::Instance().Attack(u, enemy_atall);
 		} else {
 			if ((enemyBase.x != 0) && (enemyBase.y != 0)) {
-				if (!enemyBaseDestroyed) {
+				if (!isEnemyBaseDestroyed) {
 					if (!Broodwar->isVisible(TilePosition(enemyBase))) {
 						OrderManager::Instance().Attack(u, enemyBase);
 					} else if (!Broodwar->getUnitsOnTile(TilePosition(enemyBase), IsEnemy && IsVisible && Exists && IsBuilding && !IsLifted).empty()) {

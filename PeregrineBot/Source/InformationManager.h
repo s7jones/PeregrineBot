@@ -142,21 +142,27 @@ public:
 
 	std::set<BWAPI::Unit> enemyBuildings;
 	BWAPI::Position enemyBase = { 0, 0 };
-	bool enemyBaseDeduced     = false;
-	bool enemyBaseFound       = false;
-	bool enemyBaseReached     = false;
-	bool enemyBaseDestroyed   = false;
+	bool isEnemyBaseDeduced   = false;
+	bool isEnemyBaseFound     = false;
+	bool isEnemyBaseReached   = false;
+	bool isEnemyBaseDestroyed = false;
 	BWAPI::Race enemyRace     = BWAPI::Races::Unknown;
-	bool enemyPickedRandom    = false;
-	bool enemyRaceIsUnknown   = false;
-	bool islandsOnMap         = false;
+	bool isEnemyRaceRandom    = false;
+	bool isEnemyRaceUnknown   = false;
+	bool isIslandsOnMap       = false;
 	std::set<BWAPI::Unit> enemyArmy;
 	std::map<BWAPI::TilePosition, std::array<double, 6>> scoutingInfo;
 	std::set<BWAPI::TilePosition> allStarts;
-	std::set<BWAPI::TilePosition> otherStarts;
+	std::set<BWAPI::TilePosition> otherStarts; // would be a good idea to make this const
 	std::set<BWAPI::Position> unscoutedPositions;
 	std::set<BWAPI::Position> scoutedPositions;
 	std::set<ScoutingOptionFor4, sortByMeanTime> scoutingOptions;
 	std::map<std::set<BWAPI::TilePosition, sortByMostTopThenLeft>, distAndTime> zerglingNetwork;
 	std::map<std::set<BWAPI::TilePosition, sortByMostTopThenLeft>, distAndTime> overlordNetwork;
+	bool isEnemyBaseFromOverlordSpotting       = false;
+	BWAPI::TilePosition enemyBaseSpottingGuess = { 0, 0 };
+	
+private:
+	float maxBaseToBaseDistance;
+	bool isPastSpottingTime = false;
 };
