@@ -258,12 +258,12 @@ void PeregrineBot::onFrame()
 		if ((WorkerManager::Instance().bo[WorkerManager::Instance().indx] == UnitTypes::Zerg_Spawning_Pool) && (u->getType() == UnitTypes::Zerg_Spawning_Pool) && (u->isBeingConstructed())) {
 			WorkerManager::Instance().indx++;
 			WorkerManager::Instance().pool = true;
-			DebugMessenger::Instance() << "pool isBeingConstructed: " << Broodwar->getFrameCount() << std::endl;
+			DebugMessenger::Instance() << "pool isBeingConstructed: " << Broodwar->getFrameCount() << "F" << std::endl;
 		}
 
 		if ((!WorkerManager::Instance().poolready) && (u->getType() == UnitTypes::Zerg_Spawning_Pool) && (u->isCompleted())) {
 			WorkerManager::Instance().poolready = true;
-			DebugMessenger::Instance() << "pool ready: " << Broodwar->getFrameCount() << std::endl;
+			DebugMessenger::Instance() << "pool ready: " << Broodwar->getFrameCount() << "F" << std::endl;
 		}
 
 		if (u->getType().isResourceDepot()) {
@@ -438,7 +438,7 @@ void PeregrineBot::drawAdditionalInformation()
 {
 	// Display the game frame rate as text in the upper left area of the screen
 	Broodwar->drawTextScreen(1, 0, "Supply: %i/%i", Broodwar->self()->supplyUsed(), Broodwar->self()->supplyTotal());
-	Broodwar->drawTextScreen(1, 10, "Frame Count: %i", Broodwar->getFrameCount());
+	Broodwar->drawTextScreen(1, 10, "Frame Count: %iF", Broodwar->getFrameCount());
 	Broodwar->drawTextScreen(1, 20, "Last Error: %i", lastError);
 	Broodwar->drawTextScreen(1, 30, "Enemy Buildings: %i", InformationManager::Instance().enemyBuildings.size());
 	Broodwar->drawTextScreen(1, 40, "Enemy Army: %i", InformationManager::Instance().enemyArmy.size());
@@ -458,7 +458,7 @@ void PeregrineBot::drawAdditionalInformation()
 	//}
 
 	for (auto scoutingOption : InformationManager::Instance().scoutingOptions) {
-		Broodwar->drawTextScreen(100, screenVPos, "%i: %i,%i; %i,%i : %.1f +- %.1f", count,
+		Broodwar->drawTextScreen(100, screenVPos, "%i: %i,%i; %i,%iTP : %.1f +- %.1fF", count,
 		                         scoutingOption.startToP1ToP2[1].x, scoutingOption.startToP1ToP2[1].y,
 		                         scoutingOption.startToP1ToP2[2].x, scoutingOption.startToP1ToP2[2].y,
 		                         scoutingOption.meanTime, scoutingOption.stdDev);
