@@ -1,4 +1,5 @@
 #include "ArmyManager.h"
+#include "Utility.h"
 
 using namespace BWAPI;
 using namespace Filter;
@@ -24,6 +25,7 @@ void ArmyManager::ZerglingAttack(Unit u)
 	auto isEnemyBaseFound                = InformationManager::Instance().isEnemyBaseFound;
 	auto isEnemyBaseDestroyed            = InformationManager::Instance().isEnemyBaseDestroyed;
 	auto enemyBaseSpottingGuess          = InformationManager::Instance().enemyBaseSpottingGuess;
+	auto enemyBuildings                  = InformationManager::Instance().enemyBuildings;
 
 	if (isEnemyBaseFound) {
 		if ((!isEnemyBaseReached) && (BWTA::getRegion(u->getPosition()) == BWTA::getRegion(enemyBase))) {
@@ -108,9 +110,13 @@ void ArmyManager::ZerglingAttack(Unit u)
 							OrderManager::Instance().Attack(u, enemyBase);
 						} else if (!Broodwar->getUnitsOnTile(TilePosition(enemyBase), IsEnemy && IsVisible && Exists && IsBuilding && !IsLifted).empty()) {
 							OrderManager::Instance().Attack(u, enemyBase);
+						} else if (enemyBuildings.size() != 0) {
+							ZerglingAttackKnownBuildings(u);
 						} else {
 							ZerglingScoutSpreadOut(u);
 						}
+					} else if (enemyBuildings.size() != 0) {
+						ZerglingAttackKnownBuildings(u);
 					} else {
 						ZerglingScoutSpreadOut(u);
 					}
@@ -139,6 +145,29 @@ void ArmyManager::ZerglingAttack(Unit u)
 			}
 		}
 	}
+}
+
+void ArmyManager::ZerglingAttackKnownBuildings(Unit u)
+{
+	auto enemyBuildings = InformationManager::Instance().enemyBuildings;
+	std::set<Unit> enemyBuildingsAccessible;
+	float distanceEnemyBuildingAccessible = std::numeric_limits<float>::infinity();
+	Unit buildingAccessible               = NULL;
+	for (const auto& building : enemyBuildings) {
+		Position buildingPos = building->getPosition();
+		// if building isn't reachable then skip
+		if (!BWTA::getRegion(u->getPosition())->isReachable(BWTA::getRegion(buildingPos))) {
+			DebugMessenger::Instance() << "unaccessible building" << std::endl;
+			continue;
+		}
+		float distanceBuilding = DistanceAir(u->getPosition(), building->getPosition());
+		if (distanceBuilding < distanceEnemyBuildingAccessible) {
+			distanceEnemyBuildingAccessible = distanceBuilding;
+			buildingAccessible              = building;
+		}
+		DebugMessenger::Instance() << "scoutable building" << std::endl;
+	}
+	OrderManager::Instance().Attack(u, buildingAccessible);
 }
 
 void ArmyManager::ZerglingScoutingBeforeBaseFound(Unit u)

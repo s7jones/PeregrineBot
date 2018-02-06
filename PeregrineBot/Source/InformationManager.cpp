@@ -91,22 +91,22 @@ void InformationManager::SetupScouting()
 			double zerglingTime                                        = TimeGround(*iter1, *iter2);
 
 			// calculate DistanceAir from firstOverlordPosition
-			TilePosition p1, p2;
+			TilePosition tp1, tp2;
 			if (*iter1 == Broodwar->self()->getStartLocation()) {
-				p1 = airOrigin;
+				tp1 = airOrigin;
 			} else {
-				p1 = *iter1;
+				tp1 = *iter1;
 			}
 
 			if (*iter2 == Broodwar->self()->getStartLocation()) {
-				p2 = airOrigin;
+				tp2 = airOrigin;
 			} else {
-				p2 = *iter2;
+				tp2 = *iter2;
 			}
 
 			std::set<TilePosition, sortByMostTopThenLeft> overlordLink = { *iter1, *iter2 };
-			double overlordDist                                        = DistanceAir(p1, p2);
-			double overlordTime                                        = TimeAir(p1, p2);
+			double overlordDist                                        = DistanceAir(tp1, tp2);
+			double overlordTime                                        = TimeAir(tp1, tp2);
 
 			distAndTime zerglingDnT = { zerglingDist, zerglingTime };
 			distAndTime overlordDnT = { overlordDist, overlordTime };
@@ -150,8 +150,8 @@ void InformationManager::SetupScouting()
 			for (TilePosition p2 : otherStarts) {
 				if (p2 == p1)
 					continue;
-				// p1 is any position that is not my start position,
-				// p2 is any position that is not start position or p1
+				// tp1 is any position that is not my start position,
+				// tp2 is any position that is not start position or tp1
 
 				std::set<TilePosition> remainingPlaces(otherStarts);
 				remainingPlaces.erase(p1);
