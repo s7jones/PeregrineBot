@@ -58,17 +58,17 @@ void ArmyManager::ZerglingScout(Unit u)
 
 void ArmyManager::ZerglingAttack(Unit u)
 {
-	auto enemyBase          = InformationManager::Instance().enemyBase;
+	auto enemyBase            = InformationManager::Instance().enemyBase;
 	auto isEnemyBaseReached   = InformationManager::Instance().isEnemyBaseReached;
-	auto enemyRace          = InformationManager::Instance().enemyRace;
+	auto enemyRace            = InformationManager::Instance().enemyRace;
 	auto isEnemyBaseDestroyed = InformationManager::Instance().isEnemyBaseDestroyed;
-	auto scoutingOptions    = InformationManager::Instance().scoutingOptions;
-	auto scoutedPositions   = InformationManager::Instance().scoutedPositions;
-	auto unscoutedPositions = InformationManager::Instance().unscoutedPositions;
+	auto scoutingOptions      = InformationManager::Instance().scoutingOptions;
+	auto scoutedPositions     = InformationManager::Instance().scoutedPositions;
+	auto unscoutedPositions   = InformationManager::Instance().unscoutedPositions;
 	if ((enemyBase.x != 0) && (enemyBase.y != 0)) {
 		if ((!isEnemyBaseReached) && (BWTA::getRegion(u->getPosition()) == BWTA::getRegion(enemyBase))) {
 			InformationManager::Instance().isEnemyBaseReached = true;
-			DebugMessenger::Instance() << "reach enemy base: " << Broodwar->getFrameCount() << std::endl;
+			DebugMessenger::Instance() << "reach enemy base: " << Broodwar->getFrameCount() << "F" << std::endl;
 		}
 	}
 	//Broodwar->setLocalSpeed(23);
@@ -147,15 +147,15 @@ void ArmyManager::ZerglingAttack(Unit u)
 					const bool secondOptionScouted = scoutedPositions.find(p2) != scoutedPositions.end();
 					if (!firstOptionScouted) {
 						OrderManager::Instance().Move(u, p1);
-						DebugMessenger::Instance() << " moving to tp1" << tp1.x << "," << tp1.y << std::endl;
+						DebugMessenger::Instance() << " moving to 1: " << tp1.x << "," << tp1.y << "TP" << std::endl;
 					} else if (!secondOptionScouted) {
 						OrderManager::Instance().Move(u, p2);
-						DebugMessenger::Instance() << " moving to tp2" << tp2.x << "," << tp2.y << std::endl;
+						DebugMessenger::Instance() << " moving to 2: " << tp2.x << "," << tp2.y << "TP" << std::endl;
 					} else {
 						auto p = *unscoutedPositions.begin();
 						OrderManager::Instance().Move(u, p);
 						auto tp3 = (TilePosition)p;
-						DebugMessenger::Instance() << " moving to else" << tp3.x << "," << tp3.y << std::endl;
+						DebugMessenger::Instance() << " moving to else: " << tp3.x << "," << tp3.y << "TP" << std::endl;
 					}
 				} else { // map size isn't 4, so use old scouting
 					auto p = *unscoutedPositions.begin();
