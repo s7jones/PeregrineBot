@@ -266,13 +266,15 @@ void InformationManager::OverlordScoutingAtGameStart(BWAPI::Unit overlord)
 	} else {
 		if (!isPastSpottingTime) {
 			// maybe make 128 * 1.5 a const "smudge factor" variable
-			auto spottingTime = (maxBaseToBaseDistance + 128 * 1.5) / UnitTypes::Zerg_Overlord.topSpeed();
+			auto spottingTime = (maxBaseToBaseDistance/2 + 128 * 1.5) / UnitTypes::Zerg_Overlord.topSpeed();
 			if (Broodwar->getFrameCount() > spottingTime) {
 				isPastSpottingTime = true;
 				DebugMessenger::Instance() << "Past Overlord spotting time" << std::endl;
 			}
 			else {
 				if (!isEnemyBaseFromOverlordSpotting) {
+					// overlord spotting of overlords, very naive.
+					// only allow "certain" spotting, therefore based on half max base to base distance.
 					auto range = overlord->getType().sightRange();
 					auto unitsSpotted = overlord->getUnitsInRadius(range, IsEnemy && GetType == UnitTypes::Zerg_Overlord);
 					std::set<TilePosition> potentialStartsFromSpotting;
