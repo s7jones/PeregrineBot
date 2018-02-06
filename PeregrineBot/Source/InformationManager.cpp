@@ -209,14 +209,19 @@ void InformationManager::UpdateScouting()
 		if (Broodwar->isVisible(TilePosition(p))) {
 			scoutedPositions.insert(p);
 			unscoutedPositions.erase(p);
-			// replace IsBuilding by IsResourceDepot?
-			if (Broodwar->getUnitsOnTile(TilePosition(p),
-			                             IsEnemy && IsVisible && Exists && IsBuilding && !IsLifted)
-			        .size()
-			    > 0) {
-				enemyBase          = p;
-				isEnemyBaseDeduced = true;
-				isEnemyBaseFound   = true;
+			if (!isEnemyBaseFound) {
+				// replace IsBuilding by IsResourceDepot?
+				if (Broodwar->getUnitsOnTile(TilePosition(p),
+				                             IsEnemy && IsVisible && Exists && IsBuilding && !IsLifted)
+				        .size()
+				    > 0) {
+					enemyBase          = p;
+					isEnemyBaseDeduced = true;
+					isEnemyBaseFound   = true;
+					if ((enemyBase.x == 0) && (enemyBase.y == 0)) {
+						Broodwar << "ERR: Found enemy base at 0,0 " << std::endl;
+					}
+				}
 			}
 		}
 	}

@@ -68,7 +68,7 @@ void ArmyManager::ZerglingAttack(Unit u)
 	auto isEnemyBaseReached              = InformationManager::Instance().isEnemyBaseReached;
 	auto isEnemyBaseFound                = InformationManager::Instance().isEnemyBaseFound;
 	auto isEnemyBaseDestroyed            = InformationManager::Instance().isEnemyBaseDestroyed;
-	if ((enemyBase.x != 0) && (enemyBase.y != 0)) {
+	if (isEnemyBaseFound) {
 		if ((!isEnemyBaseReached) && (BWTA::getRegion(u->getPosition()) == BWTA::getRegion(enemyBase))) {
 			InformationManager::Instance().isEnemyBaseReached = true;
 			DebugMessenger::Instance() << "reach enemy base: " << Broodwar->getFrameCount() << "F" << std::endl;
@@ -145,7 +145,7 @@ void ArmyManager::ZerglingAttack(Unit u)
 			if (enemy_atall) {
 				OrderManager::Instance().Attack(u, enemy_atall);
 			} else {
-				if ((enemyBase.x != 0) && (enemyBase.y != 0)) {
+				if (isEnemyBaseFound) {
 					if (!isEnemyBaseDestroyed) {
 						if (!Broodwar->isVisible(TilePosition(enemyBase))) {
 							OrderManager::Instance().Attack(u, enemyBase);
