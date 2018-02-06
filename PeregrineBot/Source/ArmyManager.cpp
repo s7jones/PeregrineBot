@@ -13,55 +13,10 @@ ArmyManager& ArmyManager::Instance()
 	return instance;
 }
 
-void ArmyManager::ZerglingScout(Unit u)
-{
-	auto enemyBuildings = InformationManager::Instance().enemyBuildings;
-	static std::deque<Position> ZerglingScoutLocations;
-	if (ZerglingScoutLocations.empty()) {
-		for (const auto& region : BWTA::getRegions()) {
-			// if region isn't reachable then skip
-			if (!BWTA::getRegion(u->getPosition())->isReachable(region)) {
-				continue;
-			}
-			BWTA::Polygon poly = region->getPolygon();
-			auto it            = ZerglingScoutLocations.begin();
-			for (size_t j = 0; j < poly.size(); ++j) {
-				Position point1 = poly[j];
-				if (region == BWTA::getRegion(u->getPosition())) {
-					it = ZerglingScoutLocations.insert(it, point1);
-					//it++;
-				} else {
-					ZerglingScoutLocations.push_back(point1);
-				}
-			}
-		}
-		for (const auto& building : enemyBuildings) {
-			Position buildingPos = building->getPosition();
-			// if building isn't reachable then skip
-			if (!BWTA::getRegion(u->getPosition())->isReachable(BWTA::getRegion(buildingPos))) {
-				DebugMessenger::Instance() << "unaccessible building" << std::endl;
-				continue;
-			}
-			DebugMessenger::Instance() << "scoutable building" << std::endl;
-			auto it = ZerglingScoutLocations.begin();
-			it      = ZerglingScoutLocations.insert(it, buildingPos);
-		}
-	} else {
-		DebugMessenger::Instance() << "Zergling Scouting!" << std::endl;
-
-		auto it                 = ZerglingScoutLocations.begin();
-		Position perimeterPoint = (*it);
-		OrderManager::Instance().Move(u, perimeterPoint);
-		ZerglingScoutLocations.erase(it);
-	}
-}
-
 void ArmyManager::ZerglingAttack(Unit u)
 {
 	auto enemyBase                       = InformationManager::Instance().enemyBase;
 	auto enemyRace                       = InformationManager::Instance().enemyRace;
-	auto scoutingOptions                 = InformationManager::Instance().scoutingOptions;
-	auto scoutedPositions                = InformationManager::Instance().scoutedPositions;
 	auto unscoutedPositions              = InformationManager::Instance().unscoutedPositions;
 	auto isEnemyBaseFromOverlordSpotting = InformationManager::Instance().isEnemyBaseFromOverlordSpotting;
 	auto isEnemyBaseDeduced              = InformationManager::Instance().isEnemyBaseDeduced;
@@ -152,60 +107,102 @@ void ArmyManager::ZerglingAttack(Unit u)
 						} else if (!Broodwar->getUnitsOnTile(TilePosition(enemyBase), IsEnemy && IsVisible && Exists && IsBuilding && !IsLifted).empty()) {
 							OrderManager::Instance().Attack(u, enemyBase);
 						} else {
-							ZerglingScout(u);
+							ZerglingScoutSpreadOut(u);
 						}
-					} // havent destroyed enemy base
-					else {
-						ZerglingScout(u);
+					} else {
+						ZerglingScoutSpreadOut(u);
 					}
-				} // no enemy base
-				else {
-					if (Broodwar->getStartLocations().size() == 4) { // map size is 4, use new scouting
-						auto tp1                       = scoutingOptions.begin()->startToP1ToP2[1];
-						auto p1                        = GetBasePos(tp1);
-						const bool firstOptionScouted  = scoutedPositions.find(p1) != scoutedPositions.end();
-						auto tp2                       = scoutingOptions.begin()->startToP1ToP2[2];
-						auto p2                        = GetBasePos(tp2);
-						const bool secondOptionScouted = scoutedPositions.find(p2) != scoutedPositions.end();
-						if (!firstOptionScouted) {
-							OrderManager::Instance().Move(u, p1);
-							DebugMessenger::Instance() << " moving to 1: " << tp1.x << "," << tp1.y << "TP" << std::endl;
-						} else if (!secondOptionScouted) {
-							OrderManager::Instance().Move(u, p2);
-							DebugMessenger::Instance() << " moving to 2: " << tp2.x << "," << tp2.y << "TP" << std::endl;
-						} else {
-							auto p = *unscoutedPositions.begin();
-							OrderManager::Instance().Move(u, p);
-							auto tp3 = (TilePosition)p;
-							DebugMessenger::Instance() << " moving to else: " << tp3.x << "," << tp3.y << "TP" << std::endl;
-						}
-					} else { // map size isn't 4, so use old scouting
-						auto p = *unscoutedPositions.begin();
-						OrderManager::Instance().Move(u, p);
-						//move(u, (*unscoutedOtherPositions.begin()));
-						/*for (auto p : unscoutedOtherPositions) {
-							u->move(p, true);
-							}*/
-					}
+				} else {
+					ZerglingScoutingBeforeBaseFound(u);
 				}
 			}
-		} // end if idle
-		else if (u->isMoving()) {
+		} else if (u->isMoving()) { // attack move is most likely not covered here
 			UnitCommand lastCmd = u->getLastCommand();
 			if (lastCmd.getType() == UnitCommandTypes::Move) {
 				Position targetPos = lastCmd.getTargetPosition();
-				//if (unscoutedOtherPositions.find(targetPos) == unscoutedOtherPositions.end()) {
-				if ((unscoutedPositions.count(targetPos) == 0) && (!unscoutedPositions.empty())) {
-					DebugMessenger::Instance() << "recalculate scouting" << std::endl;
-
-					u->stop();
+				if ((unscoutedPositions.count(targetPos) == 0) && (!unscoutedPositions.empty())
+					&& (std::find(scoutLocationsZergling.begin(),scoutLocationsZergling.end(), targetPos) == scoutLocationsZergling.end())) {
 					auto p = *unscoutedPositions.begin();
 					OrderManager::Instance().Move(u, p);
-					/*for (auto p : unscoutedOtherPositions) {
-						u->move(p, true);
-						}*/
+					DebugMessenger::Instance() << "recalculate scouting" << std::endl;
 				}
 			}
-		} // end if moving
+		}
+	}
+}
+
+void ArmyManager::ZerglingScoutingBeforeBaseFound(Unit u)
+{
+	auto scoutingOptions    = InformationManager::Instance().scoutingOptions;
+	auto scoutedPositions   = InformationManager::Instance().scoutedPositions;
+	auto unscoutedPositions = InformationManager::Instance().unscoutedPositions;
+
+	if (Broodwar->getStartLocations().size() == 4) { // map size is 4, use new scouting
+		auto tp1                       = scoutingOptions.begin()->startToP1ToP2[1];
+		auto p1                        = GetBasePos(tp1);
+		const bool firstOptionScouted  = scoutedPositions.find(p1) != scoutedPositions.end();
+		auto tp2                       = scoutingOptions.begin()->startToP1ToP2[2];
+		auto p2                        = GetBasePos(tp2);
+		const bool secondOptionScouted = scoutedPositions.find(p2) != scoutedPositions.end();
+		if (!firstOptionScouted) {
+			OrderManager::Instance().Move(u, p1);
+			DebugMessenger::Instance() << " moving to 1: " << tp1.x << "," << tp1.y << "TP" << std::endl;
+		} else if (!secondOptionScouted) {
+			OrderManager::Instance().Move(u, p2);
+			DebugMessenger::Instance() << " moving to 2: " << tp2.x << "," << tp2.y << "TP" << std::endl;
+		} else {
+			auto p = *unscoutedPositions.begin();
+			OrderManager::Instance().Move(u, p);
+			auto tp3 = (TilePosition)p;
+			DebugMessenger::Instance() << " moving to else: " << tp3.x << "," << tp3.y << "TP" << std::endl;
+		}
+	} else { // map size isn't 4, so use old scouting
+		auto p = *unscoutedPositions.begin();
+		OrderManager::Instance().Move(u, p);
+	}
+}
+
+void ArmyManager::ZerglingScoutSpreadOut(Unit u)
+{
+	auto enemyBuildings = InformationManager::Instance().enemyBuildings;
+	auto unscoutedPositions = InformationManager::Instance().unscoutedPositions;
+	if (scoutLocationsZergling.empty()) {
+		for (const auto& building : enemyBuildings) {
+			Position buildingPos = building->getPosition();
+			// if building isn't reachable then skip
+			if (!BWTA::getRegion(u->getPosition())->isReachable(BWTA::getRegion(buildingPos))) {
+				DebugMessenger::Instance() << "unaccessible building" << std::endl;
+				continue;
+			}
+			scoutLocationsZergling.push_front(buildingPos);
+			DebugMessenger::Instance() << "scoutable building" << std::endl;
+		}
+
+		for (const auto& unscoutedLocation : unscoutedPositions) {
+			scoutLocationsZergling.push_back(unscoutedLocation);
+		}
+
+		for (const auto& region : BWTA::getRegions()) {
+			// if region isn't reachable then skip
+			if (!BWTA::getRegion(u->getPosition())->isReachable(region)) {
+				continue;
+			}
+			BWTA::Polygon poly = region->getPolygon();
+			for (size_t j = 0; j < poly.size(); ++j) {
+				Position point1 = poly[j];
+				if (region == BWTA::getRegion(u->getPosition())) {
+					scoutLocationsZergling.push_front(point1);
+				} else {
+					scoutLocationsZergling.push_back(point1);
+				}
+			}
+		}
+	} else {
+		DebugMessenger::Instance() << "Zergling Scouting!" << std::endl;
+
+		auto it                 = scoutLocationsZergling.begin();
+		Position perimeterPoint = (*it);
+		OrderManager::Instance().Move(u, perimeterPoint);
+		scoutLocationsZergling.erase(it);
 	}
 }
