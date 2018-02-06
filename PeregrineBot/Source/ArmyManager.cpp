@@ -161,6 +161,9 @@ void ArmyManager::ZerglingAttackKnownBuildings(Unit u)
 		// if building isn't reachable then skip
 		if (!BWTA::getRegion(u->getPosition())->isReachable(BWTA::getRegion(buildingPos))) {
 			DebugMessenger::Instance() << "unaccessible building" << std::endl;
+			if (!building->exists()) {
+				Broodwar << "ERR: building doesn't exist" << std::endl;
+			}
 			continue;
 		}
 		float distanceBuilding = DistanceAir(u->getPosition(), building->getPosition());
@@ -168,9 +171,11 @@ void ArmyManager::ZerglingAttackKnownBuildings(Unit u)
 			distanceEnemyBuildingAccessible = distanceBuilding;
 			buildingAccessible              = building;
 		}
-		DebugMessenger::Instance() << "scoutable building" << std::endl;
 	}
-	OrderManager::Instance().Attack(u, buildingAccessible);
+	if (buildingAccessible) {
+		OrderManager::Instance().Attack(u, buildingAccessible);
+		DebugMessenger::Instance() << "attacking accessible building" << std::endl;
+	}
 }
 
 void ArmyManager::ZerglingScoutingBeforeBaseFound(Unit u)
