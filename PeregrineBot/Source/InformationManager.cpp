@@ -280,8 +280,8 @@ void InformationManager::OverlordScoutingAtGameStart(BWAPI::Unit overlord)
 				if (!isEnemyBaseFromOverlordSpotting) {
 					// overlord spotting of overlords, very naive.
 					// only allow "certain" spotting, therefore based on half max base to base distance.
-					auto range        = overlord->getType().sightRange();
-					auto unitsSpotted = overlord->getUnitsInRadius(range, IsEnemy && GetType == UnitTypes::Zerg_Overlord);
+					auto range        = overlord->getType().sightRange() + 32; // ADDING 32 incase the overlord needs more range
+					auto unitsSpotted = overlord->getUnitsInRadius(range, IsEnemy && IsVisible && GetType == UnitTypes::Zerg_Overlord);
 					std::set<TilePosition> potentialStartsFromSpotting;
 					for (auto u : unitsSpotted) {
 						auto pO           = u->getPosition();
