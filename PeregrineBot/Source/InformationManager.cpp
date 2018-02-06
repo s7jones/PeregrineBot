@@ -209,14 +209,20 @@ void InformationManager::UpdateScouting()
 		if (Broodwar->isVisible(TilePosition(p))) {
 			scoutedPositions.insert(p);
 			unscoutedPositions.erase(p);
-			// replace IsBuilding by IsResourceDepot?
-			if (Broodwar->getUnitsOnTile(TilePosition(p),
-			                             IsEnemy && IsVisible && Exists && IsBuilding && !IsLifted)
-			        .size()
-			    > 0) {
-				enemyBase          = p;
-				isEnemyBaseDeduced = true;
-				isEnemyBaseFound   = true;
+			if (!isEnemyBaseFound) {
+				// replace IsBuilding by IsResourceDepot?
+				if (Broodwar->getUnitsOnTile(TilePosition(p),
+				                             IsEnemy && IsVisible && Exists && IsBuilding && !IsLifted)
+				        .size()
+				    > 0) {
+					enemyBase          = p;
+					isEnemyBaseDeduced = true;
+					isEnemyBaseFound   = true;
+					DebugMessenger::Instance() << "Found enemy base at: " << Broodwar->getFrameCount() << "F" << std::endl;
+					if ((enemyBase.x == 0) && (enemyBase.y == 0)) {
+						Broodwar << "ERR: Found enemy base at 0,0P" << std::endl;
+					}
+				}
 			}
 		}
 	}
@@ -274,8 +280,8 @@ void InformationManager::OverlordScoutingAtGameStart(BWAPI::Unit overlord)
 				if (!isEnemyBaseFromOverlordSpotting) {
 					// overlord spotting of overlords, very naive.
 					// only allow "certain" spotting, therefore based on half max base to base distance.
-					auto range        = overlord->getType().sightRange();
-					auto unitsSpotted = overlord->getUnitsInRadius(range, IsEnemy && GetType == UnitTypes::Zerg_Overlord);
+					auto range        = overlord->getType().sightRange() + 32; // ADDING 32 incase the overlord needs more range
+					auto unitsSpotted = overlord->getUnitsInRadius(range, IsEnemy && IsVisible && GetType == UnitTypes::Zerg_Overlord);
 					std::set<TilePosition> potentialStartsFromSpotting;
 					for (auto u : unitsSpotted) {
 						auto pO           = u->getPosition();

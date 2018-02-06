@@ -43,26 +43,29 @@ void DebugMessenger::Setup(bool debug_flag_define)
 	}
 	*/
 
+	bool debug_flag_json = false;
+
 	boost::filesystem::path config_file_path("./bwapi-data/read/PeregrineConfig.json");
 
 	//FILE* fp = fopen_s(config_file_path.string(), "rb"); // rapidjson recommended fopen, but compiler recommends "safe" variant
 	FILE* fp;
 	const wchar_t* mode = L"rb";
-	errno_t err = _wfopen_s(&fp, config_file_path.c_str(), mode);
+	errno_t err         = _wfopen_s(&fp, config_file_path.c_str(), mode);
 
-	char readBuffer[65536];
-	FileReadStream is(fp, readBuffer, sizeof(readBuffer));
+	if (!err) {
 
-	Document d;
-	d.ParseStream(is);
+		char readBuffer[65536];
+		FileReadStream is(fp, readBuffer, sizeof(readBuffer));
 
-	fclose(fp);
+		Document d;
+		d.ParseStream(is);
 
-	bool debug_flag_json = false;
+		fclose(fp);
 
-	if (d.HasMember("debug_msgs_enabled")) {
-		if (d["debug_msgs_enabled"].IsBool()) {
-			debug_flag_json = d["debug_msgs_enabled"].GetBool();
+		if (d.HasMember("debug_msgs_enabled")) {
+			if (d["debug_msgs_enabled"].IsBool()) {
+				debug_flag_json = d["debug_msgs_enabled"].GetBool();
+			}
 		}
 	}
 
