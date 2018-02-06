@@ -218,8 +218,9 @@ void InformationManager::UpdateScouting()
 					enemyBase          = p;
 					isEnemyBaseDeduced = true;
 					isEnemyBaseFound   = true;
+					DebugMessenger::Instance() << "Found enemy base at: " << Broodwar->getFrameCount() << "F" << std::endl;
 					if ((enemyBase.x == 0) && (enemyBase.y == 0)) {
-						Broodwar << "ERR: Found enemy base at 0,0 " << std::endl;
+						Broodwar << "ERR: Found enemy base at 0,0P" << std::endl;
 					}
 				}
 			}

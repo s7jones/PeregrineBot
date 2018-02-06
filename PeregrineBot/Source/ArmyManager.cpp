@@ -23,6 +23,8 @@ void ArmyManager::ZerglingAttack(Unit u)
 	auto isEnemyBaseReached              = InformationManager::Instance().isEnemyBaseReached;
 	auto isEnemyBaseFound                = InformationManager::Instance().isEnemyBaseFound;
 	auto isEnemyBaseDestroyed            = InformationManager::Instance().isEnemyBaseDestroyed;
+	auto enemyBaseSpottingGuess          = InformationManager::Instance().enemyBaseSpottingGuess;
+
 	if (isEnemyBaseFound) {
 		if ((!isEnemyBaseReached) && (BWTA::getRegion(u->getPosition()) == BWTA::getRegion(enemyBase))) {
 			InformationManager::Instance().isEnemyBaseReached = true;
@@ -113,7 +115,12 @@ void ArmyManager::ZerglingAttack(Unit u)
 						ZerglingScoutSpreadOut(u);
 					}
 				} else {
-					ZerglingScoutingBeforeBaseFound(u);
+					if (isEnemyBaseFromOverlordSpotting) {
+						OrderManager::Instance().Move(u, enemyBase);
+						DebugMessenger::Instance() << "scout overlord spot" << std::endl;
+					} else {
+						ZerglingScoutingBeforeBaseFound(u);
+					}
 				}
 			}
 		} else if (u->isMoving()) { // attack move is most likely not covered here
@@ -121,10 +128,13 @@ void ArmyManager::ZerglingAttack(Unit u)
 			if (lastCmd.getType() == UnitCommandTypes::Move) {
 				Position targetPos = lastCmd.getTargetPosition();
 				if ((unscoutedPositions.count(targetPos) == 0) && (!unscoutedPositions.empty())
-					&& (std::find(scoutLocationsZergling.begin(),scoutLocationsZergling.end(), targetPos) == scoutLocationsZergling.end())) {
+				    && (std::find(scoutLocationsZergling.begin(), scoutLocationsZergling.end(), targetPos) == scoutLocationsZergling.end())) {
 					auto p = *unscoutedPositions.begin();
 					OrderManager::Instance().Move(u, p);
 					DebugMessenger::Instance() << "recalculate scouting" << std::endl;
+				} else if ((isEnemyBaseFromOverlordSpotting) && (GetBasePos(enemyBaseSpottingGuess) != targetPos)) {
+					OrderManager::Instance().Move(u, GetBasePos(enemyBaseSpottingGuess));
+					DebugMessenger::Instance() << "recalculate scouting (overlord guess)" << std::endl;
 				}
 			}
 		}
@@ -164,7 +174,7 @@ void ArmyManager::ZerglingScoutingBeforeBaseFound(Unit u)
 
 void ArmyManager::ZerglingScoutSpreadOut(Unit u)
 {
-	auto enemyBuildings = InformationManager::Instance().enemyBuildings;
+	auto enemyBuildings     = InformationManager::Instance().enemyBuildings;
 	auto unscoutedPositions = InformationManager::Instance().unscoutedPositions;
 	if (scoutLocationsZergling.empty()) {
 		for (const auto& building : enemyBuildings) {
