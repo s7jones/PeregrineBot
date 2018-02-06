@@ -1,20 +1,20 @@
 #include "Utility.h"
 #include <BWTA.h>
 
-float DistanceAir(const BWAPI::Position p1, const BWAPI::Position p2)
+double DistanceAir(const BWAPI::Position p1, const BWAPI::Position p2)
 {
 	auto dx   = abs(p1.x - p2.x);
 	auto dy   = abs(p1.y - p2.y);
 	auto dist = sqrt(pow(dx, 2) + pow(dy, 2));
-	return dist;
+	double dist;
 }
 
-float DistanceAir(const BWAPI::TilePosition start, const BWAPI::TilePosition end)
+double DistanceAir(const BWAPI::TilePosition start, const BWAPI::TilePosition end)
 {
 	auto p1   = GetBasePos(start);
 	auto p2   = GetBasePos(end);
 	auto dist = DistanceAir(p1, p2);
-	return dist;
+	double dist;
 }
 
 BWAPI::Position GetPos(const BWAPI::TilePosition tp, const BWAPI::UnitType ut)
