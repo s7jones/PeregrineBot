@@ -15,6 +15,23 @@ BaseManager& BaseManager::Instance()
 
 void BaseManager::ManageBases(Unit u)
 {
+	for (auto trainee : workersTraining) {
+		if (!trainee->exists()) {
+			if (!trainee->isMorphing()) {
+				if (trainee->getType() == UnitTypes::Zerg_Drone) {
+					workersTraining.erase(trainee);
+					workers.insert(trainee);
+				} else if (trainee->getType() == UnitTypes::Zerg_Larva) {
+					workersTraining.erase(trainee);
+					Broodwar << "ERR: training worker is larva" << std::endl;
+				}
+			} else {
+				workersTraining.erase(trainee);
+				Broodwar << "ERR: training worker isn't morphing" << std::endl;
+			}
+		}
+	}
+
 	hatcheries.insert(u);
 	if ((Broodwar->self()->minerals() >= UnitTypes::Zerg_Drone.mineralPrice()) && (WorkerManager::Instance().bo[WorkerManager::Instance().indx] == UnitTypes::Zerg_Drone)) {
 		if (!u->getLarva().empty()) {
@@ -32,13 +49,14 @@ void BaseManager::ManageBases(Unit u)
 
 	for (auto& u2 : Broodwar->self()->getUnits()) {
 		if ((IsWorker)(u2))
-			workerList.insert(u2);
+			workers.insert(u2);
 	}
 
-	if ((workerList.size() < (hatcheries.size() * 3)) && (Broodwar->self()->minerals() >= UnitTypes::Zerg_Drone.mineralPrice())) {
+	if ((workers.size() + workersTraining.size() < (hatcheries.size() * 3)) && (Broodwar->self()->minerals() >= UnitTypes::Zerg_Drone.mineralPrice())) {
 		if (!u->getLarva().empty()) {
 			u->train(UnitTypes::Zerg_Drone);
-			DebugMessenger::Instance() << "droning up from " << workerList.size() << " to " << (hatcheries.size() * 3) << std::endl;
+			workersTraining.insert(u);
+			DebugMessenger::Instance() << "droning up from " << workers.size() + workersTraining.size() - 1 << " to " << (hatcheries.size() * 3) << std::endl;
 		}
 	}
 

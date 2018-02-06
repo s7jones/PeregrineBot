@@ -349,7 +349,7 @@ void PeregrineBot::onUnitShow(BWAPI::Unit unit)
 
 	// if something morphs into a worker, add it
 	if (unit->getType().isWorker() && unit->getPlayer() == Broodwar->self() && unit->getHitPoints() >= 0) {
-		BaseManager::Instance().workerList.insert(unit);
+		BaseManager::Instance().workers.insert(unit);
 	}
 }
 
@@ -361,7 +361,7 @@ void PeregrineBot::onUnitCreate(BWAPI::Unit unit)
 {
 	// if something morphs into a worker, add it
 	if (unit->getType().isWorker() && unit->getPlayer() == Broodwar->self() && unit->getHitPoints() >= 0) {
-		BaseManager::Instance().workerList.insert(unit);
+		BaseManager::Instance().workers.insert(unit);
 	}
 
 	if (Broodwar->isReplay()) {
@@ -390,7 +390,7 @@ void PeregrineBot::onUnitDestroy(BWAPI::Unit unit)
 	}
 
 	if (unit->getType().isWorker() && unit->getPlayer() == Broodwar->self()) {
-		BaseManager::Instance().workerList.erase(unit);
+		BaseManager::Instance().workers.erase(unit);
 	}
 
 	if (unit->getPosition() == InformationManager::Instance().enemyBase) {
@@ -404,12 +404,12 @@ void PeregrineBot::onUnitMorph(BWAPI::Unit unit)
 {
 	// if something morphs into a worker, add it
 	if (unit->getType().isWorker() && unit->getPlayer() == Broodwar->self() && unit->getHitPoints() >= 0) {
-		BaseManager::Instance().workerList.insert(unit);
+		BaseManager::Instance().workers.insert(unit);
 	}
 
 	// if something morphs into a building, it was a worker?
 	if (unit->getType().isBuilding() && unit->getPlayer() == Broodwar->self() && unit->getPlayer()->getRace() == Races::Zerg) {
-		BaseManager::Instance().workerList.erase(unit);
+		BaseManager::Instance().workers.erase(unit);
 	}
 
 	if (Broodwar->isReplay()) {
@@ -427,7 +427,7 @@ void PeregrineBot::onUnitRenegade(BWAPI::Unit unit)
 {
 	DebugMessenger::Instance() << unit->getType() << ", " << unit->getPlayer()->getName() << ": was renegaded!" << std::endl;
 	if (unit->getType().isWorker() && unit->getPlayer() == Broodwar->self()) {
-		BaseManager::Instance().workerList.erase(unit);
+		BaseManager::Instance().workers.erase(unit);
 	}
 }
 
@@ -448,7 +448,7 @@ void PeregrineBot::drawAdditionalInformation()
 	Broodwar->drawTextScreen(1, 20, "Last Error: %i", lastError);
 	Broodwar->drawTextScreen(1, 30, "Enemy Buildings: %i", InformationManager::Instance().enemyBuildings.size());
 	Broodwar->drawTextScreen(1, 40, "Enemy Army: %i", InformationManager::Instance().enemyArmy.size());
-	Broodwar->drawTextScreen(1, 50, "Htchrs/Wrkrs: %i/%i", BaseManager::Instance().hatcheries.size(), BaseManager::Instance().workerList.size());
+	Broodwar->drawTextScreen(1, 50, "Htchrs/Wrkrs: %i/%i", BaseManager::Instance().hatcheries.size(), BaseManager::Instance().workers.size());
 
 	Broodwar->drawTextScreen(100, 0, "BO index: %i", WorkerManager::Instance().indx);
 	Broodwar->drawTextScreen(100, 10, "Pool: %i", WorkerManager::Instance().pool);
