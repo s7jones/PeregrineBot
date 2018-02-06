@@ -1,6 +1,5 @@
 #pragma once
 #include "Common.h"
-#include "OrderManager.h"
 #include "Utility.h"
 
 struct ScoutingOptionFor4 {

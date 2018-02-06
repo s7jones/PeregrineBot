@@ -1,5 +1,4 @@
 #include "Utility.h"
-#include <BWTA.h>
 
 double DistanceAir(const BWAPI::Position p1, const BWAPI::Position p2)
 {

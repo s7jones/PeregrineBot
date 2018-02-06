@@ -1,5 +1,11 @@
 #include "PeregrineBot.h"
 
+#include "ArmyManager.h"
+#include "BaseManager.h"
+#include "InformationManager.h"
+#include "OrderManager.h"
+#include "WorkerManager.h"
+
 /**
 Bot: PeregrineBot
 Author: S Jones (s7jones)

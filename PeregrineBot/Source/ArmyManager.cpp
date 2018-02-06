@@ -1,4 +1,7 @@
 #include "ArmyManager.h"
+
+#include "InformationManager.h"
+#include "OrderManager.h"
 #include "Utility.h"
 
 using namespace BWAPI;
