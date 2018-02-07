@@ -1,5 +1,6 @@
 #pragma once
 #include "Common.h"
+#include "UnitInfo.h"
 
 class ArmyManager {
 	ArmyManager();
@@ -7,6 +8,7 @@ class ArmyManager {
 public:
 	static ArmyManager& Instance();
 	void ZerglingAttack(BWAPI::Unit u);
+	std::set<UnitInfo> GetZerglingAccessibleBuildings(BWAPI::Unit u);
 	void ZerglingAttackKnownBuildings(BWAPI::Unit u);
 	void ZerglingScoutingBeforeBaseFound(BWAPI::Unit u);
 	void ZerglingScoutSpreadOut(BWAPI::Unit u);

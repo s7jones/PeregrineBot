@@ -346,12 +346,7 @@ void PeregrineBot::onUnitEvade(BWAPI::Unit unit)
 
 void PeregrineBot::onUnitShow(BWAPI::Unit unit)
 {
-	if ((IsEnemy)(unit)) {
-		if ((IsBuilding)(unit)) {
-			InformationManager::Instance().enemyBuildings.insert(unit);
-		} else
-			InformationManager::Instance().enemyArmy.insert(unit);
-	}
+	InformationManager::Instance().onUnitShow(unit);
 
 	// if something morphs into a worker, add it
 	if (unit->getType().isWorker() && unit->getPlayer() == Broodwar->self() && unit->getHitPoints() >= 0) {
@@ -383,13 +378,7 @@ void PeregrineBot::onUnitCreate(BWAPI::Unit unit)
 
 void PeregrineBot::onUnitDestroy(BWAPI::Unit unit)
 {
-	if ((IsEnemy)(unit)) {
-		if ((IsBuilding)(unit)) {
-			InformationManager::Instance().enemyBuildings.erase(unit);
-		} else {
-			InformationManager::Instance().enemyArmy.erase(unit);
-		}
-	}
+	InformationManager::Instance().onUnitDestroy(unit);
 
 	if (unit->getType().isResourceDepot() && unit->getPlayer() == Broodwar->self()) {
 		BaseManager::Instance().hatcheries.erase(unit);
@@ -398,12 +387,6 @@ void PeregrineBot::onUnitDestroy(BWAPI::Unit unit)
 	if (unit->getType().isWorker() && unit->getPlayer() == Broodwar->self()) {
 		BaseManager::Instance().workers.erase(unit);
 	}
-
-	if (unit->getPosition() == InformationManager::Instance().enemyBase) {
-		InformationManager::Instance().isEnemyBaseDestroyed = true;
-		DebugMessenger::Instance() << "destroyed enemy base: " << Broodwar->getFrameCount() << std::endl;
-	}
-	InformationManager::Instance().enemyBuildings.erase(unit);
 }
 
 void PeregrineBot::onUnitMorph(BWAPI::Unit unit)

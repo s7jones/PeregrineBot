@@ -1,6 +1,7 @@
 #pragma once
 #include "Common.h"
 #include "Utility.h"
+#include "UnitInfo.h"
 
 struct ScoutingOptionFor4 {
 	std::array<BWAPI::TilePosition, 3> startToP1ToP2;
@@ -56,6 +57,9 @@ class InformationManager {
 
 public:
 	static InformationManager& Instance();
+	void onUnitShow(BWAPI::Unit unit);
+	void onUnitDestroy(BWAPI::Unit unit);
+
 	void Setup();
 	void SetupScouting();
 	void Update();
@@ -65,7 +69,6 @@ public:
 	void OverlordScoutingAfterBaseFound(BWAPI::Unit overlord);
 	void OverlordRetreatToHome(BWAPI::Unit overlord);
 
-	std::set<BWAPI::Unit> enemyBuildings;
 	BWAPI::Position enemyBase = { 0, 0 };
 	bool isEnemyBaseDeduced   = false;
 	bool isEnemyBaseFound     = false;
@@ -75,7 +78,7 @@ public:
 	bool isEnemyRaceRandom    = false;
 	bool isEnemyRaceUnknown   = false;
 	bool isIslandsOnMap       = false;
-	std::set<BWAPI::Unit> enemyArmy;
+
 	std::map<BWAPI::TilePosition, std::array<double, 6>> scoutingInfo;
 	std::set<BWAPI::TilePosition> allStarts;
 	std::set<BWAPI::TilePosition> otherStarts; // would be a good idea to make this const
@@ -86,6 +89,9 @@ public:
 	std::map<std::set<BWAPI::TilePosition, sortByMostTopThenLeft>, distAndTime> overlordNetwork;
 	bool isEnemyBaseFromOverlordSpotting       = false;
 	BWAPI::TilePosition enemyBaseSpottingGuess = { 0, 0 };
+
+	std::map<BWAPI::Unit, UnitInfo> enemyBuildings;
+	std::map<BWAPI::Unit, UnitInfo> enemyArmy;
 
 private:
 	float maxBaseToBaseDistance;

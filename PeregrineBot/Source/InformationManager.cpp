@@ -352,3 +352,42 @@ void InformationManager::OverlordRetreatToHome(BWAPI::Unit overlord)
 		DebugMessenger::Instance() << "Overlord being attacked in base." << std::endl;
 	}
 }
+
+void InformationManager::onUnitShow(BWAPI::Unit unit)
+{
+	if ((IsEnemy)(unit)) {
+		if ((IsBuilding)(unit)) {
+			auto iter = enemyBuildings.find(unit);
+			if (iter != enemyBuildings.end()) {
+				iter->second.update();
+			} else {
+				std::map<Unit, UnitInfo>::value_type value = {unit, UnitInfo(unit)};
+				enemyBuildings.insert(value);
+			}
+		} else {
+			auto iter = enemyArmy.find(unit);
+			if (iter != enemyArmy.end()) {
+				iter->second.update();
+			} else {
+				std::map<Unit, UnitInfo>::value_type value = { unit, UnitInfo(unit) };;
+				enemyArmy.insert(value);
+			}
+		}
+	}
+}
+
+void InformationManager::onUnitDestroy(BWAPI::Unit unit)
+{
+	if ((IsEnemy)(unit)) {
+		if ((IsBuilding)(unit)) {
+			enemyBuildings.erase(unit);
+
+			if (((IsResourceDepot)(unit) == true) && (unit->getPosition() == enemyBase)) {
+				isEnemyBaseDestroyed = true;
+				DebugMessenger::Instance() << "destroyed enemy base: " << Broodwar->getFrameCount() << std::endl;
+			}
+		} else {
+			enemyArmy.erase(unit);
+		}
+	}
+}

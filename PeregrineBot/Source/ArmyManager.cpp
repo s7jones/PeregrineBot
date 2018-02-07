@@ -150,30 +150,47 @@ void ArmyManager::ZerglingAttack(Unit u)
 	}
 }
 
-void ArmyManager::ZerglingAttackKnownBuildings(Unit u)
+std::set<UnitInfo> ArmyManager::GetZerglingAccessibleBuildings(Unit u)
 {
 	auto enemyBuildings = InformationManager::Instance().enemyBuildings;
-	std::set<Unit> enemyBuildingsAccessible;
-	float distanceEnemyBuildingAccessible = std::numeric_limits<float>::infinity();
-	Unit buildingAccessible               = NULL;
-	for (const auto& building : enemyBuildings) {
-		Position buildingPos = building->getPosition();
+	std::set<UnitInfo> enemyBuildingsAccessible;
+	for (auto iter = enemyBuildings.begin(); iter != enemyBuildings.end(); iter++) {
+		auto building        = *iter;
+		Position buildingPos = building.second.getPosition();
 		// if building isn't reachable then skip
 		if (!BWTA::getRegion(u->getPosition())->isReachable(BWTA::getRegion(buildingPos))) {
 			DebugMessenger::Instance() << "unaccessible building" << std::endl;
-			if (!building->exists()) {
+			if (!building.second.exists()) {
 				Broodwar << "ERR: building doesn't exist" << std::endl;
 			}
 			continue;
-		}
-		float distanceBuilding = DistanceAir(u->getPosition(), building->getPosition());
-		if (distanceBuilding < distanceEnemyBuildingAccessible) {
-			distanceEnemyBuildingAccessible = distanceBuilding;
-			buildingAccessible              = building;
+		} else {
+			enemyBuildingsAccessible.insert(building.second);
+			DebugMessenger::Instance() << "scoutable building" << std::endl;
 		}
 	}
-	if (buildingAccessible) {
-		OrderManager::Instance().Attack(u, buildingAccessible);
+	return enemyBuildingsAccessible;
+}
+
+void ArmyManager::ZerglingAttackKnownBuildings(Unit u)
+{
+	auto enemyBuildingsAccessible = GetZerglingAccessibleBuildings(u);
+
+	if (enemyBuildingsAccessible.size() != 0) {
+
+		float distanceEnemyBuildingAccessible = std::numeric_limits<float>::infinity();
+		Position buildingAccessiblePos;
+
+		for (auto building : enemyBuildingsAccessible) {
+			Position buildingPos   = building.getPosition();
+			float distanceBuilding = DistanceAir(u->getPosition(), buildingPos);
+			if (distanceBuilding < distanceEnemyBuildingAccessible) {
+				distanceEnemyBuildingAccessible = distanceBuilding;
+				buildingAccessiblePos = buildingPos;
+			}
+		}
+
+		OrderManager::Instance().Attack(u, buildingAccessiblePos);
 		DebugMessenger::Instance() << "attacking accessible building" << std::endl;
 	}
 }
@@ -214,15 +231,11 @@ void ArmyManager::ZerglingScoutSpreadOut(Unit u)
 	auto enemyBuildings     = InformationManager::Instance().enemyBuildings;
 	auto unscoutedPositions = InformationManager::Instance().unscoutedPositions;
 	if (scoutLocationsZergling.empty()) {
-		for (const auto& building : enemyBuildings) {
-			Position buildingPos = building->getPosition();
-			// if building isn't reachable then skip
-			if (!BWTA::getRegion(u->getPosition())->isReachable(BWTA::getRegion(buildingPos))) {
-				DebugMessenger::Instance() << "unaccessible building" << std::endl;
-				continue;
-			}
+		auto enemyBuildingsAccessible = GetZerglingAccessibleBuildings(u);
+
+		for (auto building : enemyBuildingsAccessible) {
+			Position buildingPos = building.getPosition();
 			scoutLocationsZergling.push_front(buildingPos);
-			DebugMessenger::Instance() << "scoutable building" << std::endl;
 		}
 
 		for (const auto& unscoutedLocation : unscoutedPositions) {
