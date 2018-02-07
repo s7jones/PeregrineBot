@@ -1,7 +1,7 @@
 #pragma once
 #include "Common.h"
-#include "Utility.h"
 #include "UnitInfo.h"
+#include "Utility.h"
 
 struct ScoutingOptionFor4 {
 	std::array<BWAPI::TilePosition, 3> startToP1ToP2;
@@ -59,6 +59,7 @@ public:
 	static InformationManager& Instance();
 	void onUnitShow(BWAPI::Unit unit);
 	void onUnitDestroy(BWAPI::Unit unit);
+	void onUnitMorph(BWAPI::Unit unit);
 
 	void Setup();
 	void SetupScouting();
@@ -94,6 +95,12 @@ public:
 	std::map<BWAPI::Unit, UnitInfo> enemyArmy;
 
 private:
+	void addToEnemyBuildings(BWAPI::Unit unit);
+	void addToEnemyArmy(BWAPI::Unit unit);
+	void removeFromEnemyBuildings(BWAPI::Unit unit);
+	void removeFromEnemyArmy(BWAPI::Unit unit);
+	void validateEnemyUnits();
+
 	float maxBaseToBaseDistance;
 	bool isPastSpottingTime = false;
 };
