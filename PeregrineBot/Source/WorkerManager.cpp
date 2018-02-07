@@ -1,5 +1,7 @@
 #include "WorkerManager.h"
 
+#include "OrderManager.h"
+
 using namespace BWAPI;
 using namespace Filter;
 

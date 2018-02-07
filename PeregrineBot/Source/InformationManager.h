@@ -1,6 +1,7 @@
 #pragma once
 #include "Common.h"
-#include "OrderManager.h"
+#include "Utility.h"
+#include "UnitInfo.h"
 
 struct ScoutingOptionFor4 {
 	std::array<BWAPI::TilePosition, 3> startToP1ToP2;
@@ -22,16 +23,6 @@ struct sortByMeanTime {
 		}
 	}
 };
-
-const auto GetPos =
-    [](const BWAPI::TilePosition tp, const BWAPI::UnitType ut) {
-	    return BWAPI::Position(BWAPI::Position(tp) + BWAPI::Position((ut.tileWidth() * BWAPI::TILEPOSITION_SCALE) / 2, (ut.tileHeight() * BWAPI::TILEPOSITION_SCALE) / 2));
-    };
-
-const auto GetBasePos =
-    [](const BWAPI::TilePosition tp) {
-	    return GetPos(tp, BWAPI::UnitTypes::Special_Start_Location);
-    };
 
 struct sortByMostTopThenLeft {
 	bool operator()(const BWAPI::TilePosition& lhs_tp, const BWAPI::TilePosition& rhs_tp)
@@ -61,76 +52,14 @@ struct distAndTime {
 	double time;
 };
 
-const auto DistanceGround =
-    [](const BWAPI::TilePosition start, const BWAPI::TilePosition end) {
-	    auto dist = BWTA::getGroundDistance(start, end);
-	    return dist;
-    };
-
-const auto DistanceAir =
-    [](const BWAPI::TilePosition start, const BWAPI::TilePosition end) {
-	    auto p1   = GetBasePos(start);
-	    auto p2   = GetBasePos(end);
-	    auto dx   = abs(p1.x - p2.x);
-	    auto dy   = abs(p1.y - p2.y);
-	    auto dist = sqrt(pow(dx, 2) + pow(dy, 2));
-	    return dist;
-    };
-
-/*auto TimeGround =
-[](const BWAPI::TilePosition start, const BWAPI::TilePosition end, const UnitType ut, const bool reach)
-{
-auto gdist = DistanceGround(start, end);
-
-if (!reach) {
-gdist -= ut.sightRange();
-}
-
-double time = gdist / ut.topSpeed();
-return time;
-};
-
-auto TimeGround =
-[](const BWAPI::TilePosition start, const BWAPI::TilePosition end, const bool reach)
-{
-auto time = TimeGround(start, end, UnitTypes::Zerg_Zergling, true);
-return time;
-}; */
-
-const auto TimeGround =
-    [](const BWAPI::TilePosition start, const BWAPI::TilePosition end) {
-	    auto gdist = DistanceGround(start, end);
-
-	    //if (!reach) {
-	    //	gdist -= ut.sightRange();
-	    //}
-
-	    double time = gdist / BWAPI::UnitTypes::Zerg_Zergling.topSpeed();
-	    return time;
-    };
-
-//auto TimeAir =
-//[](const BWAPI::TilePosition start, const BWAPI::TilePosition end, const bool reach)
-//{
-//	auto time = TimeGround(start, end, UnitTypes::Zerg_Zergling, true);
-//	return time;
-//};
-
-const auto TimeAir =
-    [](const BWAPI::TilePosition start, const BWAPI::TilePosition end) {
-	    auto adist = DistanceAir(start, end)
-	        - BWAPI::UnitTypes::Zerg_Overlord.sightRange();
-
-	    double travelTime = adist / BWAPI::UnitTypes::Zerg_Overlord.topSpeed();
-	    double time       = travelTime;
-	    return time;
-    };
-
 class InformationManager {
 	InformationManager();
 
 public:
 	static InformationManager& Instance();
+	void onUnitShow(BWAPI::Unit unit);
+	void onUnitDestroy(BWAPI::Unit unit);
+
 	void Setup();
 	void SetupScouting();
 	void Update();
@@ -140,7 +69,6 @@ public:
 	void OverlordScoutingAfterBaseFound(BWAPI::Unit overlord);
 	void OverlordRetreatToHome(BWAPI::Unit overlord);
 
-	std::set<BWAPI::Unit> enemyBuildings;
 	BWAPI::Position enemyBase = { 0, 0 };
 	bool isEnemyBaseDeduced   = false;
 	bool isEnemyBaseFound     = false;
@@ -150,7 +78,7 @@ public:
 	bool isEnemyRaceRandom    = false;
 	bool isEnemyRaceUnknown   = false;
 	bool isIslandsOnMap       = false;
-	std::set<BWAPI::Unit> enemyArmy;
+
 	std::map<BWAPI::TilePosition, std::array<double, 6>> scoutingInfo;
 	std::set<BWAPI::TilePosition> allStarts;
 	std::set<BWAPI::TilePosition> otherStarts; // would be a good idea to make this const
@@ -161,7 +89,10 @@ public:
 	std::map<std::set<BWAPI::TilePosition, sortByMostTopThenLeft>, distAndTime> overlordNetwork;
 	bool isEnemyBaseFromOverlordSpotting       = false;
 	BWAPI::TilePosition enemyBaseSpottingGuess = { 0, 0 };
-	
+
+	std::map<BWAPI::Unit, UnitInfo> enemyBuildings;
+	std::map<BWAPI::Unit, UnitInfo> enemyArmy;
+
 private:
 	float maxBaseToBaseDistance;
 	bool isPastSpottingTime = false;

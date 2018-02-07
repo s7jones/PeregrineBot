@@ -1,11 +1,6 @@
 #include "DebugMessenger.h"
-//#include <cpptoml.h>
-#include <rapidjson\document.h>
-#include <rapidjson\filereadstream.h>
-#include <rapidjson\rapidjson.h>
-#include <rapidjson\reader.h>
 
-using namespace rapidjson;
+#include "FileManager.h"
 
 DebugMessenger::DebugMessenger()
 {
@@ -23,51 +18,7 @@ DebugMessenger::~DebugMessenger()
 
 void DebugMessenger::Setup(bool debug_flag_define)
 {
-	/*
-	// TOML snippet for later?
-	boost::filesystem::path config_file_path("./bwapi-data/read/config.toml");
-
-	bool debug_flag_toml = false;
-
-	try {
-		auto config = cpptoml::parse_file(config_file_path.string());
-
-		debug_flag_toml = config->get_as<bool>("debug").value_or(false); // val is bool value in toml or false
-	}
-	catch (const cpptoml::parse_exception& e) {
-		BWAPI::Broodwar << "Config file not read" << std::endl;
-	}
-
-	if (debug_flag_toml || debug_flag_define) {
-		debug_enabled = true;
-	}
-	*/
-
-	bool debug_flag_json = false;
-
-	boost::filesystem::path config_file_path("./bwapi-data/read/PeregrineConfig.json");
-
-	//FILE* fp = fopen_s(config_file_path.string(), "rb"); // rapidjson recommended fopen, but compiler recommends "safe" variant
-	FILE* fp;
-	const wchar_t* mode = L"rb";
-	errno_t err         = _wfopen_s(&fp, config_file_path.c_str(), mode);
-
-	if (!err) {
-
-		char readBuffer[65536];
-		FileReadStream is(fp, readBuffer, sizeof(readBuffer));
-
-		Document d;
-		d.ParseStream(is);
-
-		fclose(fp);
-
-		if (d.HasMember("debug_msgs_enabled")) {
-			if (d["debug_msgs_enabled"].IsBool()) {
-				debug_flag_json = d["debug_msgs_enabled"].GetBool();
-			}
-		}
-	}
+	bool debug_flag_json = FileManager::Instance().readJsonConfig();
 
 	if (debug_flag_json || debug_flag_define) {
 		debug_enabled = true;

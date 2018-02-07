@@ -1,11 +1,5 @@
 #pragma once
-#include "ArmyManager.h"
-#include "BaseManager.h"
 #include "Common.h"
-#include "DebugMessenger.h"
-#include "InformationManager.h"
-#include "OrderManager.h"
-#include "WorkerManager.h"
 
 // Remember not to use "Broodwar" in any global class constructor!
 
@@ -31,7 +25,5 @@ public:
 	virtual void onUnitComplete(BWAPI::Unit unit);
 	// Everything below this line is safe to modify.
 
-	void drawAdditionalInformation();
-	void drawTerrainData();
-	void drawExtendedInterface();
+	const std::string version = "v4";
 };

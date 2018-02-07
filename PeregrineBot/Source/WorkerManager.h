@@ -1,6 +1,5 @@
 #pragma once
 #include "Common.h"
-#include "OrderManager.h"
 
 typedef std::vector<BWAPI::UnitType> Vector;
 

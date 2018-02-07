@@ -1,5 +1,7 @@
 #include "InformationManager.h"
 
+#include "OrderManager.h"
+
 using namespace BWAPI;
 using namespace Filter;
 
@@ -41,10 +43,7 @@ void InformationManager::Setup()
 			auto base2tp = *iter2;
 			auto base1   = GetBasePos(base1tp);
 			auto base2   = GetBasePos(base2tp);
-			auto dx      = abs(base1.x - base2.x); // put into it's own function (lambda maybe?)
-			auto dy      = abs(base1.y - base2.y);
-			auto dist    = sqrt(pow(dx, 2) + pow(dy, 2));
-
+			auto dist    = DistanceAir(base1, base2);
 			if (dist > maxBaseToBaseDistance) {
 				maxBaseToBaseDistance = dist;
 			}
@@ -91,22 +90,22 @@ void InformationManager::SetupScouting()
 			double zerglingTime                                        = TimeGround(*iter1, *iter2);
 
 			// calculate DistanceAir from firstOverlordPosition
-			TilePosition p1, p2;
+			TilePosition tp1, tp2;
 			if (*iter1 == Broodwar->self()->getStartLocation()) {
-				p1 = airOrigin;
+				tp1 = airOrigin;
 			} else {
-				p1 = *iter1;
+				tp1 = *iter1;
 			}
 
 			if (*iter2 == Broodwar->self()->getStartLocation()) {
-				p2 = airOrigin;
+				tp2 = airOrigin;
 			} else {
-				p2 = *iter2;
+				tp2 = *iter2;
 			}
 
 			std::set<TilePosition, sortByMostTopThenLeft> overlordLink = { *iter1, *iter2 };
-			double overlordDist                                        = DistanceAir(p1, p2);
-			double overlordTime                                        = TimeAir(p1, p2);
+			double overlordDist                                        = DistanceAir(tp1, tp2);
+			double overlordTime                                        = TimeAir(tp1, tp2);
 
 			distAndTime zerglingDnT = { zerglingDist, zerglingTime };
 			distAndTime overlordDnT = { overlordDist, overlordTime };
@@ -150,8 +149,8 @@ void InformationManager::SetupScouting()
 			for (TilePosition p2 : otherStarts) {
 				if (p2 == p1)
 					continue;
-				// p1 is any position that is not my start position,
-				// p2 is any position that is not start position or p1
+				// tp1 is any position that is not my start position,
+				// tp2 is any position that is not start position or tp1
 
 				std::set<TilePosition> remainingPlaces(otherStarts);
 				remainingPlaces.erase(p1);
@@ -290,10 +289,7 @@ void InformationManager::OverlordScoutingAtGameStart(BWAPI::Unit overlord)
 
 						for (auto tp : otherStarts) {
 							auto pB          = GetBasePos(tp);
-							auto dx          = abs(pB.x - pO.x); // put into it's own function (lambda maybe?)
-							auto dy          = abs(pB.y - pO.y);
-							auto distToStart = sqrt(pow(dx, 2) + pow(dy, 2));
-
+							auto distToStart = DistanceAir(pB, pO);
 							if (distToStart < searchRadius) {
 								potentialStartsFromSpotting.insert(tp);
 							}
@@ -354,5 +350,44 @@ void InformationManager::OverlordRetreatToHome(BWAPI::Unit overlord)
 		OrderManager::Instance().Move(overlord, ownBasePos);
 	} else {
 		DebugMessenger::Instance() << "Overlord being attacked in base." << std::endl;
+	}
+}
+
+void InformationManager::onUnitShow(BWAPI::Unit unit)
+{
+	if ((IsEnemy)(unit)) {
+		if ((IsBuilding)(unit)) {
+			auto iter = enemyBuildings.find(unit);
+			if (iter != enemyBuildings.end()) {
+				iter->second.update();
+			} else {
+				std::map<Unit, UnitInfo>::value_type value = {unit, UnitInfo(unit)};
+				enemyBuildings.insert(value);
+			}
+		} else {
+			auto iter = enemyArmy.find(unit);
+			if (iter != enemyArmy.end()) {
+				iter->second.update();
+			} else {
+				std::map<Unit, UnitInfo>::value_type value = { unit, UnitInfo(unit) };;
+				enemyArmy.insert(value);
+			}
+		}
+	}
+}
+
+void InformationManager::onUnitDestroy(BWAPI::Unit unit)
+{
+	if ((IsEnemy)(unit)) {
+		if ((IsBuilding)(unit)) {
+			enemyBuildings.erase(unit);
+
+			if (((IsResourceDepot)(unit) == true) && (unit->getPosition() == enemyBase)) {
+				isEnemyBaseDestroyed = true;
+				DebugMessenger::Instance() << "destroyed enemy base: " << Broodwar->getFrameCount() << std::endl;
+			}
+		} else {
+			enemyArmy.erase(unit);
+		}
 	}
 }
