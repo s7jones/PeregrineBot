@@ -25,5 +25,5 @@ public:
 	virtual void onUnitComplete(BWAPI::Unit unit);
 	// Everything below this line is safe to modify.
 
-	const std::string Version = "v4";
+	const std::string version = "v4";
 };
