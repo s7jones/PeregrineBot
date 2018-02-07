@@ -14,6 +14,7 @@ private:
 
 class Option {
 public:
+	Option();
 	Option(std::function<BWAPI::Unit(BWAPI::Unit)> filterFunction, std::function<double> utilityFunction);
 
 	std::function<BWAPI::Unit(BWAPI::Unit)> filterFunction;

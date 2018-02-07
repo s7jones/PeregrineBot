@@ -34,20 +34,21 @@ BWAPI::UnitCommand UtilityManager::getBestActionForZerglingInEnemyBase(BWAPI::Un
 	UnitCommand command;
 	auto enemyRace = InformationManager::Instance().enemyRace;
 
-	std::unordered_map<Option, double> UtilityMap;
+	std::vector<std::pair<Option, double>> UtilityMap;
 
 	switch (enemyRace) {
 	case Races::Enum::Protoss: {
 		std::function<Unit(Unit)> lambdaFilter = [](Unit u) -> Unit {
 			return u->getClosestUnit(
-				IsEnemy && (GetType == UnitTypes::Protoss_Zealot || GetType == UnitTypes::Protoss_Photon_Cannon));
+			    IsEnemy && (GetType == UnitTypes::Protoss_Zealot || GetType == UnitTypes::Protoss_Photon_Cannon));
 		};
 
 		std::function<double> lambdaUtility = []() -> double {
 			return 1;
 		};
-		
-		Option enemyClosest = Option(lambdaFilter, lambdaUtility);
+
+		//Option enemyClosest = Option(lambdaFilter, lambdaUtility);
+		Option enemyClosest;
 		break;
 	}
 	case Races::Enum::Zerg:
@@ -62,6 +63,10 @@ BWAPI::UnitCommand UtilityManager::getBestActionForZerglingInEnemyBase(BWAPI::Un
 }
 
 UtilityManager::UtilityManager()
+{
+}
+
+Option::Option()
 {
 }
 
