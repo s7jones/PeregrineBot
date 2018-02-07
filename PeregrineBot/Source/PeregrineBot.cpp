@@ -85,12 +85,6 @@ void PeregrineBot::onStart()
 		}
 	} else // if this is not a replay
 	{
-		// Retrieve you and your enemy's races. enemy() will just return the first enemy.
-		// If you wish to deal with multiple enemies then you must use enemies().
-		if (Broodwar->enemy()) // First make sure there is an enemy
-		{
-			//Broodwar << "The matchup is " << Broodwar->self()->getRace() << " vs " << Broodwar->enemy()->getRace() << std::endl;
-		}
 		// Make our bot run thousands of games as fast as possible!
 		Broodwar->setLocalSpeed(0);
 		//Broodwar->setGUI(false);
