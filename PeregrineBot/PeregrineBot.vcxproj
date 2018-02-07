@@ -113,6 +113,7 @@
     <ClCompile Include="Source\ProductionManager.cpp" />
     <ClCompile Include="Source\UnitInfo.cpp" />
     <ClCompile Include="Source\Utility.cpp" />
+    <ClCompile Include="Source\UtilityManager.cpp" />
     <ClCompile Include="Source\WorkerManager.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -129,6 +130,7 @@
     <ClInclude Include="Source\ProductionManager.h" />
     <ClInclude Include="Source\UnitInfo.h" />
     <ClInclude Include="Source\Utility.h" />
+    <ClInclude Include="Source\UtilityManager.h" />
     <ClInclude Include="Source\WorkerManager.h" />
   </ItemGroup>
   <ItemGroup>
