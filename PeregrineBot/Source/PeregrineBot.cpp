@@ -1,7 +1,9 @@
 #include "PeregrineBot.h"
 
 #include "ArmyManager.h"
+#include "BWTAManager.h"
 #include "BaseManager.h"
+#include "GUIManager.h"
 #include "InformationManager.h"
 #include "OrderManager.h"
 #include "WorkerManager.h"
@@ -43,10 +45,6 @@ bool debug_flag = false;
 using namespace BWAPI;
 using namespace Filter;
 
-bool analyzed               = false;
-bool analysis_just_finished = false;
-bool analyzing              = false;
-const bool analysis         = true;
 int frameCount              = 1;
 int i;
 std::string Version = "v4";
@@ -97,14 +95,7 @@ void PeregrineBot::onStart()
 		Broodwar->setLocalSpeed(0);
 		//Broodwar->setGUI(false);
 
-		if (analysis) {
-			DebugMessenger::Instance() << "Begin analyzing map." << std::endl;
-
-			BWTA::readMap();
-			BWTA::analyze();
-			analyzed               = true;
-			analysis_just_finished = true;
-		}
+		BWTAManager::Instance().analyze();
 
 		InformationManager::Instance().Setup();
 	}
@@ -222,7 +213,7 @@ void PeregrineBot::onFrame()
 	if (Broodwar->isReplay() || Broodwar->isPaused() || !Broodwar->self())
 		return;
 
-	drawAdditionalInformation();
+	GUIManager::Instance().draw();
 
 	// Prevent spamming by only running our onFrame once every number of latency frames.
 	// Latency frames are the number of frames before commands are processed.
@@ -404,255 +395,4 @@ void PeregrineBot::onSaveGame(std::string gameName)
 
 void PeregrineBot::onUnitComplete(BWAPI::Unit unit)
 {
-}
-
-void PeregrineBot::drawAdditionalInformation()
-{
-	// Display the game frame rate as text in the upper left area of the screen
-	Broodwar->drawTextScreen(1, 0, "Supply: %i/%i", Broodwar->self()->supplyUsed(), Broodwar->self()->supplyTotal());
-	Broodwar->drawTextScreen(1, 10, "Frame Count: %iF", Broodwar->getFrameCount());
-	Broodwar->drawTextScreen(1, 20, "Last Error: %i", lastError);
-	Broodwar->drawTextScreen(1, 30, "Enemy Buildings: %i", InformationManager::Instance().enemyBuildings.size());
-	Broodwar->drawTextScreen(1, 40, "Enemy Army: %i", InformationManager::Instance().enemyArmy.size());
-	Broodwar->drawTextScreen(1, 50, "Htchrs/Wrkrs: %i/%i", BaseManager::Instance().hatcheries.size(), BaseManager::Instance().workers.size());
-
-	Broodwar->drawTextScreen(100, 0, "BO index: %i", WorkerManager::Instance().indx);
-	Broodwar->drawTextScreen(100, 10, "Pool: %i", WorkerManager::Instance().pool);
-
-	int screenVPos = 20;
-	int count      = 1;
-	//for (auto scoutData : scoutingInfo) {
-	//	Broodwar->drawTextScreen(100, screenVPos, "%i: gd%.1f ad%.1f md%.1f gt%.1f at%.1f mt%.1f", count,
-	//	                         scoutData.second[0], scoutData.second[1], scoutData.second[2],
-	//	                         scoutData.second[3], scoutData.second[4], scoutData.second[5]);
-	//	count++;
-	//	screenVPos += 10;
-	//}
-
-	for (auto scoutingOption : InformationManager::Instance().scoutingOptions) {
-		Broodwar->drawTextScreen(100, screenVPos, "%i: %i,%i; %i,%iTP : %.1f +- %.1fF", count,
-		                         scoutingOption.startToP1ToP2[1].x, scoutingOption.startToP1ToP2[1].y,
-		                         scoutingOption.startToP1ToP2[2].x, scoutingOption.startToP1ToP2[2].y,
-		                         scoutingOption.meanTime, scoutingOption.stdDev);
-
-		count++;
-		screenVPos += 10;
-	}
-
-	Broodwar->drawTextScreen(200, 0, "FPS: %d", Broodwar->getFPS());
-	Broodwar->drawTextScreen(200, 10, "Average FPS: %.1f", Broodwar->getAverageFPS());
-
-	//BWTA draw
-	//if (analyzed)	drawTerrainData();
-	//else if (!analyzing) {
-	//	CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)AnalyzeThread, NULL, 0, NULL);
-	//	analyzing = true;
-	//}
-
-	if (analyzed) {
-		drawTerrainData();
-	}
-
-	drawExtendedInterface();
-
-	if (analysis_just_finished) {
-		DebugMessenger::Instance() << "Finished analyzing map." << std::endl;
-		analysis_just_finished = false;
-	}
-}
-
-void PeregrineBot::drawTerrainData()
-{
-	//we will iterate through all the base locations, and draw their outlines.
-	for (const auto& baseLocation : BWTA::getBaseLocations()) {
-		TilePosition p = baseLocation->getTilePosition();
-
-		//draw outline of center location
-		Position leftTop(p.x * TILE_SIZE, p.y * TILE_SIZE);
-		Position rightBottom(leftTop.x + 4 * TILE_SIZE, leftTop.y + 3 * TILE_SIZE);
-		Broodwar->drawBoxMap(leftTop, rightBottom, Colors::Blue);
-
-		//draw a circle at each mineral patch
-		for (const auto& mineral : baseLocation->getStaticMinerals()) {
-			Broodwar->drawCircleMap(mineral->getInitialPosition(), 30, Colors::Cyan);
-		}
-
-		//draw the outlines of Vespene geysers
-		for (const auto& geyser : baseLocation->getGeysers()) {
-			TilePosition p1 = geyser->getInitialTilePosition();
-			Position leftTop1(p1.x * TILE_SIZE, p1.y * TILE_SIZE);
-			Position rightBottom1(leftTop1.x + 4 * TILE_SIZE, leftTop1.y + 2 * TILE_SIZE);
-			Broodwar->drawBoxMap(leftTop1, rightBottom1, Colors::Orange);
-		}
-
-		//if this is an island expansion, draw a yellow circle around the base location
-		if (baseLocation->isIsland()) {
-			Broodwar->drawCircleMap(baseLocation->getPosition(), 80, Colors::Yellow);
-		}
-	}
-
-	//we will iterate through all the regions and ...
-	for (const auto& region : BWTA::getRegions()) {
-		// draw the polygon outline of it in green
-		BWTA::Polygon p = region->getPolygon();
-		for (size_t j = 0; j < p.size(); ++j) {
-			Position point1 = p[j];
-			Position point2 = p[(j + 1) % p.size()];
-			Broodwar->drawLineMap(point1, point2, Colors::Green);
-		}
-		// visualize the chokepoints with red lines
-		for (auto const& chokepoint : region->getChokepoints()) {
-			Position point1 = chokepoint->getSides().first;
-			Position point2 = chokepoint->getSides().second;
-			Broodwar->drawLineMap(point1, point2, Colors::Red);
-		}
-	}
-}
-
-void PeregrineBot::drawExtendedInterface()
-{
-	int verticalOffset = -10;
-
-	// draw enemy units
-	for (auto& unit : Broodwar->enemy()->getUnits()) {
-		UnitType type = unit->getType();
-		if (type == UnitTypes::Unknown)
-			continue;
-
-		//int hitPoints = ui.lastHealth;
-		//int shields = ui.lastShields;
-
-		const Position pos = unit->getPosition();
-
-		if (pos == Positions::Unknown)
-			continue;
-
-		int left   = pos.x - type.dimensionLeft();
-		int right  = pos.x + type.dimensionRight();
-		int top    = pos.y - type.dimensionUp();
-		int bottom = pos.y + type.dimensionDown();
-
-		int hitPoints = unit->getHitPoints();
-		int shields   = unit->getShields();
-
-		if (!Broodwar->isVisible(TilePosition(pos))) {
-			Broodwar->drawBoxMap(Position(left, top), Position(right, bottom), Colors::Grey, false);
-			Broodwar->drawTextMap(Position(left + 3, top + 4), "%s", type.getName().c_str());
-		}
-
-		if (!type.isResourceContainer() && type.maxHitPoints() > 0) {
-			double hpRatio = (double)hitPoints / (double)type.maxHitPoints();
-
-			Color hpColor = Colors::Green;
-			if (hpRatio <= 0.67) hpColor = Colors::Orange;
-			if (hpRatio <= 0.33) hpColor = Colors::Red;
-
-			int ratioRight = left + (int)((right - left) * hpRatio);
-			int hpTop      = top + verticalOffset;
-			int hpBottom   = top + 4 + verticalOffset;
-
-			Broodwar->drawBoxMap(Position(left, hpTop), Position(right, hpBottom), Colors::Grey, true);
-			Broodwar->drawBoxMap(Position(left, hpTop), Position(ratioRight, hpBottom), hpColor, true);
-			Broodwar->drawBoxMap(Position(left, hpTop), Position(right, hpBottom), Colors::Black, false);
-
-			int ticWidth = 3;
-
-			for (int i(left); i < right - 1; i += ticWidth) {
-				Broodwar->drawLineMap(Position(i, hpTop), Position(i, hpBottom), Colors::Black);
-			}
-		}
-
-		if (!type.isResourceContainer() && type.maxShields() > 0) {
-			double shieldRatio = (double)shields / (double)type.maxShields();
-
-			int ratioRight = left + (int)((right - left) * shieldRatio);
-			int hpTop      = top - 3 + verticalOffset;
-			int hpBottom   = top + 1 + verticalOffset;
-
-			Broodwar->drawBoxMap(Position(left, hpTop), Position(right, hpBottom), Colors::Grey, true);
-			Broodwar->drawBoxMap(Position(left, hpTop), Position(ratioRight, hpBottom), Colors::Blue, true);
-			Broodwar->drawBoxMap(Position(left, hpTop), Position(right, hpBottom), Colors::Black, false);
-
-			int ticWidth = 3;
-
-			for (int i(left); i < right - 1; i += ticWidth) {
-				Broodwar->drawLineMap(Position(i, hpTop), Position(i, hpBottom), Colors::Black);
-			}
-		}
-	}
-
-	// draw neutral units and our units
-	for (auto& unit : Broodwar->getAllUnits()) {
-		if (unit->getPlayer() == Broodwar->enemy()) {
-			continue;
-		}
-
-		const Position& pos = unit->getPosition();
-
-		int left   = pos.x - unit->getType().dimensionLeft();
-		int right  = pos.x + unit->getType().dimensionRight();
-		int top    = pos.y - unit->getType().dimensionUp();
-		int bottom = pos.y + unit->getType().dimensionDown();
-
-		//Broodwar->drawBoxMap(Position(left, top), Position(right, bottom), Colors::Grey, false);
-
-		if (!unit->getType().isResourceContainer() && unit->getType().maxHitPoints() > 0) {
-			double hpRatio = (double)unit->getHitPoints() / (double)unit->getType().maxHitPoints();
-
-			Color hpColor = Colors::Green;
-			if (hpRatio < 0.66) hpColor = Colors::Orange;
-			if (hpRatio < 0.33) hpColor = Colors::Red;
-
-			int ratioRight = left + (int)((right - left) * hpRatio);
-			int hpTop      = top + verticalOffset;
-			int hpBottom   = top + 4 + verticalOffset;
-
-			Broodwar->drawBoxMap(Position(left, hpTop), Position(right, hpBottom), Colors::Grey, true);
-			Broodwar->drawBoxMap(Position(left, hpTop), Position(ratioRight, hpBottom), hpColor, true);
-			Broodwar->drawBoxMap(Position(left, hpTop), Position(right, hpBottom), Colors::Black, false);
-
-			int ticWidth = 3;
-
-			for (int i(left); i < right - 1; i += ticWidth) {
-				Broodwar->drawLineMap(Position(i, hpTop), Position(i, hpBottom), Colors::Black);
-			}
-		}
-
-		if (!unit->getType().isResourceContainer() && unit->getType().maxShields() > 0) {
-			double shieldRatio = (double)unit->getShields() / (double)unit->getType().maxShields();
-
-			int ratioRight = left + (int)((right - left) * shieldRatio);
-			int hpTop      = top - 3 + verticalOffset;
-			int hpBottom   = top + 1 + verticalOffset;
-
-			Broodwar->drawBoxMap(Position(left, hpTop), Position(right, hpBottom), Colors::Grey, true);
-			Broodwar->drawBoxMap(Position(left, hpTop), Position(ratioRight, hpBottom), Colors::Blue, true);
-			Broodwar->drawBoxMap(Position(left, hpTop), Position(right, hpBottom), Colors::Black, false);
-
-			int ticWidth = 3;
-
-			for (int i(left); i < right - 1; i += ticWidth) {
-				Broodwar->drawLineMap(Position(i, hpTop), Position(i, hpBottom), Colors::Black);
-			}
-		}
-
-		if (unit->getType().isResourceContainer() && unit->getInitialResources() > 0) {
-
-			double mineralRatio = (double)unit->getResources() / (double)unit->getInitialResources();
-
-			int ratioRight = left + (int)((right - left) * mineralRatio);
-			int hpTop      = top + verticalOffset;
-			int hpBottom   = top + 4 + verticalOffset;
-
-			Broodwar->drawBoxMap(Position(left, hpTop), Position(right, hpBottom), Colors::Grey, true);
-			Broodwar->drawBoxMap(Position(left, hpTop), Position(ratioRight, hpBottom), Colors::Cyan, true);
-			Broodwar->drawBoxMap(Position(left, hpTop), Position(right, hpBottom), Colors::Black, false);
-
-			int ticWidth = 3;
-
-			for (int i(left); i < right - 1; i += ticWidth) {
-				Broodwar->drawLineMap(Position(i, hpTop), Position(i, hpBottom), Colors::Black);
-			}
-		}
-	}
 }

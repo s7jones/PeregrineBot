@@ -103,8 +103,10 @@
   <ItemGroup>
     <ClCompile Include="Source\ArmyManager.cpp" />
     <ClCompile Include="Source\BaseManager.cpp" />
+    <ClCompile Include="Source\BWTAManager.cpp" />
     <ClCompile Include="Source\DebugMessenger.cpp" />
     <ClCompile Include="Source\Dll.cpp" />
+    <ClCompile Include="Source\GUIManager.cpp" />
     <ClCompile Include="Source\InformationManager.cpp" />
     <ClCompile Include="Source\OrderManager.cpp" />
     <ClCompile Include="Source\PeregrineBot.cpp" />
@@ -116,8 +118,10 @@
   <ItemGroup>
     <ClInclude Include="Source\ArmyManager.h" />
     <ClInclude Include="Source\BaseManager.h" />
+    <ClInclude Include="Source\BWTAManager.h" />
     <ClInclude Include="Source\Common.h" />
     <ClInclude Include="Source\DebugMessenger.h" />
+    <ClInclude Include="Source\GUIManager.h" />
     <ClInclude Include="Source\InformationManager.h" />
     <ClInclude Include="Source\OrderManager.h" />
     <ClInclude Include="Source\PeregrineBot.h" />
