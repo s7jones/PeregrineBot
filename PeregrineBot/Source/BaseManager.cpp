@@ -15,6 +15,53 @@ BaseManager& BaseManager::Instance()
 	return instance;
 }
 
+void BaseManager::onUnitShow(BWAPI::Unit unit)
+{
+	// if something morphs into a worker, add it
+	if (unit->getType().isWorker() && unit->getPlayer() == Broodwar->self() && unit->getHitPoints() >= 0) {
+		workers.insert(unit);
+	}
+}
+
+void BaseManager::onUnitCreate(BWAPI::Unit unit)
+{
+	// if something morphs into a worker, add it
+	if (unit->getType().isWorker() && unit->getPlayer() == Broodwar->self() && unit->getHitPoints() >= 0) {
+		workers.insert(unit);
+	}
+}
+
+void BaseManager::onUnitDestroy(BWAPI::Unit unit)
+{
+	if (unit->getType().isResourceDepot() && unit->getPlayer() == Broodwar->self()) {
+		hatcheries.erase(unit);
+	}
+
+	if (unit->getType().isWorker() && unit->getPlayer() == Broodwar->self()) {
+		workers.erase(unit);
+	}
+}
+
+void BaseManager::onUnitMorph(BWAPI::Unit unit)
+{
+	// if something morphs into a worker, add it
+	if (unit->getType().isWorker() && unit->getPlayer() == Broodwar->self() && unit->getHitPoints() >= 0) {
+		workers.insert(unit);
+	}
+
+	// if something morphs into a building, it was a worker?
+	if (unit->getType().isBuilding() && unit->getPlayer() == Broodwar->self() && unit->getPlayer()->getRace() == Races::Zerg) {
+		workers.erase(unit);
+	}
+}
+
+void BaseManager::onUnitRenegade(BWAPI::Unit unit)
+{
+	if (unit->getType().isWorker() && unit->getPlayer() == Broodwar->self()) {
+		workers.erase(unit);
+	}
+}
+
 void BaseManager::ManageBases(Unit u)
 {
 	for (auto trainee : workersTraining) {

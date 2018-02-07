@@ -347,11 +347,7 @@ void PeregrineBot::onUnitEvade(BWAPI::Unit unit)
 void PeregrineBot::onUnitShow(BWAPI::Unit unit)
 {
 	InformationManager::Instance().onUnitShow(unit);
-
-	// if something morphs into a worker, add it
-	if (unit->getType().isWorker() && unit->getPlayer() == Broodwar->self() && unit->getHitPoints() >= 0) {
-		BaseManager::Instance().workers.insert(unit);
-	}
+	BaseManager::Instance().onUnitShow(unit);
 }
 
 void PeregrineBot::onUnitHide(BWAPI::Unit unit)
@@ -360,10 +356,7 @@ void PeregrineBot::onUnitHide(BWAPI::Unit unit)
 
 void PeregrineBot::onUnitCreate(BWAPI::Unit unit)
 {
-	// if something morphs into a worker, add it
-	if (unit->getType().isWorker() && unit->getPlayer() == Broodwar->self() && unit->getHitPoints() >= 0) {
-		BaseManager::Instance().workers.insert(unit);
-	}
+	BaseManager::Instance().onUnitCreate(unit);
 
 	if (Broodwar->isReplay()) {
 		// if we are in a replay, then we will print out the build order of the structures
@@ -379,27 +372,12 @@ void PeregrineBot::onUnitCreate(BWAPI::Unit unit)
 void PeregrineBot::onUnitDestroy(BWAPI::Unit unit)
 {
 	InformationManager::Instance().onUnitDestroy(unit);
-
-	if (unit->getType().isResourceDepot() && unit->getPlayer() == Broodwar->self()) {
-		BaseManager::Instance().hatcheries.erase(unit);
-	}
-
-	if (unit->getType().isWorker() && unit->getPlayer() == Broodwar->self()) {
-		BaseManager::Instance().workers.erase(unit);
-	}
+	BaseManager::Instance().onUnitDestroy(unit);
 }
 
 void PeregrineBot::onUnitMorph(BWAPI::Unit unit)
 {
-	// if something morphs into a worker, add it
-	if (unit->getType().isWorker() && unit->getPlayer() == Broodwar->self() && unit->getHitPoints() >= 0) {
-		BaseManager::Instance().workers.insert(unit);
-	}
-
-	// if something morphs into a building, it was a worker?
-	if (unit->getType().isBuilding() && unit->getPlayer() == Broodwar->self() && unit->getPlayer()->getRace() == Races::Zerg) {
-		BaseManager::Instance().workers.erase(unit);
-	}
+	BaseManager::Instance().onUnitMorph(unit);
 
 	if (Broodwar->isReplay()) {
 		// if we are in a replay, then we will print out the build order of the structures
@@ -414,10 +392,9 @@ void PeregrineBot::onUnitMorph(BWAPI::Unit unit)
 
 void PeregrineBot::onUnitRenegade(BWAPI::Unit unit)
 {
+	BaseManager::Instance().onUnitRenegade(unit);
+
 	DebugMessenger::Instance() << unit->getType() << ", " << unit->getPlayer()->getName() << ": was renegaded!" << std::endl;
-	if (unit->getType().isWorker() && unit->getPlayer() == Broodwar->self()) {
-		BaseManager::Instance().workers.erase(unit);
-	}
 }
 
 void PeregrineBot::onSaveGame(std::string gameName)
