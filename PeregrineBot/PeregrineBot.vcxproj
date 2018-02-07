@@ -109,6 +109,7 @@
     <ClCompile Include="Source\OrderManager.cpp" />
     <ClCompile Include="Source\PeregrineBot.cpp" />
     <ClCompile Include="Source\ProductionManager.cpp" />
+    <ClCompile Include="Source\UnitInfo.cpp" />
     <ClCompile Include="Source\Utility.cpp" />
     <ClCompile Include="Source\WorkerManager.cpp" />
   </ItemGroup>
@@ -121,6 +122,7 @@
     <ClInclude Include="Source\OrderManager.h" />
     <ClInclude Include="Source\PeregrineBot.h" />
     <ClInclude Include="Source\ProductionManager.h" />
+    <ClInclude Include="Source\UnitInfo.h" />
     <ClInclude Include="Source\Utility.h" />
     <ClInclude Include="Source\WorkerManager.h" />
   </ItemGroup>
