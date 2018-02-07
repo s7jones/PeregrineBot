@@ -244,6 +244,15 @@ void ArmyManager::ZerglingScoutSpreadOut(Unit u)
 			scoutLocationsZergling.push_back(unscoutedLocation);
 		}
 
+		// TODO: don't add duplicate cases
+		for (const auto& base : BWTA::getBaseLocations()) {
+			auto region = base->getRegion();
+			if (!BWTA::getRegion(u->getPosition())->isReachable(region)) {
+				continue;
+			}
+			scoutLocationsZergling.push_back(base->getPosition());
+		}
+
 		for (const auto& region : BWTA::getRegions()) {
 			// if region isn't reachable then skip
 			if (!BWTA::getRegion(u->getPosition())->isReachable(region)) {
