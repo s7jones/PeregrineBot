@@ -351,7 +351,8 @@ void InformationManager::OverlordRetreatToHome(BWAPI::Unit overlord)
 		DebugMessenger::Instance() << "Retreat overlord." << std::endl;
 		OrderManager::Instance().Move(overlord, ownBasePos);
 	} else {
-		DebugMessenger::Instance() << "Overlord being attacked in base." << std::endl;
+		//DebugMessenger::Instance() << "Overlord being attacked in base." << std::endl;
+		// spamming when enemy race is terran.
 	}
 }
 
