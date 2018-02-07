@@ -423,7 +423,7 @@ void InformationManager::removeFromEnemyBuildings(BWAPI::Unit unit)
 
 void InformationManager::removeFromEnemyArmy(BWAPI::Unit unit)
 {
-	enemyBuildings.erase(unit);
+	enemyArmy.erase(unit);
 }
 
 void InformationManager::validateEnemyUnits()
