@@ -1,7 +1,7 @@
 #include "GUIManager.h"
 
-#include "BaseManager.h"
 #include "BWTAManager.h"
+#include "BaseManager.h"
 #include "InformationManager.h"
 #include "WorkerManager.h"
 
@@ -16,11 +16,50 @@ GUIManager& GUIManager::Instance()
 
 void GUIManager::draw()
 {
+	drawAndTalk();
 	drawAdditionalInformation();
 }
 
 GUIManager::GUIManager()
 {
+}
+
+void GUIManager::drawAndTalk()
+{
+	static int choice = -1;
+
+	if (Broodwar->getFrameCount() == 2300) {
+		choice = rand() % 100;
+		switch (choice) {
+		case 17:
+			Broodwar->sendText("Status: 0x00000011");
+			Broodwar->sendText("Info: Software faillllure. An errdsaor oc.....'''#cured transferring exec/1234/");
+		default:
+			Broodwar->sendText("Hi Twitch!");
+			break;
+		}
+	}
+
+	if (Broodwar->getFrameCount() == 2300 + 480) {
+		if (choice == 17) {
+			Broodwar->sendText("Help! Is anyone there? Help! Help! Please! Help!");
+		}
+	}
+
+	if (frameCount > 23) {
+		std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
+
+		//double duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() / 24;
+		std::chrono::duration<double, std::milli> fp_ms = end - start;
+		duration                                        = fp_ms.count() / 24;
+		frameCount                                      = 1;
+	} else {
+		if (frameCount == 1) {
+			start = std::chrono::steady_clock::now();
+		}
+		++frameCount;
+	}
+	Broodwar->drawTextScreen(1, 60, "Frame Time: %.1fms", duration);
 }
 
 void GUIManager::drawAdditionalInformation()

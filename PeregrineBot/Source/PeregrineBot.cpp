@@ -45,13 +45,6 @@ bool debug_flag = false;
 using namespace BWAPI;
 using namespace Filter;
 
-int frameCount              = 1;
-int i;
-std::string Version = "v4";
-Error lastError     = Errors::None;
-double duration     = 0;
-std::chrono::steady_clock::time_point start;
-
 void PeregrineBot::onStart()
 {
 	DebugMessenger::Instance().Setup(debug_flag);
@@ -125,13 +118,13 @@ void PeregrineBot::onEnd(bool isWinner)
 			score[0].name = "z";
 			score[1].name = "t";
 			score[2].name = "p";
-			for (i = 0; i < 3; i++) {
+			for (int i = 0; i < 3; i++) {
 				score[i].matches = 0;
 				score[i].score   = 0;
 				score[i].percent = 0;
 			}
 		} else if (input.is_open()) {
-			for (i = 0; i < 3; i++) {
+			for (int i = 0; i < 3; i++) {
 				input >> score[i].name >> score[i].matches >> score[i].score >> score[i].percent;
 			}
 		}
@@ -154,7 +147,7 @@ void PeregrineBot::onEnd(bool isWinner)
 
 		boost::filesystem::ofstream output(pathOut, std::ios::trunc);
 
-		for (i = 0; i < 3; i++) {
+		for (int i = 0; i < 3; i++) {
 			output << score[i].name << "\t" << score[i].matches << "\t" << score[i].score << "\t" << score[i].percent << "\n";
 		}
 
@@ -166,48 +159,13 @@ void PeregrineBot::onEnd(bool isWinner)
 
 void PeregrineBot::onFrame()
 {
-	static int choice = -1;
-
-	if (Broodwar->getFrameCount() == 2300) {
-		choice = rand() % 100;
-		switch (choice) {
-		case 17:
-			Broodwar->sendText("Status: 0x00000011");
-			Broodwar->sendText("Info: Software faillllure. An errdsaor oc.....'''#cured transferring exec/1234/");
-		default:
-			Broodwar->sendText("Hi Twitch!");
-			break;
-		}
-	}
-
-	if (Broodwar->getFrameCount() == 2300 + 480) {
-		if (choice == 17) {
-			Broodwar->sendText("Help! Is anyone there? Help! Help! Please! Help!");
-		}
-	}
-
-	if (frameCount > 23) {
-		std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
-
-		//double duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() / 24;
-		std::chrono::duration<double, std::milli> fp_ms = end - start;
-		duration                                        = fp_ms.count() / 24;
-		frameCount                                      = 1;
-	} else {
-		if (frameCount == 1) {
-			start = std::chrono::steady_clock::now();
-		}
-		++frameCount;
-	}
-	Broodwar->drawTextScreen(1, 60, "Frame Time: %.1fms", duration);
+	GUIManager::Instance().draw();
 
 	// Called once every game frame
 
 	// Return if the game is a replay or is paused
 	if (Broodwar->isReplay() || Broodwar->isPaused() || !Broodwar->self())
 		return;
-
-	GUIManager::Instance().draw();
 
 	// Prevent spamming by only running our onFrame once every number of latency frames.
 	// Latency frames are the number of frames before commands are processed.
