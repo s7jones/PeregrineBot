@@ -1,12 +1,71 @@
 #include "FileManager.h"
 
+#include <rapidjson\document.h>
+#include <rapidjson\filereadstream.h>
+#include <rapidjson\rapidjson.h>
+#include <rapidjson\reader.h>
+
+//#include <cpptoml.h>
+
 using namespace BWAPI;
 using namespace Filter;
+using namespace rapidjson;
 
 FileManager& FileManager::Instance()
 {
 	static FileManager instance;
 	return instance;
+}
+
+bool FileManager::readJsonConfig()
+{
+	/*
+	// TOML snippet for later?
+	boost::filesystem::path config_file_path("./bwapi-data/read/config.toml");
+
+	bool debug_flag_toml = false;
+
+	try {
+	auto config = cpptoml::parse_file(config_file_path.string());
+
+	debug_flag_toml = config->get_as<bool>("debug").value_or(false); // val is bool value in toml or false
+	}
+	catch (const cpptoml::parse_exception& e) {
+	BWAPI::Broodwar << "Config file not read" << std::endl;
+	}
+
+	if (debug_flag_toml || debug_flag_define) {
+	debug_enabled = true;
+	}
+	*/
+
+	bool debug_flag_json = false;
+
+	boost::filesystem::path config_file_path("./bwapi-data/read/PeregrineConfig.json");
+
+	//FILE* fp = fopen_s(config_file_path.string(), "rb"); // rapidjson recommended fopen, but compiler recommends "safe" variant
+	FILE* fp;
+	const wchar_t* mode = L"rb";
+	errno_t err         = _wfopen_s(&fp, config_file_path.c_str(), mode);
+
+	if (!err) {
+
+		char readBuffer[65536];
+		FileReadStream is(fp, readBuffer, sizeof(readBuffer));
+
+		Document d;
+		d.ParseStream(is);
+
+		fclose(fp);
+
+		if (d.HasMember("debug_msgs_enabled")) {
+			if (d["debug_msgs_enabled"].IsBool()) {
+				debug_flag_json = d["debug_msgs_enabled"].GetBool();
+			}
+		}
+	}
+
+	return debug_flag_json;
 }
 
 void FileManager::writeStatisticsToFile(std::string botVersion, bool isWinner)
@@ -39,11 +98,10 @@ void FileManager::writeStatisticsToFile(std::string botVersion, bool isWinner)
 		score[2].name = "p";
 		for (int i = 0; i < 3; i++) {
 			score[i].matches = 0;
-			score[i].score = 0;
+			score[i].score   = 0;
 			score[i].percent = 0;
 		}
-	}
-	else if (input.is_open()) {
+	} else if (input.is_open()) {
 		for (int i = 0; i < 3; i++) {
 			input >> score[i].name >> score[i].matches >> score[i].score >> score[i].percent;
 		}
