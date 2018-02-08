@@ -318,9 +318,8 @@ void InformationManager::OverlordScoutingAfterBaseFound(BWAPI::Unit overlord)
 			//DebugMessenger::Instance() << "Overlord Scouting!" << std::endl;
 			static std::deque<Position> scoutLocations;
 			if (scoutLocations.empty()) {
-				BWTA::RegionImpl* enemyRegion = BWTA::getRegion(enemyBase);
-				auto poly = enemyRegion->_polygon;
-				//BWTA::Polygon poly        = enemyRegion->getPolygon();
+				auto enemyRegion = BWTA::getRegion(enemyBase);
+				auto& poly        = enemyRegion->getPolygon();
 				for (size_t j = 0; j < poly.size(); ++j) {
 					// The points in Polygon appear to be all along the perimeter.
 					Position point1 = poly[j];

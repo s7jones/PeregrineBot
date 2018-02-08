@@ -150,7 +150,7 @@ void GUIManager::drawTerrainData()
 	//we will iterate through all the regions and ...
 	for (const auto& region : BWTA::getRegions()) {
 		// draw the polygon outline of it in green
-		BWTA::Polygon p = region->getPolygon();
+		auto& p = region->getPolygon();
 		for (size_t j = 0; j < p.size(); ++j) {
 			Position point1 = p[j];
 			Position point2 = p[(j + 1) % p.size()];
