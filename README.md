@@ -11,7 +11,7 @@ A C++ AI bot that plays the game Starcraft Broodwar using a "Zerg 5-pool" strate
 * Make sure the BWTA dlls `libgmp-10.dll` & `libgmp-10.dll` from `BWTAlib_2.2\windows` are in the root Starcraft folder.
 
 ## Dependencies:
-* BWAPI v4.1.2 (VS2013).
-* BWTA2 v2.2 (has it own version of Boost).
-* Boost v1.63.
+* BWAPI v4.2.0 (VS2017).
+* My fork of: BWTA2 v2.2.
+* Boost v1.66.
 * RapidJSON v1.0.2.

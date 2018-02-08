@@ -8,8 +8,9 @@ public:
 
 private:
 	GUIManager();
-	void drawAndTalk();
-	void drawAdditionalInformation();
+	void drawTopLeftOverlay();
+	void calculateAverageFrameTime();
+	void talk();
 	void drawTerrainData();
 	void drawExtendedInterface();
 

@@ -16,17 +16,88 @@ GUIManager& GUIManager::Instance()
 
 void GUIManager::draw()
 {
-	drawAndTalk();
-	drawAdditionalInformation();
+	talk();
+	
+	//BWTA draw
+	//if (analyzed)	drawTerrainData();
+	//else if (!analyzing) {
+	//	CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)AnalyzeThread, NULL, 0, NULL);
+	//	analyzing = true;
+	//}
+
+	if (BWTAManager::Instance().analyzed) {
+		drawTerrainData();
+	}
+
+	drawTopLeftOverlay();
+
+	drawExtendedInterface();
+
+	// this seems redundant at the moment but is useful if threading is wanted later
+	if (BWTAManager::Instance().analysis_just_finished) {
+		DebugMessenger::Instance() << "Finished analyzing map." << std::endl;
+		BWTAManager::Instance().analysis_just_finished = false;
+	}
 }
 
 GUIManager::GUIManager()
 {
 }
 
-void GUIManager::drawAndTalk()
+void GUIManager::drawTopLeftOverlay()
 {
-	static int choice = -1;
+	calculateAverageFrameTime();
+
+	// Display the game frame rate as text in the upper left area of the screen
+	Broodwar->drawTextScreen(1, 0, "Supply: %i/%i", Broodwar->self()->supplyUsed(), Broodwar->self()->supplyTotal());
+	Broodwar->drawTextScreen(1, 10, "Frame Count: %iF", Broodwar->getFrameCount());
+	Broodwar->drawTextScreen(1, 20, "Last Error: %i", Broodwar->getLastError());
+	Broodwar->drawTextScreen(1, 30, "Enemy Buildings: %i", InformationManager::Instance().enemyBuildings.size());
+	Broodwar->drawTextScreen(1, 40, "Enemy Army: %i", InformationManager::Instance().enemyArmy.size());
+	Broodwar->drawTextScreen(1, 50, "Htchrs/Wrkrs: %i/%i", BaseManager::Instance().hatcheries.size(), BaseManager::Instance().workers.size());
+	Broodwar->drawTextScreen(1, 60, "Frame Time: %.1fms", duration);
+	Broodwar->drawTextScreen(1, 70, "APM: %i", Broodwar->getAPM());
+
+	Broodwar->drawTextScreen(100, 0, "BO index: %i", WorkerManager::Instance().indx);
+	Broodwar->drawTextScreen(100, 10, "Pool: %i", WorkerManager::Instance().pool);
+	int screenVPos = 20;
+	int count = 1;
+
+	for (auto scoutingOption : InformationManager::Instance().scoutingOptions) {
+		Broodwar->drawTextScreen(100, screenVPos, "%i: %i,%i; %i,%iTP : %.1f +- %.1fF", count,
+			scoutingOption.startToP1ToP2[1].x, scoutingOption.startToP1ToP2[1].y,
+			scoutingOption.startToP1ToP2[2].x, scoutingOption.startToP1ToP2[2].y,
+			scoutingOption.meanTime, scoutingOption.stdDev);
+
+		count++;
+		screenVPos += 10;
+	}
+
+
+	Broodwar->drawTextScreen(200, 0, "FPS: %d", Broodwar->getFPS());
+	Broodwar->drawTextScreen(200, 10, "Average FPS: %.1f", Broodwar->getAverageFPS());
+}
+
+void GUIManager::calculateAverageFrameTime()
+{
+	if (frameCount > 23) {
+		std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
+		std::chrono::duration<double, std::milli> fp_ms = end - start;
+		duration = fp_ms.count() / 24;
+		frameCount = 1;
+	}
+	else {
+		if (frameCount == 1) {
+			start = std::chrono::steady_clock::now();
+		}
+		++frameCount;
+	}
+
+}
+
+void GUIManager::talk()
+{
+	int choice = -1;
 
 	if (Broodwar->getFrameCount() == 2300) {
 		choice = rand() % 100;
@@ -44,76 +115,6 @@ void GUIManager::drawAndTalk()
 		if (choice == 17) {
 			Broodwar->sendText("Help! Is anyone there? Help! Help! Please! Help!");
 		}
-	}
-
-	if (frameCount > 23) {
-		std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
-
-		//double duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() / 24;
-		std::chrono::duration<double, std::milli> fp_ms = end - start;
-		duration                                        = fp_ms.count() / 24;
-		frameCount                                      = 1;
-	} else {
-		if (frameCount == 1) {
-			start = std::chrono::steady_clock::now();
-		}
-		++frameCount;
-	}
-	Broodwar->drawTextScreen(1, 60, "Frame Time: %.1fms", duration);
-}
-
-void GUIManager::drawAdditionalInformation()
-{
-	// Display the game frame rate as text in the upper left area of the screen
-	Broodwar->drawTextScreen(1, 0, "Supply: %i/%i", Broodwar->self()->supplyUsed(), Broodwar->self()->supplyTotal());
-	Broodwar->drawTextScreen(1, 10, "Frame Count: %iF", Broodwar->getFrameCount());
-	Broodwar->drawTextScreen(1, 20, "Last Error: %i", Broodwar->getLastError());
-	Broodwar->drawTextScreen(1, 30, "Enemy Buildings: %i", InformationManager::Instance().enemyBuildings.size());
-	Broodwar->drawTextScreen(1, 40, "Enemy Army: %i", InformationManager::Instance().enemyArmy.size());
-	Broodwar->drawTextScreen(1, 50, "Htchrs/Wrkrs: %i/%i", BaseManager::Instance().hatcheries.size(), BaseManager::Instance().workers.size());
-
-	Broodwar->drawTextScreen(100, 0, "BO index: %i", WorkerManager::Instance().indx);
-	Broodwar->drawTextScreen(100, 10, "Pool: %i", WorkerManager::Instance().pool);
-
-	int screenVPos = 20;
-	int count      = 1;
-	//for (auto scoutData : scoutingInfo) {
-	//	Broodwar->drawTextScreen(100, screenVPos, "%i: gd%.1f ad%.1f md%.1f gt%.1f at%.1f mt%.1f", count,
-	//	                         scoutData.second[0], scoutData.second[1], scoutData.second[2],
-	//	                         scoutData.second[3], scoutData.second[4], scoutData.second[5]);
-	//	count++;
-	//	screenVPos += 10;
-	//}
-
-	for (auto scoutingOption : InformationManager::Instance().scoutingOptions) {
-		Broodwar->drawTextScreen(100, screenVPos, "%i: %i,%i; %i,%iTP : %.1f +- %.1fF", count,
-		                         scoutingOption.startToP1ToP2[1].x, scoutingOption.startToP1ToP2[1].y,
-		                         scoutingOption.startToP1ToP2[2].x, scoutingOption.startToP1ToP2[2].y,
-		                         scoutingOption.meanTime, scoutingOption.stdDev);
-
-		count++;
-		screenVPos += 10;
-	}
-
-	Broodwar->drawTextScreen(200, 0, "FPS: %d", Broodwar->getFPS());
-	Broodwar->drawTextScreen(200, 10, "Average FPS: %.1f", Broodwar->getAverageFPS());
-
-	//BWTA draw
-	//if (analyzed)	drawTerrainData();
-	//else if (!analyzing) {
-	//	CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)AnalyzeThread, NULL, 0, NULL);
-	//	analyzing = true;
-	//}
-
-	if (BWTAManager::Instance().analyzed) {
-		drawTerrainData();
-	}
-
-	drawExtendedInterface();
-
-	if (BWTAManager::Instance().analysis_just_finished) {
-		DebugMessenger::Instance() << "Finished analyzing map." << std::endl;
-		BWTAManager::Instance().analysis_just_finished = false;
 	}
 }
 
@@ -150,7 +151,7 @@ void GUIManager::drawTerrainData()
 	//we will iterate through all the regions and ...
 	for (const auto& region : BWTA::getRegions()) {
 		// draw the polygon outline of it in green
-		BWTA::Polygon p = region->getPolygon();
+		auto& p = region->getPolygon();
 		for (size_t j = 0; j < p.size(); ++j) {
 			Position point1 = p[j];
 			Position point2 = p[(j + 1) % p.size()];

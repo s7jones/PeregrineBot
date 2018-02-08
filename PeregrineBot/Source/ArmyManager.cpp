@@ -258,7 +258,7 @@ void ArmyManager::ZerglingScoutSpreadOut(Unit u)
 			if (!BWTA::getRegion(u->getPosition())->isReachable(region)) {
 				continue;
 			}
-			BWTA::Polygon poly = region->getPolygon();
+			auto& poly = region->getPolygon();
 			for (size_t j = 0; j < poly.size(); ++j) {
 				Position point1 = poly[j];
 				if (region == BWTA::getRegion(u->getPosition())) {
