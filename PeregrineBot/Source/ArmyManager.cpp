@@ -1,5 +1,6 @@
 #include "ArmyManager.h"
 
+#include "GUIManager.h"
 #include "InformationManager.h"
 #include "OrderManager.h"
 #include "Utility.h"
@@ -142,10 +143,12 @@ void ArmyManager::ZerglingAttack(Unit u)
 				    && (std::find(scoutLocationsZergling.begin(), scoutLocationsZergling.end(), targetPos) == scoutLocationsZergling.end())) {
 					auto p = *unscoutedPositions.begin();
 					OrderManager::Instance().Move(u, p);
-					DebugMessenger::Instance() << "recalculate scouting" << std::endl;
+					GUIManager::Instance().drawTextOnScreen(u, "recalculate scouting", 48);
+					//DebugMessenger::Instance() << "recalculate scouting" << std::endl;
 				} else if ((!isEnemyBaseFound) && (isEnemyBaseFromOverlordSpotting) && (GetBasePos(enemyBaseSpottingGuess) != targetPos)) {
 					OrderManager::Instance().Move(u, GetBasePos(enemyBaseSpottingGuess));
-					DebugMessenger::Instance() << "recalculate scouting (overlord guess)" << std::endl;
+					GUIManager::Instance().drawTextOnScreen(u, "recalculate scouting (overlord guess)", 48);
+					//DebugMessenger::Instance() << "recalculate scouting (overlord guess)" << std::endl;
 				}
 			}
 		}
@@ -193,7 +196,8 @@ void ArmyManager::ZerglingAttackKnownBuildings(Unit u)
 		}
 
 		OrderManager::Instance().Attack(u, buildingAccessiblePos);
-		DebugMessenger::Instance() << "attacking accessible building" << std::endl;
+		GUIManager::Instance().drawTextOnScreen(u, "attacking accessible building", 48);
+		//DebugMessenger::Instance() << "attacking accessible building" << std::endl;
 	}
 }
 
@@ -210,18 +214,23 @@ void ArmyManager::ZerglingScoutingBeforeBaseFound(Unit u)
 		auto tp2                       = scoutingOptions.begin()->startToP1ToP2[2];
 		auto p2                        = GetBasePos(tp2);
 		const bool secondOptionScouted = scoutedPositions.find(p2) != scoutedPositions.end();
+		std::stringstream ss;
 		if (!firstOptionScouted) {
 			OrderManager::Instance().Move(u, p1);
-			DebugMessenger::Instance() << " moving to 1: " << tp1.x << "," << tp1.y << "TP" << std::endl;
+			ss << " moving to 1: " << tp1.x << "," << tp1.y << "TP";
+			//DebugMessenger::Instance() << " moving to 1: " << tp1.x << "," << tp1.y << "TP" << std::endl;
 		} else if (!secondOptionScouted) {
 			OrderManager::Instance().Move(u, p2);
-			DebugMessenger::Instance() << " moving to 2: " << tp2.x << "," << tp2.y << "TP" << std::endl;
+			ss << " moving to 2: " << tp2.x << "," << tp2.y << "TP";
+			//DebugMessenger::Instance() << " moving to 2: " << tp2.x << "," << tp2.y << "TP" << std::endl;
 		} else {
 			auto p = *unscoutedPositions.begin();
 			OrderManager::Instance().Move(u, p);
 			auto tp3 = (TilePosition)p;
-			DebugMessenger::Instance() << " moving to else: " << tp3.x << "," << tp3.y << "TP" << std::endl;
+			ss << " moving to else: " << tp3.x << "," << tp3.y << "TP";
+			//DebugMessenger::Instance() << " moving to else: " << tp3.x << "," << tp3.y << "TP" << std::endl;
 		}
+		GUIManager::Instance().drawTextOnScreen(u, ss.str() , 48);
 	} else { // map size isn't 4, so use old scouting
 		auto p = *unscoutedPositions.begin();
 		OrderManager::Instance().Move(u, p);
@@ -269,7 +278,8 @@ void ArmyManager::ZerglingScoutSpreadOut(Unit u)
 			}
 		}
 	} else {
-		DebugMessenger::Instance() << "Zergling Scouting!" << std::endl;
+		GUIManager::Instance().drawTextOnScreen(u, "Zergling Scouting!", 48);
+		//DebugMessenger::Instance() << "Zergling Scouting!" << std::endl;
 
 		auto it    = scoutLocationsZergling.begin();
 		Position p = (*it);
