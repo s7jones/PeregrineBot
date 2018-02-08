@@ -38,12 +38,12 @@ BWAPI::UnitCommand UtilityManager::getBestActionForZerglingInEnemyBase(BWAPI::Un
 
 	switch (enemyRace) {
 	case Races::Enum::Protoss: {
-		std::function<Unit(Unit)> lambdaFilter = [](Unit u) -> Unit {
+		auto lambdaFilter = [](Unit u) -> Unit {
 			return u->getClosestUnit(
 			    IsEnemy && (GetType == UnitTypes::Protoss_Zealot || GetType == UnitTypes::Protoss_Photon_Cannon));
 		};
 
-		std::function<double> lambdaUtility = []() -> double {
+		auto lambdaUtility = []() -> double {
 			return 1;
 		};
 
@@ -70,7 +70,7 @@ Option::Option()
 {
 }
 
-Option::Option(std::function<BWAPI::Unit(BWAPI::Unit)> filterFunction, std::function<double> utilityFunction)
+Option::Option(std::function<BWAPI::Unit(BWAPI::Unit)> filterFunction, std::function<double()> utilityFunction)
     : filterFunction(filterFunction)
     , utilityFunction(utilityFunction)
 {

@@ -15,10 +15,10 @@ private:
 class Option {
 public:
 	Option();
-	Option(std::function<BWAPI::Unit(BWAPI::Unit)> filterFunction, std::function<double> utilityFunction);
+	Option(std::function<BWAPI::Unit(BWAPI::Unit)> filterFunction, std::function<double()> utilityFunction);
 
 	std::function<BWAPI::Unit(BWAPI::Unit)> filterFunction;
-	std::function<double> utilityFunction;
+	std::function<double()> utilityFunction;
 
 private:
 	//BWAPI::UnitFilter unitfilter;
