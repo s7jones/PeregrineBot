@@ -64,7 +64,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
       <ImportLibrary>$(IntDir)$(TargetName).lib</ImportLibrary>
-      <AdditionalDependencies>$(BWAPI_DIR)\lib\BWAPId.lib;$(BWTA_DIR)\lib\BWTAd.lib;$(BWTA_DIR)\lib\libboost_filesystem-vc120-mt-1_56.lib;$(BWTA_DIR)\lib\libboost_filesystem-vc120-mt-gd-1_56.lib;$(BWTA_DIR)\lib\libboost_system-vc120-mt-1_56.lib;$(BWTA_DIR)\lib\libboost_system-vc120-mt-gd-1_56.lib;$(BWTA_DIR)\lib\libboost_thread-vc120-mt-1_56.lib;$(BWTA_DIR)\lib\libboost_thread-vc120-mt-gd-1_56.lib;$(BWTA_DIR)\lib\libCGAL-vc120-mt-4.4.lib;$(BWTA_DIR)\lib\libCGAL-vc120-mt-gd-4.4.lib;$(BWTA_DIR)\lib\libgmp-10.lib;$(BWTA_DIR)\lib\libmpfr-4.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>$(BWAPI_DIR)\lib\BWAPId.lib;$(BWTA_DIR)\lib\BWTAd.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
       <Command>"C:\Program Files\7-Zip\7z" a -tzip "$(SolutionDir)\Source\Source.zip" "$(SolutionDir)\Source\*.cpp" "$(SolutionDir)\Source\*.h"</Command>
@@ -90,7 +90,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <SubSystem>Windows</SubSystem>
       <ImportLibrary>$(IntDir)$(TargetName).lib</ImportLibrary>
-      <AdditionalDependencies>$(BWAPI_DIR)\lib\BWAPI.lib;$(BWTA_DIR)\lib\BWTA.lib;$(BWTA_DIR)\lib\libboost_filesystem-vc120-mt-1_56.lib;$(BWTA_DIR)\lib\libboost_filesystem-vc120-mt-gd-1_56.lib;$(BWTA_DIR)\lib\libboost_system-vc120-mt-1_56.lib;$(BWTA_DIR)\lib\libboost_system-vc120-mt-gd-1_56.lib;$(BWTA_DIR)\lib\libboost_thread-vc120-mt-1_56.lib;$(BWTA_DIR)\lib\libboost_thread-vc120-mt-gd-1_56.lib;$(BWTA_DIR)\lib\libCGAL-vc120-mt-4.4.lib;$(BWTA_DIR)\lib\libCGAL-vc120-mt-gd-4.4.lib;$(BWTA_DIR)\lib\libgmp-10.lib;$(BWTA_DIR)\lib\libmpfr-4.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>$(BWAPI_DIR)\lib\BWAPI.lib;$(BWTA_DIR)\lib\BWTA.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
       <Command>"C:\Program Files\7-Zip\7z" a -tzip "$(SolutionDir)\Source\Source.zip" "$(SolutionDir)\Source\*.cpp" "$(SolutionDir)\Source\*.h"</Command>
