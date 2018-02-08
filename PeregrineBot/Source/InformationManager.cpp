@@ -199,6 +199,8 @@ void InformationManager::Update()
 		}
 	}
 
+	validateEnemyUnits();
+
 	UpdateScouting();
 }
 
@@ -349,7 +351,8 @@ void InformationManager::OverlordRetreatToHome(BWAPI::Unit overlord)
 		DebugMessenger::Instance() << "Retreat overlord." << std::endl;
 		OrderManager::Instance().Move(overlord, ownBasePos);
 	} else {
-		DebugMessenger::Instance() << "Overlord being attacked in base." << std::endl;
+		//DebugMessenger::Instance() << "Overlord being attacked in base." << std::endl;
+		// spamming when enemy race is terran.
 	}
 }
 
@@ -357,21 +360,9 @@ void InformationManager::onUnitShow(BWAPI::Unit unit)
 {
 	if ((IsEnemy)(unit)) {
 		if ((IsBuilding)(unit)) {
-			auto iter = enemyBuildings.find(unit);
-			if (iter != enemyBuildings.end()) {
-				iter->second.update();
-			} else {
-				std::map<Unit, UnitInfo>::value_type value = {unit, UnitInfo(unit)};
-				enemyBuildings.insert(value);
-			}
+			addToEnemyBuildings(unit);
 		} else {
-			auto iter = enemyArmy.find(unit);
-			if (iter != enemyArmy.end()) {
-				iter->second.update();
-			} else {
-				std::map<Unit, UnitInfo>::value_type value = { unit, UnitInfo(unit) };;
-				enemyArmy.insert(value);
-			}
+			addToEnemyArmy(unit);
 		}
 	}
 }
@@ -380,14 +371,81 @@ void InformationManager::onUnitDestroy(BWAPI::Unit unit)
 {
 	if ((IsEnemy)(unit)) {
 		if ((IsBuilding)(unit)) {
-			enemyBuildings.erase(unit);
-
+			removeFromEnemyBuildings(unit);
 			if (((IsResourceDepot)(unit) == true) && (unit->getPosition() == enemyBase)) {
 				isEnemyBaseDestroyed = true;
 				DebugMessenger::Instance() << "destroyed enemy base: " << Broodwar->getFrameCount() << std::endl;
 			}
 		} else {
-			enemyArmy.erase(unit);
+			removeFromEnemyArmy(unit);
+		}
+	}
+}
+
+void InformationManager::onUnitMorph(BWAPI::Unit unit)
+{
+	if ((IsEnemy)(unit)) {
+		if ((IsBuilding)(unit)) {
+			addToEnemyBuildings(unit);
+			removeFromEnemyArmy(unit);
+		} else {
+			addToEnemyArmy(unit);
+			removeFromEnemyBuildings(unit);
+		}
+	}
+}
+
+void InformationManager::addToEnemyBuildings(BWAPI::Unit unit)
+{
+	auto iter = enemyBuildings.find(unit);
+	if (iter != enemyBuildings.end()) {
+		iter->second.update();
+	} else {
+		std::map<Unit, UnitInfo>::value_type value = { unit, UnitInfo(unit) };
+		enemyBuildings.insert(value);
+	}
+}
+
+void InformationManager::addToEnemyArmy(BWAPI::Unit unit)
+{
+	auto iter = enemyArmy.find(unit);
+	if (iter != enemyArmy.end()) {
+		iter->second.update();
+	} else {
+		std::map<Unit, UnitInfo>::value_type value = { unit, UnitInfo(unit) };
+		enemyArmy.insert(value);
+	}
+}
+
+void InformationManager::removeFromEnemyBuildings(BWAPI::Unit unit)
+{
+	enemyBuildings.erase(unit);
+}
+
+void InformationManager::removeFromEnemyArmy(BWAPI::Unit unit)
+{
+	enemyArmy.erase(unit);
+}
+
+void InformationManager::validateEnemyUnits()
+{
+	for (auto iter = enemyBuildings.begin(); iter != enemyBuildings.end(); iter++) {
+		auto unit = *iter;
+		if (unit.second.exists()) {
+			if ((!IsBuilding || !IsEnemy)(unit.second.u)) {
+				removeFromEnemyBuildings(unit.first);
+				DebugMessenger::Instance() << "remove enemy building on validation" << std::endl;
+			}
+		}
+	}
+
+	for (auto iter = enemyArmy.begin(); iter != enemyArmy.end(); iter++) {
+		auto unit = *iter;
+		if (unit.second.exists()) {
+			if ((IsBuilding || !IsEnemy)(unit.second.u)) {
+				removeFromEnemyArmy(unit.first);
+				DebugMessenger::Instance() << "remove enemy army on validation" << std::endl;
+			}
 		}
 	}
 }

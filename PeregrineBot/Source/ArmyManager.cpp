@@ -124,7 +124,9 @@ void ArmyManager::ZerglingAttack(Unit u)
 						ZerglingScoutSpreadOut(u);
 					}
 				} else {
-					if (isEnemyBaseFromOverlordSpotting) {
+					if (enemyBuildings.size() != 0) {
+						ZerglingAttackKnownBuildings(u);
+					} else if (isEnemyBaseFromOverlordSpotting) {
 						OrderManager::Instance().Move(u, enemyBase);
 						DebugMessenger::Instance() << "scout overlord spot" << std::endl;
 					} else {
@@ -186,7 +188,7 @@ void ArmyManager::ZerglingAttackKnownBuildings(Unit u)
 			float distanceBuilding = DistanceAir(u->getPosition(), buildingPos);
 			if (distanceBuilding < distanceEnemyBuildingAccessible) {
 				distanceEnemyBuildingAccessible = distanceBuilding;
-				buildingAccessiblePos = buildingPos;
+				buildingAccessiblePos           = buildingPos;
 			}
 		}
 
@@ -242,6 +244,15 @@ void ArmyManager::ZerglingScoutSpreadOut(Unit u)
 			scoutLocationsZergling.push_back(unscoutedLocation);
 		}
 
+		// TODO: don't add duplicate cases
+		for (const auto& base : BWTA::getBaseLocations()) {
+			auto region = base->getRegion();
+			if (!BWTA::getRegion(u->getPosition())->isReachable(region)) {
+				continue;
+			}
+			scoutLocationsZergling.push_back(base->getPosition());
+		}
+
 		for (const auto& region : BWTA::getRegions()) {
 			// if region isn't reachable then skip
 			if (!BWTA::getRegion(u->getPosition())->isReachable(region)) {
@@ -260,9 +271,9 @@ void ArmyManager::ZerglingScoutSpreadOut(Unit u)
 	} else {
 		DebugMessenger::Instance() << "Zergling Scouting!" << std::endl;
 
-		auto it                 = scoutLocationsZergling.begin();
-		Position perimeterPoint = (*it);
-		OrderManager::Instance().Move(u, perimeterPoint);
+		auto it    = scoutLocationsZergling.begin();
+		Position p = (*it);
+		OrderManager::Instance().Move(u, p);
 		scoutLocationsZergling.erase(it);
 	}
 }

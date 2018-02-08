@@ -262,6 +262,17 @@ void PeregrineBot::onUnitDestroy(BWAPI::Unit unit)
 
 void PeregrineBot::onUnitMorph(BWAPI::Unit unit)
 {
+	/*
+	Called when a unit changes its UnitType.
+
+	For example, when a Drone transforms into a Hatchery, a Siege Tank uses Siege Mode, or a Vespene Geyser receives a Refinery.
+
+	Parameters
+	unit	Unit object representing the unit that had its UnitType change.
+	Note
+	This is NOT called if the unit type changes to or from UnitTypes::Unknown.
+	*/
+	InformationManager::Instance().onUnitMorph(unit);
 	BaseManager::Instance().onUnitMorph(unit);
 
 	if (Broodwar->isReplay()) {
