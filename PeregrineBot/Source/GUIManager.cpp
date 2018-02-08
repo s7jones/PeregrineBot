@@ -14,6 +14,32 @@ GUIManager& GUIManager::Instance()
 	return instance;
 }
 
+GUIManager::GUIManager()
+{
+}
+
+void GUIManager::drawTextOnScreen(BWAPI::Unit u, std::string format, int frames)
+{
+	UnitAndMessage unitAndMessage = { u, format };
+
+	auto result = messageBuffer.insert(std::make_pair(unitAndMessage, frames));
+
+	if (!result.second) {
+		if (frames > (*result.first).second) {
+			(*result.first).second = frames;
+		}
+	}
+}
+
+void GUIManager::drawTextOnUnit(BWAPI::Unit u, std::string format)
+{
+	if (!u->exists()) {
+		return;
+	}
+	Broodwar->drawTextMap(u->getPosition(), format.c_str());
+}
+
+
 void GUIManager::draw()
 {
 	talk();
@@ -31,6 +57,8 @@ void GUIManager::draw()
 
 	drawTopLeftOverlay();
 
+	drawOnScreenMessages();
+
 	drawExtendedInterface();
 
 	// this seems redundant at the moment but is useful if threading is wanted later
@@ -40,8 +68,20 @@ void GUIManager::draw()
 	}
 }
 
-GUIManager::GUIManager()
+void GUIManager::drawOnScreenMessages()
 {
+	for (auto messageInfo = messageBuffer.begin(); messageInfo != messageBuffer.end(); messageInfo++) {
+		if (messageInfo->second > 0) {
+			drawTextOnUnit(messageInfo->first.u, messageInfo->first.format);
+		}
+
+		messageInfo->second--;
+
+		if (messageInfo->second <= 0) {
+			messageBuffer.erase(messageInfo->first);
+			DebugMessenger::Instance() << "message erased" << std::endl;
+		}
+	}
 }
 
 void GUIManager::drawTopLeftOverlay()
