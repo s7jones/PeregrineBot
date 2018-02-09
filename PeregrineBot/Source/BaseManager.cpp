@@ -1,5 +1,6 @@
 #include "BaseManager.h"
 
+#include "Utility.h"
 #include "WorkerManager.h"
 
 using namespace BWAPI;
@@ -15,8 +16,16 @@ BaseManager& BaseManager::Instance()
 	return instance;
 }
 
-void BaseManager::ManageBases(Unit u)
+void BaseManager::ManageBases(Unit base)
 {
+	auto result = hatcheries.emplace(base);
+
+	if ((*result.first).borderRadius == 0) {
+		(*result.first).calculateBorder();
+	}
+
+	//auto invaders = (*result.first).checkForInvaders();
+
 	for (auto trainee : workersTraining) {
 		if (!trainee->exists()) {
 			if (!trainee->isMorphing()) {
@@ -34,30 +43,29 @@ void BaseManager::ManageBases(Unit u)
 		}
 	}
 
-	hatcheries.insert(u);
 	if ((Broodwar->self()->minerals() >= UnitTypes::Zerg_Drone.mineralPrice()) && (WorkerManager::Instance().bo[WorkerManager::Instance().indx] == UnitTypes::Zerg_Drone)) {
-		if (!u->getLarva().empty()) {
-			u->train(UnitTypes::Zerg_Drone);
+		if (!base->getLarva().empty()) {
+			base->train(UnitTypes::Zerg_Drone);
 			WorkerManager::Instance().indx++;
 		}
 	}
 
 	if ((Broodwar->self()->minerals() >= UnitTypes::Zerg_Overlord.mineralPrice()) && ((WorkerManager::Instance().bo[WorkerManager::Instance().indx] == UnitTypes::Zerg_Overlord) || ((WorkerManager::Instance().indx >= WorkerManager::Instance().bo.size()) && (Broodwar->self()->supplyTotal() - Broodwar->self()->supplyUsed() <= 1)))) {
-		if (!u->getLarva().empty()) {
-			u->train(UnitTypes::Zerg_Overlord);
+		if (!base->getLarva().empty()) {
+			base->train(UnitTypes::Zerg_Overlord);
 			WorkerManager::Instance().indx++;
 		}
 	}
 
-	for (auto& u2 : Broodwar->self()->getUnits()) {
-		if ((IsWorker)(u2))
-			workers.insert(u2);
+	for (auto& unit : Broodwar->self()->getUnits()) {
+		if ((IsWorker)(unit))
+			workers.insert(unit);
 	}
 
 	if ((workers.size() + workersTraining.size() < (hatcheries.size() * 3)) && (Broodwar->self()->minerals() >= UnitTypes::Zerg_Drone.mineralPrice())) {
-		if (!u->getLarva().empty()) {
-			u->train(UnitTypes::Zerg_Drone);
-			workersTraining.insert(u);
+		if (!base->getLarva().empty()) {
+			base->train(UnitTypes::Zerg_Drone);
+			workersTraining.insert(base);
 			DebugMessenger::Instance() << "droning up from " << workers.size() + workersTraining.size() - 1 << " to " << (hatcheries.size() * 3) << std::endl;
 		}
 	}
@@ -66,8 +74,8 @@ void BaseManager::ManageBases(Unit u)
 	    && (Broodwar->self()->supplyTotal() - Broodwar->self()->supplyUsed() > 0)
 	    && ((WorkerManager::Instance().bo[WorkerManager::Instance().indx] == UnitTypes::Zerg_Zergling)
 	        || (WorkerManager::Instance().indx >= WorkerManager::Instance().bo.size()))) {
-		if (!u->getLarva().empty()) {
-			u->train(UnitTypes::Zerg_Zergling);
+		if (!base->getLarva().empty()) {
+			base->train(UnitTypes::Zerg_Zergling);
 			WorkerManager::Instance().indx++;
 		}
 	}
@@ -92,7 +100,7 @@ void BaseManager::onUnitCreate(BWAPI::Unit unit)
 void BaseManager::onUnitDestroy(BWAPI::Unit unit)
 {
 	if (unit->getType().isResourceDepot() && unit->getPlayer() == Broodwar->self()) {
-		hatcheries.erase(unit);
+		hatcheries.erase(Base(unit));
 	}
 
 	if (unit->getType().isWorker() && unit->getPlayer() == Broodwar->self()) {
@@ -118,4 +126,43 @@ void BaseManager::onUnitRenegade(BWAPI::Unit unit)
 	if (unit->getType().isWorker() && unit->getPlayer() == Broodwar->self()) {
 		workers.erase(unit);
 	}
+}
+
+Base::Base(BWAPI::Unit u)
+    : base(u)
+{
+}
+
+BWAPI::Unitset Base::checkForInvaders() const
+{
+	auto units = base->getUnitsInRadius(borderRadius, IsEnemy && !IsFlying);
+	for (auto unit : units) {
+		if (BWTA::getRegion(unit->getPosition()) != BWTA::getRegion(base->getPosition())) {
+			units.erase(unit);
+		}
+	}
+	return units;
+}
+
+void Base::calculateBorder() const
+{
+	auto region = BWTA::getRegion(base->getPosition());
+	auto& poly  = region->getPolygon();
+
+	region->getChokepoints();
+
+	double maxDist = 0;
+	for (auto p : poly) {
+		auto dist = DistanceAir(base->getPosition(), p);
+		if (maxDist < dist) {
+			maxDist = dist;
+		}
+	}
+
+	borderRadius = maxDist;
+}
+
+bool Base::operator<(const Base& other) const
+{
+	return base < other.base;
 }

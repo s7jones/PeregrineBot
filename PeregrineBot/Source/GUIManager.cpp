@@ -90,6 +90,9 @@ void GUIManager::drawTopLeftOverlay()
 	Broodwar->drawTextScreen(1, 60, "Frame Time: %.1fms", duration);
 	Broodwar->drawTextScreen(1, 70, "APM: %i", Broodwar->getAPM());
 
+	int invaders = (BaseManager::Instance().hatcheries.size()) ? BaseManager::Instance().hatcheries.begin()->checkForInvaders().size() : 0;
+	Broodwar->drawTextScreen(1, 80, "Invaders: %i", invaders);
+
 	Broodwar->drawTextScreen(100, 0, "BO index: %i", WorkerManager::Instance().indx);
 	Broodwar->drawTextScreen(100, 10, "Pool: %i", WorkerManager::Instance().pool);
 	int screenVPos = 20;
