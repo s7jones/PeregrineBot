@@ -66,10 +66,9 @@ void ArmyManager::ZerglingAttack(Unit u)
 					if (!isEnemyBaseDestroyed) {
 						if (!Broodwar->isVisible(TilePosition(enemyBase))) {
 							OrderManager::Instance().Attack(u, enemyBase);
-						} else if (!Broodwar
-						                ->getUnitsOnTile(
-						                    TilePosition(enemyBase),
-						                    IsEnemy && IsVisible && Exists && IsBuilding && !IsLifted)
+						} else if (!Broodwar->getUnitsOnTile(
+						                        TilePosition(enemyBase),
+						                        IsEnemy && IsVisible && Exists && IsBuilding && !IsLifted)
 						                .empty()) {
 							OrderManager::Instance().Attack(u, enemyBase);
 						} else if (enemyBuildings.size() != 0) {
@@ -87,30 +86,27 @@ void ArmyManager::ZerglingAttack(Unit u)
 						ZerglingAttackKnownBuildings(u);
 					} else if (isEnemyBaseFromOverlordSpotting) {
 						OrderManager::Instance().Move(u, enemyBase);
-						DebugMessenger::Instance()
-						    << "scout overlord spot" << std::endl;
+						DebugMessenger::Instance() << "scout overlord spot" << std::endl;
 					} else {
 						ZerglingScoutingBeforeBaseFound(u);
 					}
 				}
 			}
-		} else if (u->isMoving()) { // attack move is most likely not covered
-			                        // here
+		} else if (u->isMoving()) { // attack move is most likely not covered here
 			UnitCommand lastCmd = u->getLastCommand();
 			if (lastCmd.getType() == UnitCommandTypes::Move) {
 				Position targetPos = lastCmd.getTargetPosition();
-				if ((unscoutedPositions.count(targetPos) == 0) && (!unscoutedPositions.empty()) && (std::find(scoutLocationsZergling.begin(), scoutLocationsZergling.end(), targetPos) == scoutLocationsZergling.end())) {
+				if ((unscoutedPositions.count(targetPos) == 0) && (!unscoutedPositions.empty())
+				    && (std::find(scoutLocationsZergling.begin(), scoutLocationsZergling.end(), targetPos) == scoutLocationsZergling.end())) {
 					auto p = *unscoutedPositions.begin();
 					OrderManager::Instance().Move(u, p);
-					GUIManager::Instance().drawTextOnScreen(
-					    u, "recalculate scouting", 48);
+					GUIManager::Instance().drawTextOnScreen(u, "recalculate scouting", 48);
 					// DebugMessenger::Instance() << "recalculate scouting" <<
 					// std::endl;
-				} else if ((!isEnemyBaseFound) && (isEnemyBaseFromOverlordSpotting) && (GetBasePos(enemyBaseSpottingGuess) != targetPos)) {
-					OrderManager::Instance().Move(
-					    u, GetBasePos(enemyBaseSpottingGuess));
-					GUIManager::Instance().drawTextOnScreen(
-					    u, "recalculate scouting (overlord guess)", 48);
+				} else if ((!isEnemyBaseFound) && (isEnemyBaseFromOverlordSpotting)
+				           && (GetBasePos(enemyBaseSpottingGuess) != targetPos)) {
+					OrderManager::Instance().Move(u, GetBasePos(enemyBaseSpottingGuess));
+					GUIManager::Instance().drawTextOnScreen(u, "recalculate scouting (overlord guess)", 48);
 					// DebugMessenger::Instance() << "recalculate scouting
 					// (overlord guess)" << std::endl;
 				}
