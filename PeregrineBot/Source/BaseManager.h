@@ -16,7 +16,6 @@ public:
 	std::set<BWAPI::Unit> hatcheries;
 	std::set<BWAPI::Unit> workers;
 
-
 private:
 	std::set<BWAPI::Unit> workersTraining;
 };

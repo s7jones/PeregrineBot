@@ -16,7 +16,7 @@ void BWTAManager::analyze()
 
 		//BWTA::readMap();
 		BWTA::analyze();
-		analyzed = true;
+		analyzed               = true;
 		analysis_just_finished = true;
 	}
 }
