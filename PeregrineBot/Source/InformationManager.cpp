@@ -137,15 +137,14 @@ void InformationManager::SetupScouting()
 	}
 
 	DebugMessenger::Instance() << allStarts.size() << " starts / " << otherStarts.size() << " otherstarts" << std::endl;
+	if (Broodwar->getStartLocations().size() < 4)
+		DebugMessenger::Instance() << "less than 4 start positions" << std::endl;
 
 	for (TilePosition p1 : otherStarts) {
 		std::set<TilePosition, sortByMostTopThenLeft> startToP1 = { Broodwar->self()->getStartLocation(), p1 };
 		DebugMessenger::Instance() << "ad" << overlordNetwork.find(startToP1)->second.distance << "P,   at" << overlordNetwork.find(startToP1)->second.time << "F" << std::endl;
 
-		if (Broodwar->getStartLocations().size() != 4) {
-			DebugMessenger::Instance() << "less than 4 start positions" << std::endl;
-
-		} else {
+		if (Broodwar->getStartLocations().size() == 4) {
 			for (TilePosition p2 : otherStarts) {
 				if (p2 == p1)
 					continue;
