@@ -20,15 +20,9 @@ GUIManager::GUIManager()
 
 void GUIManager::drawTextOnScreen(BWAPI::Unit u, std::string format, int frames)
 {
-	UnitAndMessage unitAndMessage = { u, format };
+	MessageAndFrames mnf = { format, frames };
 
-	auto result = messageBuffer.insert(std::make_pair(unitAndMessage, frames));
-
-	if (!result.second) {
-		if (frames > (*result.first).second) {
-			(*result.first).second = frames;
-		}
-	}
+	messageBuffer.insert_or_assign(u, mnf);
 }
 
 void GUIManager::drawTextOnUnit(BWAPI::Unit u, std::string format)
@@ -39,11 +33,10 @@ void GUIManager::drawTextOnUnit(BWAPI::Unit u, std::string format)
 	Broodwar->drawTextMap(u->getPosition(), format.c_str());
 }
 
-
 void GUIManager::draw()
 {
 	talk();
-	
+
 	//BWTA draw
 	//if (analyzed)	drawTerrainData();
 	//else if (!analyzing) {
@@ -71,15 +64,14 @@ void GUIManager::draw()
 void GUIManager::drawOnScreenMessages()
 {
 	for (auto messageInfo = messageBuffer.begin(); messageInfo != messageBuffer.end(); messageInfo++) {
-		if (messageInfo->second > 0) {
-			drawTextOnUnit(messageInfo->first.u, messageInfo->first.format);
+		if (messageInfo->second.frames > 0) {
+			drawTextOnUnit(messageInfo->first, messageInfo->second.format);
 		}
 
-		messageInfo->second--;
+		messageInfo->second.frames--;
 
-		if (messageInfo->second <= 0) {
+		if (messageInfo->second.frames <= 0) {
 			messageBuffer.erase(messageInfo->first);
-			DebugMessenger::Instance() << "message erased" << std::endl;
 		}
 	}
 }
@@ -101,18 +93,17 @@ void GUIManager::drawTopLeftOverlay()
 	Broodwar->drawTextScreen(100, 0, "BO index: %i", WorkerManager::Instance().indx);
 	Broodwar->drawTextScreen(100, 10, "Pool: %i", WorkerManager::Instance().pool);
 	int screenVPos = 20;
-	int count = 1;
+	int count      = 1;
 
 	for (auto scoutingOption : InformationManager::Instance().scoutingOptions) {
 		Broodwar->drawTextScreen(100, screenVPos, "%i: %i,%i; %i,%iTP : %.1f +- %.1fF", count,
-			scoutingOption.startToP1ToP2[1].x, scoutingOption.startToP1ToP2[1].y,
-			scoutingOption.startToP1ToP2[2].x, scoutingOption.startToP1ToP2[2].y,
-			scoutingOption.meanTime, scoutingOption.stdDev);
+		                         scoutingOption.startToP1ToP2[1].x, scoutingOption.startToP1ToP2[1].y,
+		                         scoutingOption.startToP1ToP2[2].x, scoutingOption.startToP1ToP2[2].y,
+		                         scoutingOption.meanTime, scoutingOption.stdDev);
 
 		count++;
 		screenVPos += 10;
 	}
-
 
 	Broodwar->drawTextScreen(200, 0, "FPS: %d", Broodwar->getFPS());
 	Broodwar->drawTextScreen(200, 10, "Average FPS: %.1f", Broodwar->getAverageFPS());
@@ -121,18 +112,16 @@ void GUIManager::drawTopLeftOverlay()
 void GUIManager::calculateAverageFrameTime()
 {
 	if (frameCount > 23) {
-		std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
+		std::chrono::steady_clock::time_point end       = std::chrono::steady_clock::now();
 		std::chrono::duration<double, std::milli> fp_ms = end - start;
-		duration = fp_ms.count() / 24;
-		frameCount = 1;
-	}
-	else {
+		duration                                        = fp_ms.count() / 24;
+		frameCount                                      = 1;
+	} else {
 		if (frameCount == 1) {
 			start = std::chrono::steady_clock::now();
 		}
 		++frameCount;
 	}
-
 }
 
 void GUIManager::talk()

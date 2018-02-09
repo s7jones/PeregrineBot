@@ -1,6 +1,8 @@
 #include "UtilityManager.h"
 
+#include "GUIManager.h"
 #include "InformationManager.h"
+#include "OrderManager.h"
 
 using namespace BWAPI;
 using namespace Filter;
@@ -11,67 +13,175 @@ UtilityManager& UtilityManager::Instance()
 	return instance;
 }
 
-BWAPI::UnitCommand UtilityManager::getBestActionForZergling(BWAPI::Unit zergling)
+bool UtilityManager::getBestActionForZergling(BWAPI::Unit zergling)
 {
-	UnitCommand command;
+	if (options.size() == 0) {
+		constructOptions();
+	}
+	bool flag             = false;
 	auto isEnemyBaseFound = InformationManager::Instance().isEnemyBaseFound;
 	if (isEnemyBaseFound) {
 		auto enemyBase = InformationManager::Instance().enemyBase;
 		if (BWTA::getRegion(enemyBase) == BWTA::getRegion(zergling->getPosition())) {
-			command = getBestActionForZerglingInEnemyBase(zergling);
+			flag = performBestActionForZerglingInEnemyBase(zergling);
+			if (flag) return true;
 		}
 	}
 
-	if (command.getType() == UnitCommandTypes::None) {
-		command.type = UnitCommandTypes::Stop;
-		Broodwar << "Err: Utility Manager didn't know what to do with zergling, stopping" << std::endl;
-	}
-	return command;
+	return flag;
 }
 
-BWAPI::UnitCommand UtilityManager::getBestActionForZerglingInEnemyBase(BWAPI::Unit zergling)
+void UtilityManager::constructOptions()
 {
-	UnitCommand command;
 	auto enemyRace = InformationManager::Instance().enemyRace;
 
-	std::vector<std::pair<Option, double>> UtilityMap;
+	if (enemyRace != Races::Unknown) {
+		switch (enemyRace) {
+		case Races::Enum::Protoss: {
+			auto utilityClosest = [](Unit u) -> std::pair<double, Unit> {
+				Unit other = u->getClosestUnit(
+				    IsEnemy && (GetType == UnitTypes::Protoss_Zealot || GetType == UnitTypes::Protoss_Photon_Cannon));
+				double score = other ? 1 : 0;
+				auto p       = std::make_pair(score, other);
+				return p;
+			};
+			Option enemyClosest = Option(utilityClosest, "attack closest zealot/cannon");
+			options.push_back(enemyClosest);
 
-	switch (enemyRace) {
-	case Races::Enum::Protoss: {
-		auto lambdaFilter = [](Unit u) -> Unit {
-			return u->getClosestUnit(
-			    IsEnemy && (GetType == UnitTypes::Protoss_Zealot || GetType == UnitTypes::Protoss_Photon_Cannon));
-		};
+			auto utilitySupply = [](Unit u) -> std::pair<double, Unit> {
+				Unit supply = u->getClosestUnit(
+				    IsEnemy && GetType == UnitTypes::Protoss_Pylon);
+				double score = supply ? 0.9 : 0;
+				auto p       = std::make_pair(score, supply);
+				return p;
+			};
 
-		auto lambdaUtility = []() -> double {
-			return 1;
-		};
+			Option enemySupply = Option(utilitySupply, "attack closest pylon");
+			options.push_back(enemySupply);
 
-		//Option enemyClosest = Option(lambdaFilter, lambdaUtility);
-		Option enemyClosest;
-		break;
+			auto utilityWorker = [](Unit u) -> std::pair<double, Unit> {
+				Unit worker  = u->getClosestUnit(IsEnemy && IsWorker);
+				double score = worker ? 0.8 : 0;
+				auto p       = std::make_pair(score, worker);
+				return p;
+			};
+			Option enemyWorker = Option(utilityWorker, "attack closest worker");
+			options.push_back(enemyWorker);
+
+			auto utilityAtAll = [](Unit u) -> std::pair<double, Unit> {
+				Unit any     = u->getClosestUnit(IsEnemy);
+				double score = any ? 0.7 : 0;
+				auto p       = std::make_pair(score, any);
+				return p;
+			};
+			Option enemyAtAll = Option(utilityAtAll, "attack closest enemy");
+			options.push_back(enemyAtAll);
+
+			break;
+		}
+		case Races::Enum::Zerg: {
+			auto utilityClosest = [](Unit u) -> std::pair<double, Unit> {
+				Unit other = u->getClosestUnit(
+				    IsEnemy && (GetType == UnitTypes::Zerg_Zergling || GetType == UnitTypes::Zerg_Sunken_Colony || IsWorker));
+				double score = other ? 1 : 0;
+				auto p       = std::make_pair(score, other);
+				return p;
+			};
+			Option enemyClosest = Option(utilityClosest, "attack closest zergling/sunken/worker");
+			options.push_back(enemyClosest);
+
+			auto utilityWorker = [](Unit u) -> std::pair<double, Unit> {
+				Unit worker  = u->getClosestUnit(IsEnemy && IsWorker);
+				double score = worker ? 0.9 : 0;
+				auto p       = std::make_pair(score, worker);
+				return p;
+			};
+			Option enemyWorker = Option(utilityWorker, "attack closest worker");
+			options.push_back(enemyWorker);
+
+			auto utilityAtAll = [](Unit u) -> std::pair<double, Unit> {
+				Unit any     = u->getClosestUnit(IsEnemy);
+				double score = any ? 0.8 : 0;
+				auto p       = std::make_pair(score, any);
+				return p;
+			};
+			Option enemyAtAll = Option(utilityAtAll, "attack closest enemy");
+			options.push_back(enemyAtAll);
+
+			break;
+		}
+		case Races::Enum::Terran: {
+			auto utilityClosest = [](Unit u) -> std::pair<double, Unit> {
+				Unit other = u->getClosestUnit(
+				    IsEnemy && (GetType == UnitTypes::Terran_Marine || GetType == UnitTypes::Terran_Firebat || GetType == UnitTypes::Terran_Bunker || IsWorker));
+				double score = other ? 1 : 0;
+				auto p       = std::make_pair(score, other);
+				return p;
+			};
+			Option enemyClosest = Option(
+			    utilityClosest, "attack closest marine/firebat/bunker/worker");
+			options.push_back(enemyClosest);
+
+			auto utilityWorker = [](Unit u) -> std::pair<double, Unit> {
+				Unit worker  = u->getClosestUnit(IsEnemy && IsWorker);
+				double score = worker ? 0.9 : 0;
+				auto p       = std::make_pair(score, worker);
+				return p;
+			};
+			Option enemyWorker = Option(utilityWorker, "attack closest worker");
+			options.push_back(enemyWorker);
+
+			auto utilitySupply = [](Unit u) -> std::pair<double, Unit> {
+				Unit supply = u->getClosestUnit(
+				    IsEnemy && GetType == UnitTypes::Terran_Supply_Depot);
+				double score = supply ? 0.8 : 0;
+				auto p       = std::make_pair(score, supply);
+				return p;
+			};
+			Option enemySupply = Option(utilitySupply, "attack closest depot");
+			options.push_back(enemySupply);
+
+			auto utilityAtAll = [](Unit u) -> std::pair<double, Unit> {
+				Unit any     = u->getClosestUnit(IsEnemy);
+				double score = any ? 0.7 : 0;
+				auto p       = std::make_pair(score, any);
+				return p;
+			};
+			Option enemyAtAll = Option(utilityAtAll, "attack closest enemy");
+			options.push_back(enemyAtAll);
+
+			break;
+		}
+		}
 	}
-	case Races::Enum::Zerg:
-		break;
-	case Races::Enum::Terran:
-		break;
-	otherwise:
-		Broodwar << "Err: don't know enemy race but in his base??" << std::endl;
+}
+
+bool UtilityManager::performBestActionForZerglingInEnemyBase(
+    BWAPI::Unit zergling)
+{
+	std::string bestOptionDescription;
+	std::pair<double, Unit> bestOptionResult = { 0, NULL };
+	for (auto option : options) {
+		auto result = option.util(zergling);
+		if (result.first > bestOptionResult.first) {
+			bestOptionResult      = result;
+			bestOptionDescription = option.description;
+		}
 	}
 
-	return command;
+	if (bestOptionResult.first == 0 || bestOptionResult.second == NULL) {
+		return false;
+	} else {
+		OrderManager::Instance().Attack(zergling, bestOptionResult.second);
+		GUIManager::Instance().drawTextOnScreen(zergling, bestOptionDescription, 48);
+		return true;
+	}
 }
 
-UtilityManager::UtilityManager()
-{
-}
+UtilityManager::UtilityManager() {}
 
-Option::Option()
-{
-}
-
-Option::Option(std::function<BWAPI::Unit(BWAPI::Unit)> filterFunction, std::function<double()> utilityFunction)
-    : filterFunction(filterFunction)
-    , utilityFunction(utilityFunction)
+Option::Option(funcUtil util, std::string description)
+    : util(util)
+    , description(description)
 {
 }

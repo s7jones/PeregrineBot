@@ -1,25 +1,26 @@
 #pragma once
 #include "Common.h"
 
+class Option {
+public:
+	using funcUtil = std::function<std::pair<double, BWAPI::Unit>(BWAPI::Unit)>;
+	Option(funcUtil util, std::string description);
+
+	funcUtil util;
+	std::string description;
+
+private:
+};
+
 class UtilityManager {
 public:
 	static UtilityManager& Instance();
-	BWAPI::UnitCommand getBestActionForZergling(BWAPI::Unit zergling);
+	bool getBestActionForZergling(BWAPI::Unit zergling);
 
 private:
 	UtilityManager();
-	BWAPI::UnitCommand getBestActionForZerglingInEnemyBase(BWAPI::Unit zergling);
+	void constructOptions();
+	bool performBestActionForZerglingInEnemyBase(BWAPI::Unit zergling);
 
-};
-
-class Option {
-public:
-	Option();
-	Option(std::function<BWAPI::Unit(BWAPI::Unit)> filterFunction, std::function<double()> utilityFunction);
-
-	std::function<BWAPI::Unit(BWAPI::Unit)> filterFunction;
-	std::function<double()> utilityFunction;
-
-private:
-	//BWAPI::UnitFilter unitfilter;
+	std::vector<Option> options;
 };

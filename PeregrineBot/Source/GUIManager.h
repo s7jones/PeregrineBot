@@ -1,13 +1,9 @@
 #pragma once
 #include "Common.h"
 
-struct UnitAndMessage
-{
-	BWAPI::Unit u;
+struct MessageAndFrames {
 	std::string format;
-	bool operator< (const UnitAndMessage& um) const {
-		return u < um.u;
-	}
+	int frames;
 };
 
 class GUIManager {
@@ -29,5 +25,5 @@ private:
 	double duration = 0;
 	std::chrono::steady_clock::time_point start;
 	int frameCount = 0;
-	std::map<UnitAndMessage, int> messageBuffer;
+	std::map<BWAPI::Unit, MessageAndFrames> messageBuffer;
 };
