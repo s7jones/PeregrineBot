@@ -33,7 +33,13 @@ bool OrderManager::DoesUnitHasOrder(BWAPI::Unit unit)
 	return (it != unitsToWaitAfterOrder.end());
 }
 
-void OrderManager::Attack(BWAPI::Unit attacker, BWAPI::PositionOrUnit u)
+void OrderManager::Attack(BWAPI::Unit attacker, BWAPI::Position p)
+{
+	unitsToWaitAfterOrder.insert({ attacker, 0 });
+	attacker->attack(p);
+}
+
+void OrderManager::Attack(BWAPI::Unit attacker, BWAPI::Unit u)
 {
 	unitsToWaitAfterOrder.insert({ attacker, 0 });
 	attacker->attack(u);

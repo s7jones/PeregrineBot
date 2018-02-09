@@ -26,11 +26,11 @@ BWAPI::Position GetBasePos(const BWAPI::TilePosition tp)
 	return GetPos(tp, BWAPI::UnitTypes::Special_Start_Location);
 }
 
-double DistanceGround(const BWAPI::TilePosition start, const BWAPI::TilePosition end) {
+double DistanceGround(const BWAPI::TilePosition start, const BWAPI::TilePosition end)
+{
 	auto dist = BWTA::getGroundDistance(start, end);
 	return dist;
 }
-
 
 /*auto TimeGround =
 [](const BWAPI::TilePosition start, const BWAPI::TilePosition end, const UnitType ut, const bool reach)
@@ -52,7 +52,8 @@ auto time = TimeGround(start, end, UnitTypes::Zerg_Zergling, true);
 return time;
 }; */
 
-double TimeGround(const BWAPI::TilePosition start, const BWAPI::TilePosition end) {
+double TimeGround(const BWAPI::TilePosition start, const BWAPI::TilePosition end)
+{
 	auto gdist = DistanceGround(start, end);
 
 	//if (!reach) {
@@ -70,11 +71,12 @@ double TimeGround(const BWAPI::TilePosition start, const BWAPI::TilePosition end
 //	return time;
 //};
 
-double TimeAir(const BWAPI::TilePosition start, const BWAPI::TilePosition end) {
+double TimeAir(const BWAPI::TilePosition start, const BWAPI::TilePosition end)
+{
 	auto adist = DistanceAir(start, end)
-		- BWAPI::UnitTypes::Zerg_Overlord.sightRange();
+	    - BWAPI::UnitTypes::Zerg_Overlord.sightRange();
 
 	double travelTime = adist / BWAPI::UnitTypes::Zerg_Overlord.topSpeed();
-	double time = travelTime;
+	double time       = travelTime;
 	return time;
 }

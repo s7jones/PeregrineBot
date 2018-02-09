@@ -6,12 +6,12 @@ public:
 	static BWTAManager& Instance();
 	void analyze();
 
-	bool analyzed = false;
+	bool analyzed               = false;
 	bool analysis_just_finished = false;
 
 private:
 	BWTAManager();
-	bool analyzing = false;
+	bool analyzing      = false;
 	const bool analysis = true;
 };
 #pragma once

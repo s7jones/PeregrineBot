@@ -14,9 +14,9 @@ void BWTAManager::analyze()
 	if (analysis) {
 		DebugMessenger::Instance() << "Begin analyzing map." << std::endl;
 
-		BWTA::readMap();
+		//BWTA::readMap();
 		BWTA::analyze();
-		analyzed = true;
+		analyzed               = true;
 		analysis_just_finished = true;
 	}
 }

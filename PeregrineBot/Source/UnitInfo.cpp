@@ -36,6 +36,7 @@ BWAPI::Position UnitInfo::getPosition()
 	return pos;
 }
 
-bool UnitInfo::operator<(const UnitInfo& other) const {
+bool UnitInfo::operator<(const UnitInfo& other) const
+{
 	return u < other.u;
 }
