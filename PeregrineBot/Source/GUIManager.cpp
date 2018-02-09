@@ -203,69 +203,72 @@ void GUIManager::drawExtendedInterface()
 	int verticalOffset = -10;
 
 	// draw enemy units
-	for (auto& unit : Broodwar->enemy()->getUnits()) {
-		UnitType type = unit->getType();
-		if (type == UnitTypes::Unknown)
-			continue;
+	auto enemy = Broodwar->enemy();
+	if (enemy) {
+		for (auto& unit : enemy->getUnits()) {
+			UnitType type = unit->getType();
+			if (type == UnitTypes::Unknown)
+				continue;
 
-		//int hitPoints = ui.lastHealth;
-		//int shields = ui.lastShields;
+			//int hitPoints = ui.lastHealth;
+			//int shields = ui.lastShields;
 
-		const Position pos = unit->getPosition();
+			const Position pos = unit->getPosition();
 
-		if (pos == Positions::Unknown)
-			continue;
+			if (pos == Positions::Unknown)
+				continue;
 
-		int left   = pos.x - type.dimensionLeft();
-		int right  = pos.x + type.dimensionRight();
-		int top    = pos.y - type.dimensionUp();
-		int bottom = pos.y + type.dimensionDown();
+			int left   = pos.x - type.dimensionLeft();
+			int right  = pos.x + type.dimensionRight();
+			int top    = pos.y - type.dimensionUp();
+			int bottom = pos.y + type.dimensionDown();
 
-		int hitPoints = unit->getHitPoints();
-		int shields   = unit->getShields();
+			int hitPoints = unit->getHitPoints();
+			int shields   = unit->getShields();
 
-		if (!Broodwar->isVisible(TilePosition(pos))) {
-			Broodwar->drawBoxMap(Position(left, top), Position(right, bottom), Colors::Grey, false);
-			Broodwar->drawTextMap(Position(left + 3, top + 4), "%s", type.getName().c_str());
-		}
-
-		if (!type.isResourceContainer() && type.maxHitPoints() > 0) {
-			double hpRatio = (double)hitPoints / (double)type.maxHitPoints();
-
-			Color hpColor = Colors::Green;
-			if (hpRatio <= 0.67) hpColor = Colors::Orange;
-			if (hpRatio <= 0.33) hpColor = Colors::Red;
-
-			int ratioRight = left + (int)((right - left) * hpRatio);
-			int hpTop      = top + verticalOffset;
-			int hpBottom   = top + 4 + verticalOffset;
-
-			Broodwar->drawBoxMap(Position(left, hpTop), Position(right, hpBottom), Colors::Grey, true);
-			Broodwar->drawBoxMap(Position(left, hpTop), Position(ratioRight, hpBottom), hpColor, true);
-			Broodwar->drawBoxMap(Position(left, hpTop), Position(right, hpBottom), Colors::Black, false);
-
-			int ticWidth = 3;
-
-			for (int i(left); i < right - 1; i += ticWidth) {
-				Broodwar->drawLineMap(Position(i, hpTop), Position(i, hpBottom), Colors::Black);
+			if (!Broodwar->isVisible(TilePosition(pos))) {
+				Broodwar->drawBoxMap(Position(left, top), Position(right, bottom), Colors::Grey, false);
+				Broodwar->drawTextMap(Position(left + 3, top + 4), "%s", type.getName().c_str());
 			}
-		}
 
-		if (!type.isResourceContainer() && type.maxShields() > 0) {
-			double shieldRatio = (double)shields / (double)type.maxShields();
+			if (!type.isResourceContainer() && type.maxHitPoints() > 0) {
+				double hpRatio = (double)hitPoints / (double)type.maxHitPoints();
 
-			int ratioRight = left + (int)((right - left) * shieldRatio);
-			int hpTop      = top - 3 + verticalOffset;
-			int hpBottom   = top + 1 + verticalOffset;
+				Color hpColor = Colors::Green;
+				if (hpRatio <= 0.67) hpColor = Colors::Orange;
+				if (hpRatio <= 0.33) hpColor = Colors::Red;
 
-			Broodwar->drawBoxMap(Position(left, hpTop), Position(right, hpBottom), Colors::Grey, true);
-			Broodwar->drawBoxMap(Position(left, hpTop), Position(ratioRight, hpBottom), Colors::Blue, true);
-			Broodwar->drawBoxMap(Position(left, hpTop), Position(right, hpBottom), Colors::Black, false);
+				int ratioRight = left + (int)((right - left) * hpRatio);
+				int hpTop      = top + verticalOffset;
+				int hpBottom   = top + 4 + verticalOffset;
 
-			int ticWidth = 3;
+				Broodwar->drawBoxMap(Position(left, hpTop), Position(right, hpBottom), Colors::Grey, true);
+				Broodwar->drawBoxMap(Position(left, hpTop), Position(ratioRight, hpBottom), hpColor, true);
+				Broodwar->drawBoxMap(Position(left, hpTop), Position(right, hpBottom), Colors::Black, false);
 
-			for (int i(left); i < right - 1; i += ticWidth) {
-				Broodwar->drawLineMap(Position(i, hpTop), Position(i, hpBottom), Colors::Black);
+				int ticWidth = 3;
+
+				for (int i(left); i < right - 1; i += ticWidth) {
+					Broodwar->drawLineMap(Position(i, hpTop), Position(i, hpBottom), Colors::Black);
+				}
+			}
+
+			if (!type.isResourceContainer() && type.maxShields() > 0) {
+				double shieldRatio = (double)shields / (double)type.maxShields();
+
+				int ratioRight = left + (int)((right - left) * shieldRatio);
+				int hpTop      = top - 3 + verticalOffset;
+				int hpBottom   = top + 1 + verticalOffset;
+
+				Broodwar->drawBoxMap(Position(left, hpTop), Position(right, hpBottom), Colors::Grey, true);
+				Broodwar->drawBoxMap(Position(left, hpTop), Position(ratioRight, hpBottom), Colors::Blue, true);
+				Broodwar->drawBoxMap(Position(left, hpTop), Position(right, hpBottom), Colors::Black, false);
+
+				int ticWidth = 3;
+
+				for (int i(left); i < right - 1; i += ticWidth) {
+					Broodwar->drawLineMap(Position(i, hpTop), Position(i, hpBottom), Colors::Black);
+				}
 			}
 		}
 	}

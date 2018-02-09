@@ -4,8 +4,9 @@
 #include <rapidjson\filereadstream.h>
 #include <rapidjson\rapidjson.h>
 #include <rapidjson\reader.h>
-
 //#include <cpptoml.h>
+
+#include "InformationManager.h"
 
 using namespace BWAPI;
 using namespace Filter;
@@ -109,19 +110,21 @@ void FileManager::writeStatisticsToFile(std::string botVersion, bool isWinner)
 
 	input.close();
 
-	if (Broodwar->enemy()->getRace() == Races::Zerg) score[0].matches++;
-	if (Broodwar->enemy()->getRace() == Races::Terran) score[1].matches++;
-	if (Broodwar->enemy()->getRace() == Races::Protoss) score[2].matches++;
+	auto enemyRace = InformationManager::Instance().enemyRace;
+
+	if (enemyRace == Races::Zerg) score[0].matches++;
+	if (enemyRace == Races::Terran) score[1].matches++;
+	if (enemyRace == Races::Protoss) score[2].matches++;
 
 	if (isWinner) {
-		if (Broodwar->enemy()->getRace() == Races::Zerg) score[0].score++;
-		if (Broodwar->enemy()->getRace() == Races::Terran) score[1].score++;
-		if (Broodwar->enemy()->getRace() == Races::Protoss) score[2].score++;
+		if (enemyRace == Races::Zerg) score[0].score++;
+		if (enemyRace == Races::Terran) score[1].score++;
+		if (enemyRace == Races::Protoss) score[2].score++;
 	}
 
-	if (Broodwar->enemy()->getRace() == Races::Zerg) score[0].percent = (int)(100 * score[0].score / score[0].matches);
-	if (Broodwar->enemy()->getRace() == Races::Terran) score[1].percent = (int)(100 * score[1].score / score[1].matches);
-	if (Broodwar->enemy()->getRace() == Races::Protoss) score[2].percent = (int)(100 * score[2].score / score[2].matches);
+	if (enemyRace == Races::Zerg) score[0].percent = (int)(100 * score[0].score / score[0].matches);
+	if (enemyRace == Races::Terran) score[1].percent = (int)(100 * score[1].score / score[1].matches);
+	if (enemyRace == Races::Protoss) score[2].percent = (int)(100 * score[2].score / score[2].matches);
 
 	boost::filesystem::ofstream output(pathOut, std::ios::trunc);
 

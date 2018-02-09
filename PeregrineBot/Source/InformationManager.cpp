@@ -17,13 +17,19 @@ InformationManager& InformationManager::Instance()
 
 void InformationManager::Setup()
 {
-	auto race = Broodwar->enemy()->getRace();
-	if (race == Races::Unknown) {
-		isEnemyRaceRandom  = true;
-		isEnemyRaceUnknown = true;
-		DebugMessenger::Instance() << "Enemy is Random" << std::endl;
+	auto enemy = Broodwar->enemy();
+	if (enemy) {
+		auto race = enemy->getRace();
+		if (race == Races::Unknown) {
+			isEnemyRaceRandom = true;
+			DebugMessenger::Instance() << "Enemy is Random" << std::endl;
+		} else {
+			enemyRace = race;
+		}
 	} else {
-		enemyRace = race;
+		// this is required as there was a crash when one bot leaves
+		// during the game lobby countdown.
+		DebugMessenger::Instance() << "Err: no enemy" << std::endl;
 	}
 
 	bool isIslandsOnMap = false;
@@ -189,12 +195,14 @@ void InformationManager::SetupScouting()
 
 void InformationManager::Update()
 {
-	if (isEnemyRaceUnknown) {
-		auto race = Broodwar->enemy()->getRace();
-		if ((race == Races::Terran) || (race == Races::Zerg) || (race == Races::Protoss)) {
-			enemyRace          = race;
-			isEnemyRaceUnknown = false;
-			DebugMessenger::Instance() << "Enemy is " << enemyRace.c_str() << std::endl;
+	if (enemyRace == Races::Unknown) {
+		auto enemy = Broodwar->enemy();
+		if (enemy) {
+			auto race = enemy->getRace();
+			if ((race == Races::Terran) || (race == Races::Zerg) || (race == Races::Protoss)) {
+				enemyRace = race;
+				DebugMessenger::Instance() << "Enemy is " << enemyRace.c_str() << std::endl;
+			}
 		}
 	}
 

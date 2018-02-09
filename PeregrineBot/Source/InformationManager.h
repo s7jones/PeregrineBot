@@ -77,7 +77,6 @@ public:
 	bool isEnemyBaseDestroyed = false;
 	BWAPI::Race enemyRace     = BWAPI::Races::Unknown;
 	bool isEnemyRaceRandom    = false;
-	bool isEnemyRaceUnknown   = false;
 	bool isIslandsOnMap       = false;
 
 	std::map<BWAPI::TilePosition, std::array<double, 6>> scoutingInfo;
