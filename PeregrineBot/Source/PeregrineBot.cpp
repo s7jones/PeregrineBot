@@ -118,8 +118,12 @@ void PeregrineBot::onFrame()
 	OrderManager::Instance().Update();
 	InformationManager::Instance().Update();
 
-	if (WorkerManager::Instance().indx > (WorkerManager::Instance().bo.size() * 2))
-		WorkerManager::Instance().indx = WorkerManager::Instance().bo.size() * 2;
+	if (!WorkerManager::Instance().buildOrderComplete) {
+		if (WorkerManager::Instance().indx >= WorkerManager::Instance().bo.size()) {
+			WorkerManager::Instance().buildOrderComplete = true;
+			DebugMessenger::Instance() << "buildOrderComplete" << std::endl;
+		}
+	}
 
 	// Iterate through all the units that we own
 	for (auto& u : Broodwar->self()->getUnits()) {
@@ -152,10 +156,12 @@ void PeregrineBot::onFrame()
 			continue;
 		}
 
-		if ((WorkerManager::Instance().bo[WorkerManager::Instance().indx] == UnitTypes::Zerg_Spawning_Pool) && (u->getType() == UnitTypes::Zerg_Spawning_Pool) && (u->isBeingConstructed())) {
-			WorkerManager::Instance().indx++;
-			WorkerManager::Instance().pool = true;
-			DebugMessenger::Instance() << "pool isBeingConstructed: " << Broodwar->getFrameCount() << "F" << std::endl;
+		if (!WorkerManager::Instance().buildOrderComplete) {
+			if ((WorkerManager::Instance().bo[WorkerManager::Instance().indx] == UnitTypes::Zerg_Spawning_Pool) && (u->getType() == UnitTypes::Zerg_Spawning_Pool) && (u->isBeingConstructed())) {
+				WorkerManager::Instance().indx++;
+				WorkerManager::Instance().pool = true;
+				DebugMessenger::Instance() << "pool isBeingConstructed: " << Broodwar->getFrameCount() << "F" << std::endl;
+			}
 		}
 
 		if ((!WorkerManager::Instance().poolready) && (u->getType() == UnitTypes::Zerg_Spawning_Pool) && (u->isCompleted())) {
