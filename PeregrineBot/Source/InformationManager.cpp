@@ -430,38 +430,41 @@ void InformationManager::validateEnemyUnits()
 {
 	// be careful about removing while iterating sets
 	// https://stackoverflow.com/a/2874533/5791272
-
-	auto it = enemyBuildings.begin();
-	while (it != enemyBuildings.end()) {
-		bool erase = false;
-		if (it->exists()) {
-			if ((!IsBuilding || !IsEnemy)(it->u)) {
-				erase = true;
-				DebugMessenger::Instance() << "remove enemy building on validation" << std::endl;
+	{
+		auto it = enemyBuildings.begin();
+		while (it != enemyBuildings.end()) {
+			bool erase = false;
+			if (it->exists()) {
+				if ((!IsBuilding || !IsEnemy)(it->u)) {
+					erase = true;
+					DebugMessenger::Instance() << "remove enemy building on validation" << std::endl;
+				}
 			}
-		}
 
-		if (erase) {
-			it = enemyBuildings.erase(it);
-		} else {
-			it++;
+			if (erase) {
+				it = enemyBuildings.erase(it);
+			} else {
+				it++;
+			}
 		}
 	}
 
-	auto it = enemyArmy.begin();
-	while (it != enemyArmy.end()) {
-		bool erase = false;
-		if (it->exists()) {
-			if ((IsBuilding || !IsEnemy)(it->u)) {
-				erase = true;
-				DebugMessenger::Instance() << "remove enemy army on validation" << std::endl;
+	{
+		auto it = enemyArmy.begin();
+		while (it != enemyArmy.end()) {
+			bool erase = false;
+			if (it->exists()) {
+				if ((IsBuilding || !IsEnemy)(it->u)) {
+					erase = true;
+					DebugMessenger::Instance() << "remove enemy army on validation" << std::endl;
+				}
 			}
-		}
 
-		if (erase) {
-			it = enemyArmy.erase(it);
-		} else {
-			it++;
+			if (erase) {
+				it = enemyArmy.erase(it);
+			} else {
+				it++;
+			}
 		}
 	}
 }
