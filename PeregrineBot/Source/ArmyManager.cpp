@@ -119,20 +119,19 @@ std::set<UnitInfo> ArmyManager::GetZerglingAccessibleBuildings(Unit u)
 {
 	auto enemyBuildings = InformationManager::Instance().enemyBuildings;
 	std::set<UnitInfo> enemyBuildingsAccessible;
-	for (auto iter = enemyBuildings.begin(); iter != enemyBuildings.end();
-	     iter++) {
+	for (auto iter = enemyBuildings.begin(); iter != enemyBuildings.end(); iter++) {
 		auto building        = *iter;
-		Position buildingPos = building.second.getPosition();
+		Position buildingPos = building.getPosition();
 		// if building isn't reachable then skip
 		if (!BWTA::getRegion(u->getPosition())
 		         ->isReachable(BWTA::getRegion(buildingPos))) {
 			DebugMessenger::Instance() << "unaccessible building" << std::endl;
-			if (!building.second.exists()) {
+			if (!building.exists()) {
 				Broodwar << "ERR: building doesn't exist" << std::endl;
 			}
 			continue;
 		} else {
-			enemyBuildingsAccessible.insert(building.second);
+			enemyBuildingsAccessible.insert(building);
 			DebugMessenger::Instance() << "scoutable building" << std::endl;
 		}
 	}

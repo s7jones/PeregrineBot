@@ -404,32 +404,30 @@ void InformationManager::onUnitMorph(BWAPI::Unit unit)
 
 void InformationManager::addToEnemyBuildings(BWAPI::Unit unit)
 {
-	auto iter = enemyBuildings.find(unit);
-	if (iter != enemyBuildings.end()) {
-		iter->second.update();
-	} else {
-		std::map<Unit, UnitInfo>::value_type value = { unit, UnitInfo(unit) };
-		enemyBuildings.insert(value);
+	auto iterAndBool = enemyBuildings.emplace(unit);
+
+	// if unit already exists in enemyBuildings
+	if (!iterAndBool.second) {
+		iterAndBool.first->update();
 	}
 }
 
 void InformationManager::addToEnemyArmy(BWAPI::Unit unit)
 {
-	auto iter = enemyArmy.find(unit);
-	if (iter != enemyArmy.end()) {
-		iter->second.update();
-	} else {
-		std::map<Unit, UnitInfo>::value_type value = { unit, UnitInfo(unit) };
-		enemyArmy.insert(value);
+	auto iterAndBool = enemyArmy.emplace(unit);
+
+	// if unit already exists in enemyArmy
+	if (!iterAndBool.second) {
+		iterAndBool.first->update();
 	}
 }
 
-void InformationManager::removeFromEnemyBuildings(BWAPI::Unit unit)
+void InformationManager::removeFromEnemyBuildings(UnitInfo unit)
 {
 	enemyBuildings.erase(unit);
 }
 
-void InformationManager::removeFromEnemyArmy(BWAPI::Unit unit)
+void InformationManager::removeFromEnemyArmy(UnitInfo unit)
 {
 	enemyArmy.erase(unit);
 }
@@ -437,10 +435,9 @@ void InformationManager::removeFromEnemyArmy(BWAPI::Unit unit)
 void InformationManager::validateEnemyUnits()
 {
 	for (auto iter = enemyBuildings.begin(); iter != enemyBuildings.end(); iter++) {
-		auto unit = *iter;
-		if (unit.second.exists()) {
-			if ((!IsBuilding || !IsEnemy)(unit.second.u)) {
-				removeFromEnemyBuildings(unit.first);
+		if (iter->exists()) {
+			if ((!IsBuilding || !IsEnemy)(iter->u)) {
+				removeFromEnemyBuildings(*iter);
 				DebugMessenger::Instance() << "remove enemy building on validation" << std::endl;
 			}
 		}
@@ -448,9 +445,9 @@ void InformationManager::validateEnemyUnits()
 
 	for (auto iter = enemyArmy.begin(); iter != enemyArmy.end(); iter++) {
 		auto unit = *iter;
-		if (unit.second.exists()) {
-			if ((IsBuilding || !IsEnemy)(unit.second.u)) {
-				removeFromEnemyArmy(unit.first);
+		if (iter->exists()) {
+			if ((IsBuilding || !IsEnemy)(iter->u)) {
+				removeFromEnemyArmy(*iter);
 				DebugMessenger::Instance() << "remove enemy army on validation" << std::endl;
 			}
 		}

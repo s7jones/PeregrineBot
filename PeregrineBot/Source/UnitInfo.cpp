@@ -9,7 +9,7 @@ UnitInfo::UnitInfo(Unit unitToWrap)
 	update();
 }
 
-void UnitInfo::update()
+void UnitInfo::update() const
 {
 	if (u) {
 		if (exists()) {
@@ -26,12 +26,12 @@ void UnitInfo::update()
 	}
 }
 
-bool UnitInfo::exists()
+bool UnitInfo::exists() const
 {
 	return u->exists();
 }
 
-BWAPI::Position UnitInfo::getPosition()
+BWAPI::Position UnitInfo::getPosition() const
 {
 	return pos;
 }
@@ -39,4 +39,13 @@ BWAPI::Position UnitInfo::getPosition()
 bool UnitInfo::operator<(const UnitInfo& other) const
 {
 	return u < other.u;
+}
+
+bool operator<(const UnitInfo& lhs, const BWAPI::Unit& rhs)
+{
+	return lhs.u < rhs;
+}
+bool operator<(const BWAPI::Unit& lhs, const UnitInfo& rhs)
+{
+	return lhs < rhs.u;
 }

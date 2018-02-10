@@ -90,14 +90,14 @@ public:
 	bool isEnemyBaseFromOverlordSpotting       = false;
 	BWAPI::TilePosition enemyBaseSpottingGuess = { 0, 0 };
 
-	std::map<BWAPI::Unit, UnitInfo> enemyBuildings;
-	std::map<BWAPI::Unit, UnitInfo> enemyArmy;
+	std::set<UnitInfo> enemyBuildings;
+	std::set<UnitInfo> enemyArmy;
 
 private:
 	void addToEnemyBuildings(BWAPI::Unit unit);
 	void addToEnemyArmy(BWAPI::Unit unit);
-	void removeFromEnemyBuildings(BWAPI::Unit unit);
-	void removeFromEnemyArmy(BWAPI::Unit unit);
+	void removeFromEnemyBuildings(UnitInfo unit);
+	void removeFromEnemyArmy(UnitInfo unit);
 	void validateEnemyUnits();
 
 	float maxBaseToBaseDistance;
