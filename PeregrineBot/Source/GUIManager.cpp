@@ -63,7 +63,8 @@ void GUIManager::draw()
 
 void GUIManager::drawOnScreenMessages()
 {
-	for (auto it = messageBuffer.begin(); it != messageBuffer.end(); it++) {
+	auto it = messageBuffer.begin();
+	while (it != messageBuffer.end()) {
 		if (it->second.frames > 0) {
 			drawTextOnUnit(it->first, it->second.format);
 		}
