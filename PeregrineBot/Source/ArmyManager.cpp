@@ -120,14 +120,28 @@ std::set<UnitInfo> ArmyManager::GetZerglingAccessibleBuildings(Unit u)
 	auto enemyBuildings = InformationManager::Instance().enemyBuildings;
 	std::set<UnitInfo> enemyBuildingsAccessible;
 	for (auto iter = enemyBuildings.begin(); iter != enemyBuildings.end(); iter++) {
-		auto building        = *iter;
-		Position buildingPos = building.getPosition();
+		auto building    = *iter;
+		auto buildingPos = building.getPosition();
+		auto zerglingPos = u->getPosition();
+
+		auto zerglingRegion = BWTA::getRegion(zerglingPos);
+		auto buildingRegion = BWTA::getRegion(buildingPos);
+
+		if (!zerglingRegion) {
+			errorMessage("zerglingRegion null");
+			continue;
+		}
+
+		if (!buildingRegion) {
+			errorMessage("buildingRegion null");
+			continue;
+		}
+
 		// if building isn't reachable then skip
-		if (!BWTA::getRegion(u->getPosition())
-		         ->isReachable(BWTA::getRegion(buildingPos))) {
+		if (!zerglingRegion->isReachable(buildingRegion)) {
 			DebugMessenger::Instance() << "unaccessible building" << std::endl;
 			if (!building.exists()) {
-				Broodwar << "ERR: building doesn't exist" << std::endl;
+				errorMessage("building doesn't exist");
 			}
 			continue;
 		} else {

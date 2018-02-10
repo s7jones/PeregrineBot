@@ -34,11 +34,11 @@ void BaseManager::ManageBases(Unit base)
 					workers.insert(trainee);
 				} else if (trainee->getType() == UnitTypes::Zerg_Larva) {
 					workersTraining.erase(trainee);
-					Broodwar << "ERR: training worker is larva" << std::endl;
+					errorMessage("training worker is larva");
 				}
 			} else {
 				workersTraining.erase(trainee);
-				Broodwar << "ERR: training worker isn't morphing" << std::endl;
+				errorMessage("training worker isn't morphing");
 			}
 		}
 	}

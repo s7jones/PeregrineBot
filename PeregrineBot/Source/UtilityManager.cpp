@@ -28,6 +28,12 @@ bool UtilityManager::getBestActionForZergling(BWAPI::Unit zergling)
 		}
 	}
 
+	if (!flag) {
+		// putting this here for now to reconstruct old behaviour
+		flag = performBestActionForZerglingInEnemyBase(zergling);
+		if (flag) return true;
+	}
+
 	return flag;
 }
 

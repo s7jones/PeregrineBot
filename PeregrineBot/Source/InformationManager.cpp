@@ -29,7 +29,7 @@ void InformationManager::Setup()
 	} else {
 		// this is required as there was a crash when one bot leaves
 		// during the game lobby countdown.
-		DebugMessenger::Instance() << "Err: no enemy" << std::endl;
+		errorMessage("no enemy");
 	}
 
 	bool isIslandsOnMap = false;
@@ -228,7 +228,7 @@ void InformationManager::UpdateScouting()
 					isEnemyBaseFound   = true;
 					DebugMessenger::Instance() << "Found enemy base at: " << Broodwar->getFrameCount() << "F" << std::endl;
 					if ((enemyBase.x == 0) && (enemyBase.y == 0)) {
-						Broodwar << "ERR: Found enemy base at 0,0P" << std::endl;
+						errorMessage("Found enemy base at 0,0P");
 					}
 				}
 			}
@@ -434,6 +434,9 @@ void InformationManager::removeFromEnemyArmy(UnitInfo unit)
 
 void InformationManager::validateEnemyUnits()
 {
+	// be careful about removing while iterating sets
+	// https://stackoverflow.com/a/2874533/5791272
+
 	for (auto iter = enemyBuildings.begin(); iter != enemyBuildings.end(); iter++) {
 		if (iter->exists()) {
 			if ((!IsBuilding || !IsEnemy)(iter->u)) {
