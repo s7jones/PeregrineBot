@@ -150,14 +150,16 @@ void PeregrineBot::onFrame()
 		}
 
 		if (!WorkerManager::Instance().buildOrderComplete) {
-			if ((WorkerManager::Instance().bo[WorkerManager::Instance().indx] == UnitTypes::Zerg_Spawning_Pool) && (u->getType() == UnitTypes::Zerg_Spawning_Pool) && (u->isBeingConstructed())) {
+			if ((*WorkerManager::Instance().boIndex == UnitTypes::Zerg_Spawning_Pool)
+			    && (u->getType() == UnitTypes::Zerg_Spawning_Pool) && (u->isBeingConstructed())) {
 				WorkerManager::Instance().incrementBuildOrder();
 				WorkerManager::Instance().pool = true;
 				DebugMessenger::Instance() << "pool isBeingConstructed: " << Broodwar->getFrameCount() << "F" << std::endl;
 			}
 		}
 
-		if ((!WorkerManager::Instance().poolready) && (u->getType() == UnitTypes::Zerg_Spawning_Pool) && (u->isCompleted())) {
+		if ((!WorkerManager::Instance().poolready)
+		    && (u->getType() == UnitTypes::Zerg_Spawning_Pool) && (u->isCompleted())) {
 			WorkerManager::Instance().poolready = true;
 			DebugMessenger::Instance() << "pool ready: " << Broodwar->getFrameCount() << "F" << std::endl;
 		}

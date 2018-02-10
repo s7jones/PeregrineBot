@@ -54,7 +54,7 @@ void BaseManager::ManageBases(Unit base)
 
 	if (!WorkerManager::Instance().buildOrderComplete) {
 		if ((Broodwar->self()->minerals() >= UnitTypes::Zerg_Drone.mineralPrice())
-		    && (WorkerManager::Instance().bo[WorkerManager::Instance().indx] == UnitTypes::Zerg_Drone)) {
+		    && (*WorkerManager::Instance().boIndex == UnitTypes::Zerg_Drone)) {
 			if (!base->getLarva().empty()) {
 				base->train(UnitTypes::Zerg_Drone);
 				WorkerManager::Instance().incrementBuildOrder();
@@ -62,7 +62,7 @@ void BaseManager::ManageBases(Unit base)
 		}
 
 		if ((Broodwar->self()->minerals() >= UnitTypes::Zerg_Overlord.mineralPrice())
-		    && ((WorkerManager::Instance().bo[WorkerManager::Instance().indx] == UnitTypes::Zerg_Overlord))) {
+		    && (*WorkerManager::Instance().boIndex == UnitTypes::Zerg_Overlord)) {
 			if (!base->getLarva().empty()) {
 				base->train(UnitTypes::Zerg_Overlord);
 				WorkerManager::Instance().incrementBuildOrder();
@@ -72,7 +72,7 @@ void BaseManager::ManageBases(Unit base)
 		auto poolready     = WorkerManager::Instance().poolready;
 		auto gotZergMoney  = Broodwar->self()->minerals() >= UnitTypes::Zerg_Zergling.mineralPrice();
 		auto gotZergSupply = Broodwar->self()->supplyTotal() - Broodwar->self()->supplyUsed() > 0;
-		auto zergBO        = WorkerManager::Instance().bo[WorkerManager::Instance().indx] == UnitTypes::Zerg_Zergling;
+		auto zergBO        = *WorkerManager::Instance().boIndex == UnitTypes::Zerg_Zergling;
 
 		if (poolready && gotZergMoney
 		    && gotZergSupply

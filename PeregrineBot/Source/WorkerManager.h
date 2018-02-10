@@ -26,10 +26,10 @@ public:
 		                      BWAPI::UnitType(BWAPI::UnitTypes::Zerg_Zergling),
 		                      BWAPI::UnitType(BWAPI::UnitTypes::Zerg_Zergling) };
 
-	int indx                = 0;
-	bool pool               = false;
-	bool poolready          = false;
-	int lastChecked         = 0;
-	int poolLastChecked     = 0;
-	bool buildOrderComplete = false;
+	Vector::const_iterator boIndex = bo.begin();
+	bool pool                      = false;
+	bool poolready                 = false;
+	int lastChecked                = 0;
+	int poolLastChecked            = 0;
+	bool buildOrderComplete        = false;
 };

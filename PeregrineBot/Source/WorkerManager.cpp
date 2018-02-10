@@ -1,6 +1,7 @@
 #include "WorkerManager.h"
 
 #include "OrderManager.h"
+#include "Utility.h"
 
 using namespace BWAPI;
 using namespace Filter;
@@ -39,32 +40,34 @@ void WorkerManager::DoAllWorkerTasks(Unit u)
 			DebugMessenger::Instance() << "is idle and has power up?" << std::endl;
 		}
 	}
-	if (bo[indx] == UnitTypes::Zerg_Spawning_Pool) {
-		if ((!pool) && (Broodwar->self()->minerals() >= UnitTypes::Zerg_Spawning_Pool.mineralPrice())) {
-			if ((poolLastChecked + 115) < Broodwar->getFrameCount()) {
-				//find a location for spawning pool and construct it
-				TilePosition buildPosition = Broodwar->getBuildLocation(UnitTypes::Zerg_Spawning_Pool, u->getTilePosition());
-				OrderManager::Instance().Build(u, UnitTypes::Zerg_Spawning_Pool, buildPosition);
-				poolLastChecked = Broodwar->getFrameCount();
-				return;
+	if (!buildOrderComplete) {
+		if (*boIndex == UnitTypes::Zerg_Spawning_Pool) {
+			if ((!pool) && (Broodwar->self()->minerals() >= UnitTypes::Zerg_Spawning_Pool.mineralPrice())) {
+				if ((poolLastChecked + 115) < Broodwar->getFrameCount()) {
+					//find a location for spawning pool and construct it
+					TilePosition buildPosition = Broodwar->getBuildLocation(UnitTypes::Zerg_Spawning_Pool, u->getTilePosition());
+					OrderManager::Instance().Build(u, UnitTypes::Zerg_Spawning_Pool, buildPosition);
+					poolLastChecked = Broodwar->getFrameCount();
+					return;
+				}
 			}
 		}
-	}
-	if ((Broodwar->self()->minerals() >= UnitTypes::Zerg_Hatchery.mineralPrice()) && (indx >= bo.size())) {
-		if ((lastChecked + 400) < Broodwar->getFrameCount()) {
-			TilePosition buildPosition = Broodwar->getBuildLocation(UnitTypes::Zerg_Hatchery, u->getTilePosition());
-			OrderManager::Instance().Build(u, UnitTypes::Zerg_Hatchery, buildPosition);
-			lastChecked = Broodwar->getFrameCount();
-			return;
+	} else {
+		if (Broodwar->self()->minerals() >= UnitTypes::Zerg_Hatchery.mineralPrice()) {
+			if ((lastChecked + 400) < Broodwar->getFrameCount()) {
+				TilePosition buildPosition = Broodwar->getBuildLocation(UnitTypes::Zerg_Hatchery, u->getTilePosition());
+				OrderManager::Instance().Build(u, UnitTypes::Zerg_Hatchery, buildPosition);
+				lastChecked = Broodwar->getFrameCount();
+				return;
+			}
 		}
 	}
 }
 
 void WorkerManager::incrementBuildOrder()
 {
-	if (indx < bo.size()) {
-		indx++;
-	} else {
+	boIndex++;
+	if (boIndex == bo.end()) {
 		buildOrderComplete = true;
 	}
 }

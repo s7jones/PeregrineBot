@@ -96,7 +96,7 @@ void GUIManager::drawTopLeftOverlay()
 	int invaders = (BaseManager::Instance().hatcheries.size()) ? BaseManager::Instance().hatcheries.begin()->checkForInvaders().size() : 0;
 	Broodwar->drawTextScreen(1, 80, "Invaders: %i", invaders);
 
-	Broodwar->drawTextScreen(100, 0, "BO index: %i", WorkerManager::Instance().indx);
+	Broodwar->drawTextScreen(100, 0, "BO index: %i", std::distance(WorkerManager::Instance().bo.cbegin(), WorkerManager::Instance().boIndex));
 	Broodwar->drawTextScreen(100, 10, "Pool: %i", WorkerManager::Instance().pool);
 	int screenVPos = 20;
 	int count      = 1;
