@@ -41,14 +41,14 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <IncludePath>%BWAPI_DIR%\include;%BWTA_DIR%\include;$(IncludePath)</IncludePath>
+    <IncludePath>%CPPTOML_DIR%\include;%BWAPI_DIR%\include;%BWTA_DIR%\include;$(IncludePath)</IncludePath>
     <LibraryPath>%BWAPI_DIR%\lib;%BWTA_DIR%\lib;$(LibraryPath)</LibraryPath>
     <PostBuildEventUseInBuild>false</PostBuildEventUseInBuild>
     <TargetName>$(ProjectName)d</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <PostBuildEventUseInBuild>false</PostBuildEventUseInBuild>
-    <IncludePath>%BWAPI_DIR%\include;%BWTA_DIR%\include;$(IncludePath)</IncludePath>
+    <IncludePath>%CPPTOML_DIR%\include;%BWAPI_DIR%\include;%BWTA_DIR%\include;$(IncludePath)</IncludePath>
     <LibraryPath>%BWAPI_DIR%\lib;%BWTA_DIR%\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -57,7 +57,7 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NOMINMAX;WIN32;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(BWAPI_DIR)\include;$(BWTA_DIR)\include;$(SQLITE_DIR);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>%CPPTOML_DIR%\include;$(BWAPI_DIR)\include;$(BWTA_DIR)\include;$(SQLITE_DIR);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
@@ -81,7 +81,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NOMINMAX;WIN32;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(BWAPI_DIR)\include;$(BWTA_DIR)\include;$(SQLITE_DIR);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>%CPPTOML_DIR%\include;$(BWAPI_DIR)\include;$(BWTA_DIR)\include;$(SQLITE_DIR);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
