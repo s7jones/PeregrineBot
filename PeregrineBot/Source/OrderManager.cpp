@@ -19,10 +19,13 @@ void OrderManager::Update()
 
 void OrderManager::UpdateUnitsWaitingSinceLastOrder()
 {
-	for (auto unitIterator = unitsToWaitAfterOrder.begin(); unitIterator != unitsToWaitAfterOrder.end(); unitIterator++) {
-		++(unitIterator->second); // increment counter
-		if (unitIterator->second >= 8) {
-			unitsToWaitAfterOrder.erase(unitIterator->first);
+	auto it = unitsToWaitAfterOrder.begin();
+	while (it != unitsToWaitAfterOrder.end()) {
+		++(it->second); // increment counter
+		if (it->second >= 8) {
+			it = unitsToWaitAfterOrder.erase(it);
+		} else {
+			++it;
 		}
 	}
 }

@@ -77,7 +77,6 @@ public:
 	bool isEnemyBaseDestroyed = false;
 	BWAPI::Race enemyRace     = BWAPI::Races::Unknown;
 	bool isEnemyRaceRandom    = false;
-	bool isEnemyRaceUnknown   = false;
 	bool isIslandsOnMap       = false;
 
 	std::map<BWAPI::TilePosition, std::array<double, 6>> scoutingInfo;
@@ -91,14 +90,12 @@ public:
 	bool isEnemyBaseFromOverlordSpotting       = false;
 	BWAPI::TilePosition enemyBaseSpottingGuess = { 0, 0 };
 
-	std::map<BWAPI::Unit, UnitInfo> enemyBuildings;
-	std::map<BWAPI::Unit, UnitInfo> enemyArmy;
+	std::set<UnitInfo> enemyBuildings;
+	std::set<UnitInfo> enemyArmy;
 
 private:
 	void addToEnemyBuildings(BWAPI::Unit unit);
 	void addToEnemyArmy(BWAPI::Unit unit);
-	void removeFromEnemyBuildings(BWAPI::Unit unit);
-	void removeFromEnemyArmy(BWAPI::Unit unit);
 	void validateEnemyUnits();
 
 	float maxBaseToBaseDistance;

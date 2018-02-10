@@ -1,15 +1,21 @@
 #include "UnitInfo.h"
 
+#include "Utility.h"
+
 using namespace BWAPI;
 using namespace Filter;
 
 UnitInfo::UnitInfo(Unit unitToWrap)
-    : u(unitToWrap)
 {
-	update();
+	if (unitToWrap) {
+		u = unitToWrap;
+		update();
+	} else {
+		errorMessage("unit null 1");
+	}
 }
 
-void UnitInfo::update()
+void UnitInfo::update() const
 {
 	if (u) {
 		if (exists()) {
@@ -22,16 +28,21 @@ void UnitInfo::update()
 			velocity      = std::make_pair(u->getVelocityX(), u->getVelocityY());
 		}
 	} else {
-		Broodwar << "ERR: unit null" << std::endl;
+		errorMessage("unit null 2");
 	}
 }
 
-bool UnitInfo::exists()
+bool UnitInfo::exists() const
 {
-	return u->exists();
+	if (u) {
+		return u->exists();
+	} else {
+		errorMessage("unit null 3");
+		return false;
+	}
 }
 
-BWAPI::Position UnitInfo::getPosition()
+BWAPI::Position UnitInfo::getPosition() const
 {
 	return pos;
 }
@@ -39,4 +50,13 @@ BWAPI::Position UnitInfo::getPosition()
 bool UnitInfo::operator<(const UnitInfo& other) const
 {
 	return u < other.u;
+}
+
+bool operator<(const UnitInfo& lhs, const BWAPI::Unit& rhs)
+{
+	return lhs.u < rhs;
+}
+bool operator<(const BWAPI::Unit& lhs, const UnitInfo& rhs)
+{
+	return lhs < rhs.u;
 }

@@ -1,5 +1,7 @@
 #include "Utility.h"
 
+using namespace BWAPI;
+
 double DistanceAir(const BWAPI::Position p1, const BWAPI::Position p2)
 {
 	auto dx   = abs(p1.x - p2.x);
@@ -79,4 +81,9 @@ double TimeAir(const BWAPI::TilePosition start, const BWAPI::TilePosition end)
 	double travelTime = adist / BWAPI::UnitTypes::Zerg_Overlord.topSpeed();
 	double time       = travelTime;
 	return time;
+}
+
+void errorMessage(std::string message)
+{
+	Broodwar << "err: " << message << std::endl;
 }

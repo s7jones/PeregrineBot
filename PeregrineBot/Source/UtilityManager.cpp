@@ -28,6 +28,12 @@ bool UtilityManager::getBestActionForZergling(BWAPI::Unit zergling)
 		}
 	}
 
+	if (!flag) {
+		// putting this here for now to reconstruct old behaviour
+		flag = performBestActionForZerglingInEnemyBase(zergling);
+		if (flag) return true;
+	}
+
 	return flag;
 }
 
@@ -69,12 +75,12 @@ void UtilityManager::constructOptions()
 			options.push_back(enemyWorker);
 
 			auto utilityAtAll = [](Unit u) -> std::pair<double, Unit> {
-				Unit any     = u->getClosestUnit(IsEnemy);
+				Unit any     = u->getClosestUnit(IsEnemy && !IsFlying);
 				double score = any ? 0.7 : 0;
 				auto p       = std::make_pair(score, any);
 				return p;
 			};
-			Option enemyAtAll = Option(utilityAtAll, "attack closest enemy");
+			Option enemyAtAll = Option(utilityAtAll, "attack closest ground enemy");
 			options.push_back(enemyAtAll);
 
 			break;
@@ -100,12 +106,12 @@ void UtilityManager::constructOptions()
 			options.push_back(enemyWorker);
 
 			auto utilityAtAll = [](Unit u) -> std::pair<double, Unit> {
-				Unit any     = u->getClosestUnit(IsEnemy);
+				Unit any     = u->getClosestUnit(IsEnemy && !IsFlying);
 				double score = any ? 0.8 : 0;
 				auto p       = std::make_pair(score, any);
 				return p;
 			};
-			Option enemyAtAll = Option(utilityAtAll, "attack closest enemy");
+			Option enemyAtAll = Option(utilityAtAll, "attack closest ground enemy");
 			options.push_back(enemyAtAll);
 
 			break;
@@ -142,12 +148,12 @@ void UtilityManager::constructOptions()
 			options.push_back(enemySupply);
 
 			auto utilityAtAll = [](Unit u) -> std::pair<double, Unit> {
-				Unit any     = u->getClosestUnit(IsEnemy);
+				Unit any     = u->getClosestUnit(IsEnemy && !IsFlying);
 				double score = any ? 0.7 : 0;
 				auto p       = std::make_pair(score, any);
 				return p;
 			};
-			Option enemyAtAll = Option(utilityAtAll, "attack closest enemy");
+			Option enemyAtAll = Option(utilityAtAll, "attack closest ground enemy");
 			options.push_back(enemyAtAll);
 
 			break;

@@ -4,18 +4,24 @@
 class UnitInfo {
 public:
 	UnitInfo(BWAPI::Unit unitToWrap);
-	void update();
-	bool exists();
-	BWAPI::Position getPosition();
+	void update() const;
+	bool exists() const;
+	BWAPI::Position getPosition() const;
 	bool operator<(const UnitInfo& other) const;
+	friend bool operator<(const UnitInfo& lhs, const BWAPI::Unit& rhs);
+	friend bool operator<(const BWAPI::Unit& lhs, const UnitInfo& rhs);
+	// transparent comparators
+	// https://www.youtube.com/watch?v=BBUacofxOP8
+	using is_transparent = void;
+
 	BWAPI::Unit u = NULL;
 
 private:
-	int lastFrameSeen;
-	BWAPI::Position pos  = { 0, 0 };
-	BWAPI::UnitType type = BWAPI::UnitTypes::Unknown;
-	int shields;
-	int hp;
-	int energy;
-	std::pair<double, double> velocity;
+	mutable int lastFrameSeen;
+	mutable BWAPI::Position pos  = { 0, 0 };
+	mutable BWAPI::UnitType type = BWAPI::UnitTypes::Unknown;
+	mutable int shields;
+	mutable int hp;
+	mutable int energy;
+	mutable std::pair<double, double> velocity;
 };

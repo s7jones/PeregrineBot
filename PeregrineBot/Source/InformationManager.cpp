@@ -17,16 +17,21 @@ InformationManager& InformationManager::Instance()
 
 void InformationManager::Setup()
 {
-	auto race = Broodwar->enemy()->getRace();
-	if (race == Races::Unknown) {
-		isEnemyRaceRandom  = true;
-		isEnemyRaceUnknown = true;
-		DebugMessenger::Instance() << "Enemy is Random" << std::endl;
+	auto enemy = Broodwar->enemy();
+	if (enemy) {
+		auto race = enemy->getRace();
+		if (race == Races::Unknown) {
+			isEnemyRaceRandom = true;
+			DebugMessenger::Instance() << "Enemy is Random" << std::endl;
+		} else {
+			enemyRace = race;
+		}
 	} else {
-		enemyRace = race;
+		// this is required as there was a crash when one bot leaves
+		// during the game lobby countdown.
+		errorMessage("no enemy");
 	}
 
-	bool isIslandsOnMap = false;
 	for (auto bl : BWTA::getBaseLocations()) {
 		if (bl->isIsland()) {
 			isIslandsOnMap = true;
@@ -137,15 +142,14 @@ void InformationManager::SetupScouting()
 	}
 
 	DebugMessenger::Instance() << allStarts.size() << " starts / " << otherStarts.size() << " otherstarts" << std::endl;
+	if (Broodwar->getStartLocations().size() < 4)
+		DebugMessenger::Instance() << "less than 4 start positions" << std::endl;
 
 	for (TilePosition p1 : otherStarts) {
 		std::set<TilePosition, sortByMostTopThenLeft> startToP1 = { Broodwar->self()->getStartLocation(), p1 };
 		DebugMessenger::Instance() << "ad" << overlordNetwork.find(startToP1)->second.distance << "P,   at" << overlordNetwork.find(startToP1)->second.time << "F" << std::endl;
 
-		if (Broodwar->getStartLocations().size() != 4) {
-			DebugMessenger::Instance() << "less than 4 start positions" << std::endl;
-
-		} else {
+		if (Broodwar->getStartLocations().size() == 4) {
 			for (TilePosition p2 : otherStarts) {
 				if (p2 == p1)
 					continue;
@@ -190,12 +194,14 @@ void InformationManager::SetupScouting()
 
 void InformationManager::Update()
 {
-	if (isEnemyRaceUnknown) {
-		auto race = Broodwar->enemy()->getRace();
-		if ((race == Races::Terran) || (race == Races::Zerg) || (race == Races::Protoss)) {
-			enemyRace          = race;
-			isEnemyRaceUnknown = false;
-			DebugMessenger::Instance() << "Enemy is " << enemyRace.c_str() << std::endl;
+	if (enemyRace == Races::Unknown) {
+		auto enemy = Broodwar->enemy();
+		if (enemy) {
+			auto race = enemy->getRace();
+			if ((race == Races::Terran) || (race == Races::Zerg) || (race == Races::Protoss)) {
+				enemyRace = race;
+				DebugMessenger::Instance() << "Enemy is " << enemyRace.c_str() << std::endl;
+			}
 		}
 	}
 
@@ -206,10 +212,12 @@ void InformationManager::Update()
 
 void InformationManager::UpdateScouting()
 {
-	for (auto p : unscoutedPositions) {
+	auto it = unscoutedPositions.begin();
+	while (it != unscoutedPositions.end()) {
+		auto p = *it;
 		if (Broodwar->isVisible(TilePosition(p))) {
 			scoutedPositions.insert(p);
-			unscoutedPositions.erase(p);
+			it = unscoutedPositions.erase(it);
 			if (!isEnemyBaseFound) {
 				// replace IsBuilding by IsResourceDepot?
 				if (Broodwar->getUnitsOnTile(TilePosition(p),
@@ -221,10 +229,12 @@ void InformationManager::UpdateScouting()
 					isEnemyBaseFound   = true;
 					DebugMessenger::Instance() << "Found enemy base at: " << Broodwar->getFrameCount() << "F" << std::endl;
 					if ((enemyBase.x == 0) && (enemyBase.y == 0)) {
-						Broodwar << "ERR: Found enemy base at 0,0P" << std::endl;
+						errorMessage("Found enemy base at 0,0P");
 					}
 				}
 			}
+		} else {
+			it++;
 		}
 	}
 
@@ -273,7 +283,7 @@ void InformationManager::OverlordScoutingAtGameStart(BWAPI::Unit overlord)
 	} else {
 		if (!isPastSpottingTime) {
 			// maybe make 128 * 1.5 a const "smudge factor" variable
-			auto spottingTime = (maxBaseToBaseDistance / 2 + 128 * 1.5) / UnitTypes::Zerg_Overlord.topSpeed();
+			auto spottingTime = (maxBaseToBaseDistance + 128 * 1.5) / UnitTypes::Zerg_Overlord.topSpeed();
 			if (Broodwar->getFrameCount() > spottingTime) {
 				isPastSpottingTime = true;
 				DebugMessenger::Instance() << "Past Overlord spotting time" << std::endl;
@@ -371,13 +381,13 @@ void InformationManager::onUnitDestroy(BWAPI::Unit unit)
 {
 	if ((IsEnemy)(unit)) {
 		if ((IsBuilding)(unit)) {
-			removeFromEnemyBuildings(unit);
+			enemyBuildings.erase(unit);
 			if (((IsResourceDepot)(unit) == true) && (unit->getPosition() == enemyBase)) {
 				isEnemyBaseDestroyed = true;
 				DebugMessenger::Instance() << "destroyed enemy base: " << Broodwar->getFrameCount() << std::endl;
 			}
 		} else {
-			removeFromEnemyArmy(unit);
+			enemyArmy.erase(unit);
 		}
 	}
 }
@@ -387,64 +397,72 @@ void InformationManager::onUnitMorph(BWAPI::Unit unit)
 	if ((IsEnemy)(unit)) {
 		if ((IsBuilding)(unit)) {
 			addToEnemyBuildings(unit);
-			removeFromEnemyArmy(unit);
+			enemyArmy.erase(unit);
 		} else {
 			addToEnemyArmy(unit);
-			removeFromEnemyBuildings(unit);
+			enemyBuildings.erase(unit);
 		}
 	}
 }
 
 void InformationManager::addToEnemyBuildings(BWAPI::Unit unit)
 {
-	auto iter = enemyBuildings.find(unit);
-	if (iter != enemyBuildings.end()) {
-		iter->second.update();
-	} else {
-		std::map<Unit, UnitInfo>::value_type value = { unit, UnitInfo(unit) };
-		enemyBuildings.insert(value);
+	auto iterAndBool = enemyBuildings.emplace(unit);
+
+	// if unit already exists in enemyBuildings
+	if (!iterAndBool.second) {
+		iterAndBool.first->update();
 	}
 }
 
 void InformationManager::addToEnemyArmy(BWAPI::Unit unit)
 {
-	auto iter = enemyArmy.find(unit);
-	if (iter != enemyArmy.end()) {
-		iter->second.update();
-	} else {
-		std::map<Unit, UnitInfo>::value_type value = { unit, UnitInfo(unit) };
-		enemyArmy.insert(value);
+	auto iterAndBool = enemyArmy.emplace(unit);
+
+	// if unit already exists in enemyArmy
+	if (!iterAndBool.second) {
+		iterAndBool.first->update();
 	}
-}
-
-void InformationManager::removeFromEnemyBuildings(BWAPI::Unit unit)
-{
-	enemyBuildings.erase(unit);
-}
-
-void InformationManager::removeFromEnemyArmy(BWAPI::Unit unit)
-{
-	enemyArmy.erase(unit);
 }
 
 void InformationManager::validateEnemyUnits()
 {
-	for (auto iter = enemyBuildings.begin(); iter != enemyBuildings.end(); iter++) {
-		auto unit = *iter;
-		if (unit.second.exists()) {
-			if ((!IsBuilding || !IsEnemy)(unit.second.u)) {
-				removeFromEnemyBuildings(unit.first);
-				DebugMessenger::Instance() << "remove enemy building on validation" << std::endl;
+	// be careful about removing while iterating sets
+	// https://stackoverflow.com/a/2874533/5791272
+	{
+		auto it = enemyBuildings.begin();
+		while (it != enemyBuildings.end()) {
+			bool erase = false;
+			if (it->exists()) {
+				if ((!IsBuilding || !IsEnemy)(it->u)) {
+					erase = true;
+					DebugMessenger::Instance() << "remove enemy building on validation" << std::endl;
+				}
+			}
+
+			if (erase) {
+				it = enemyBuildings.erase(it);
+			} else {
+				it++;
 			}
 		}
 	}
 
-	for (auto iter = enemyArmy.begin(); iter != enemyArmy.end(); iter++) {
-		auto unit = *iter;
-		if (unit.second.exists()) {
-			if ((IsBuilding || !IsEnemy)(unit.second.u)) {
-				removeFromEnemyArmy(unit.first);
-				DebugMessenger::Instance() << "remove enemy army on validation" << std::endl;
+	{
+		auto it = enemyArmy.begin();
+		while (it != enemyArmy.end()) {
+			bool erase = false;
+			if (it->exists()) {
+				if ((IsBuilding || !IsEnemy)(it->u)) {
+					erase = true;
+					DebugMessenger::Instance() << "remove enemy army on validation" << std::endl;
+				}
+			}
+
+			if (erase) {
+				it = enemyArmy.erase(it);
+			} else {
+				it++;
 			}
 		}
 	}

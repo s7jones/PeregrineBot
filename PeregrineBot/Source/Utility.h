@@ -8,3 +8,5 @@ BWAPI::Position GetBasePos(const BWAPI::TilePosition tp);
 double DistanceGround(const BWAPI::TilePosition start, const BWAPI::TilePosition end);
 double TimeGround(const BWAPI::TilePosition start, const BWAPI::TilePosition end);
 double TimeAir(const BWAPI::TilePosition start, const BWAPI::TilePosition end);
+
+void errorMessage(std::string message);
