@@ -58,9 +58,9 @@ void ArmyManager::ZerglingAttack(Unit u)
 
 	if (!priorityTarget) {
 		if (u->isIdle()) {
-			Unit enemy_atall = u->getClosestUnit(IsEnemy);
-			if (enemy_atall) {
-				OrderManager::Instance().Attack(u, enemy_atall);
+			Unit closestGroundEnemy = u->getClosestUnit(IsEnemy && !IsFlying);
+			if (closestGroundEnemy) {
+				OrderManager::Instance().Attack(u, closestGroundEnemy);
 			} else {
 				if (isEnemyBaseFound) {
 					if (!isEnemyBaseDestroyed) {
