@@ -218,7 +218,7 @@ void InformationManager::UpdateScouting()
 		auto p = *it;
 		if (Broodwar->isVisible(TilePosition(p))) {
 			scoutedPositions.insert(p);
-			unscoutedPositions.erase(it);
+			it = unscoutedPositions.erase(it);
 			if (!isEnemyBaseFound) {
 				// replace IsBuilding by IsResourceDepot?
 				if (Broodwar->getUnitsOnTile(TilePosition(p),
