@@ -9,6 +9,7 @@ class WorkerManager {
 public:
 	static WorkerManager& Instance();
 	void DoAllWorkerTasks(BWAPI::Unit u);
+	void incrementBuildOrder();
 
 	// To workaround Compiler Error C2797 in VS2013 had to do this
 	// https://msdn.microsoft.com/en-us/library/dn793970.aspx

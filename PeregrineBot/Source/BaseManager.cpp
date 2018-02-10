@@ -57,7 +57,7 @@ void BaseManager::ManageBases(Unit base)
 		    && (WorkerManager::Instance().bo[WorkerManager::Instance().indx] == UnitTypes::Zerg_Drone)) {
 			if (!base->getLarva().empty()) {
 				base->train(UnitTypes::Zerg_Drone);
-				WorkerManager::Instance().indx++;
+				WorkerManager::Instance().incrementBuildOrder();
 			}
 		}
 
@@ -65,7 +65,7 @@ void BaseManager::ManageBases(Unit base)
 		    && ((WorkerManager::Instance().bo[WorkerManager::Instance().indx] == UnitTypes::Zerg_Overlord))) {
 			if (!base->getLarva().empty()) {
 				base->train(UnitTypes::Zerg_Overlord);
-				WorkerManager::Instance().indx++;
+				WorkerManager::Instance().incrementBuildOrder();
 			}
 		}
 
@@ -79,7 +79,7 @@ void BaseManager::ManageBases(Unit base)
 		    && zergBO) {
 			if (!base->getLarva().empty()) {
 				base->train(UnitTypes::Zerg_Zergling);
-				WorkerManager::Instance().indx++;
+				WorkerManager::Instance().incrementBuildOrder();
 			}
 		}
 

@@ -60,6 +60,15 @@ void WorkerManager::DoAllWorkerTasks(Unit u)
 	}
 }
 
+void WorkerManager::incrementBuildOrder()
+{
+	if (indx < bo.size()) {
+		indx++;
+	} else {
+		buildOrderComplete = true;
+	}
+}
+
 //s7jones: @PurpleWaveJadien In plain english, is mineral locking : -spam worker on mineral until it has gathered - return with minerals once it has gathered - each worker assigned to one mineral always
 //jaj22 : spam every other frame at most
 //s7jones : @PurpleWaveJadien - also have no more than 2 / 2.5 workers to a mineral patch ? -choose minerals based on closest then least amount of workers ?
