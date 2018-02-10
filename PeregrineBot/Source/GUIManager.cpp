@@ -63,15 +63,17 @@ void GUIManager::draw()
 
 void GUIManager::drawOnScreenMessages()
 {
-	for (auto messageInfo = messageBuffer.begin(); messageInfo != messageBuffer.end(); messageInfo++) {
-		if (messageInfo->second.frames > 0) {
-			drawTextOnUnit(messageInfo->first, messageInfo->second.format);
+	for (auto it = messageBuffer.begin(); it != messageBuffer.end(); it++) {
+		if (it->second.frames > 0) {
+			drawTextOnUnit(it->first, it->second.format);
 		}
 
-		messageInfo->second.frames--;
+		it->second.frames--;
 
-		if (messageInfo->second.frames <= 0) {
-			messageBuffer.erase(messageInfo->first);
+		if (it->second.frames <= 0) {
+			it = messageBuffer.erase(it);
+		} else {
+			it++;
 		}
 	}
 }

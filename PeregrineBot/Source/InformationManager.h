@@ -96,8 +96,6 @@ public:
 private:
 	void addToEnemyBuildings(BWAPI::Unit unit);
 	void addToEnemyArmy(BWAPI::Unit unit);
-	void removeFromEnemyBuildings(UnitInfo unit);
-	void removeFromEnemyArmy(UnitInfo unit);
 	void validateEnemyUnits();
 
 	float maxBaseToBaseDistance;

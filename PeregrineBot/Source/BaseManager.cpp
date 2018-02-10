@@ -26,20 +26,29 @@ void BaseManager::ManageBases(Unit base)
 
 	//auto invaders = (*result.first).checkForInvaders();
 
-	for (auto trainee : workersTraining) {
+	auto it = workersTraining.begin();
+	while (it != workersTraining.end()) {
+		auto trainee = *it;
+		bool erase   = false;
 		if (!trainee->exists()) {
 			if (!trainee->isMorphing()) {
 				if (trainee->getType() == UnitTypes::Zerg_Drone) {
-					workersTraining.erase(trainee);
+					erase = true;
 					workers.insert(trainee);
 				} else if (trainee->getType() == UnitTypes::Zerg_Larva) {
-					workersTraining.erase(trainee);
+					erase = true;
 					errorMessage("training worker is larva");
 				}
 			} else {
-				workersTraining.erase(trainee);
+				erase = true;
 				errorMessage("training worker isn't morphing");
 			}
+		}
+
+		if (erase) {
+			it = workersTraining.erase(it);
+		} else {
+			it++;
 		}
 	}
 
@@ -136,9 +145,13 @@ Base::Base(BWAPI::Unit u)
 BWAPI::Unitset Base::checkForInvaders() const
 {
 	auto units = base->getUnitsInRadius(borderRadius, IsEnemy && !IsFlying);
-	for (auto unit : units) {
+	auto it    = units.begin();
+	while (it != units.end()) {
+		auto unit = *it;
 		if (BWTA::getRegion(unit->getPosition()) != BWTA::getRegion(base->getPosition())) {
-			units.erase(unit);
+			units.erase(it);
+		} else {
+			it++;
 		}
 	}
 	return units;

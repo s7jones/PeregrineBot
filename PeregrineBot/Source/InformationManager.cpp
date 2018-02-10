@@ -213,10 +213,12 @@ void InformationManager::Update()
 
 void InformationManager::UpdateScouting()
 {
-	for (auto p : unscoutedPositions) {
+	auto it = unscoutedPositions.begin();
+	while (it != unscoutedPositions.end()) {
+		auto p = *it;
 		if (Broodwar->isVisible(TilePosition(p))) {
 			scoutedPositions.insert(p);
-			unscoutedPositions.erase(p);
+			unscoutedPositions.erase(it);
 			if (!isEnemyBaseFound) {
 				// replace IsBuilding by IsResourceDepot?
 				if (Broodwar->getUnitsOnTile(TilePosition(p),
@@ -232,6 +234,8 @@ void InformationManager::UpdateScouting()
 					}
 				}
 			}
+		} else {
+			it++;
 		}
 	}
 
@@ -378,13 +382,13 @@ void InformationManager::onUnitDestroy(BWAPI::Unit unit)
 {
 	if ((IsEnemy)(unit)) {
 		if ((IsBuilding)(unit)) {
-			removeFromEnemyBuildings(unit);
+			enemyBuildings.erase(unit);
 			if (((IsResourceDepot)(unit) == true) && (unit->getPosition() == enemyBase)) {
 				isEnemyBaseDestroyed = true;
 				DebugMessenger::Instance() << "destroyed enemy base: " << Broodwar->getFrameCount() << std::endl;
 			}
 		} else {
-			removeFromEnemyArmy(unit);
+			enemyArmy.erase(unit);
 		}
 	}
 }
@@ -394,10 +398,10 @@ void InformationManager::onUnitMorph(BWAPI::Unit unit)
 	if ((IsEnemy)(unit)) {
 		if ((IsBuilding)(unit)) {
 			addToEnemyBuildings(unit);
-			removeFromEnemyArmy(unit);
+			enemyArmy.erase(unit);
 		} else {
 			addToEnemyArmy(unit);
-			removeFromEnemyBuildings(unit);
+			enemyBuildings.erase(unit);
 		}
 	}
 }
@@ -422,37 +426,42 @@ void InformationManager::addToEnemyArmy(BWAPI::Unit unit)
 	}
 }
 
-void InformationManager::removeFromEnemyBuildings(UnitInfo unit)
-{
-	enemyBuildings.erase(unit);
-}
-
-void InformationManager::removeFromEnemyArmy(UnitInfo unit)
-{
-	enemyArmy.erase(unit);
-}
-
 void InformationManager::validateEnemyUnits()
 {
 	// be careful about removing while iterating sets
 	// https://stackoverflow.com/a/2874533/5791272
 
-	for (auto iter = enemyBuildings.begin(); iter != enemyBuildings.end(); iter++) {
-		if (iter->exists()) {
-			if ((!IsBuilding || !IsEnemy)(iter->u)) {
-				removeFromEnemyBuildings(*iter);
+	auto it = enemyBuildings.begin();
+	while (it != enemyBuildings.end()) {
+		bool erase = false;
+		if (it->exists()) {
+			if ((!IsBuilding || !IsEnemy)(it->u)) {
+				erase = true;
 				DebugMessenger::Instance() << "remove enemy building on validation" << std::endl;
 			}
 		}
+
+		if (erase) {
+			it = enemyBuildings.erase(it);
+		} else {
+			it++;
+		}
 	}
 
-	for (auto iter = enemyArmy.begin(); iter != enemyArmy.end(); iter++) {
-		auto unit = *iter;
-		if (iter->exists()) {
-			if ((IsBuilding || !IsEnemy)(iter->u)) {
-				removeFromEnemyArmy(*iter);
+	auto it = enemyArmy.begin();
+	while (it != enemyArmy.end()) {
+		bool erase = false;
+		if (it->exists()) {
+			if ((IsBuilding || !IsEnemy)(it->u)) {
+				erase = true;
 				DebugMessenger::Instance() << "remove enemy army on validation" << std::endl;
 			}
+		}
+
+		if (erase) {
+			it = enemyArmy.erase(it);
+		} else {
+			it++;
 		}
 	}
 }
