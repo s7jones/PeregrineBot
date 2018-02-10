@@ -19,7 +19,8 @@ void OrderManager::Update()
 
 void OrderManager::UpdateUnitsWaitingSinceLastOrder()
 {
-	for (auto it = unitsToWaitAfterOrder.begin(); it != unitsToWaitAfterOrder.end();) {
+	auto it = unitsToWaitAfterOrder.begin();
+	while (it != unitsToWaitAfterOrder.end()) {
 		++(it->second); // increment counter
 		if (it->second >= 8) {
 			it = unitsToWaitAfterOrder.erase(it);
