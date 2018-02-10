@@ -149,7 +149,7 @@ BWAPI::Unitset Base::checkForInvaders() const
 	while (it != units.end()) {
 		auto unit = *it;
 		if (BWTA::getRegion(unit->getPosition()) != BWTA::getRegion(base->getPosition())) {
-			units.erase(it);
+			it = units.erase(it);
 		} else {
 			it++;
 		}
