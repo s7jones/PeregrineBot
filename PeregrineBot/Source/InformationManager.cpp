@@ -32,7 +32,6 @@ void InformationManager::Setup()
 		errorMessage("no enemy");
 	}
 
-	bool isIslandsOnMap = false;
 	for (auto bl : BWTA::getBaseLocations()) {
 		if (bl->isIsland()) {
 			isIslandsOnMap = true;
