@@ -1,8 +1,9 @@
 #include "PeregrineBot.h"
 
 #include "ArmyManager.h"
-#include "BWTAManager.h"
 #include "BaseManager.h"
+#include "BuildOrderManager.h"
+#include "BWTAManager.h"
 #include "FileManager.h"
 #include "GUIManager.h"
 #include "InformationManager.h"
@@ -149,18 +150,18 @@ void PeregrineBot::onFrame()
 			continue;
 		}
 
-		if (!WorkerManager::Instance().buildOrderComplete) {
-			if ((*WorkerManager::Instance().boIndex == UnitTypes::Zerg_Spawning_Pool)
+		if (!BuildOrderManager::Instance().buildOrderComplete) {
+			if ((*BuildOrderManager::Instance().boIndex == UnitTypes::Zerg_Spawning_Pool)
 			    && (u->getType() == UnitTypes::Zerg_Spawning_Pool) && (u->isBeingConstructed())) {
-				WorkerManager::Instance().incrementBuildOrder();
-				WorkerManager::Instance().pool = true;
+				BuildOrderManager::Instance().incrementBuildOrder();
+				BuildOrderManager::Instance().pool = true;
 				DebugMessenger::Instance() << "pool isBeingConstructed: " << Broodwar->getFrameCount() << "F" << std::endl;
 			}
 		}
 
-		if ((!WorkerManager::Instance().poolready)
+		if ((!BuildOrderManager::Instance().poolready)
 		    && (u->getType() == UnitTypes::Zerg_Spawning_Pool) && (u->isCompleted())) {
-			WorkerManager::Instance().poolready = true;
+			BuildOrderManager::Instance().poolready = true;
 			DebugMessenger::Instance() << "pool ready: " << Broodwar->getFrameCount() << "F" << std::endl;
 		}
 

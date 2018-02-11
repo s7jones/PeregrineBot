@@ -1,5 +1,6 @@
 #include "WorkerManager.h"
 
+#include "BuildOrderManager.h"
 #include "OrderManager.h"
 #include "Utility.h"
 
@@ -40,9 +41,9 @@ void WorkerManager::DoAllWorkerTasks(Unit u)
 			DebugMessenger::Instance() << "is idle and has power up?" << std::endl;
 		}
 	}
-	if (!buildOrderComplete) {
-		if (*boIndex == UnitTypes::Zerg_Spawning_Pool) {
-			if ((!pool) && (Broodwar->self()->minerals() >= UnitTypes::Zerg_Spawning_Pool.mineralPrice())) {
+	if (!BuildOrderManager::Instance().buildOrderComplete) {
+		if (*BuildOrderManager::Instance().boIndex == UnitTypes::Zerg_Spawning_Pool) {
+			if ((!BuildOrderManager::Instance().pool) && (Broodwar->self()->minerals() >= UnitTypes::Zerg_Spawning_Pool.mineralPrice())) {
 				if ((poolLastChecked + 115) < Broodwar->getFrameCount()) {
 					//find a location for spawning pool and construct it
 					TilePosition buildPosition = Broodwar->getBuildLocation(UnitTypes::Zerg_Spawning_Pool, u->getTilePosition());
@@ -61,14 +62,6 @@ void WorkerManager::DoAllWorkerTasks(Unit u)
 				return;
 			}
 		}
-	}
-}
-
-void WorkerManager::incrementBuildOrder()
-{
-	boIndex++;
-	if (boIndex == bo.end()) {
-		buildOrderComplete = true;
 	}
 }
 
