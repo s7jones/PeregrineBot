@@ -1,9 +1,11 @@
 #include "InformationManager.h"
 
 #include "OrderManager.h"
+#include "BrainTree.h"
 
 using namespace BWAPI;
 using namespace Filter;
+using namespace BrainTree;
 
 InformationManager::InformationManager()
 {
@@ -257,6 +259,60 @@ void InformationManager::OverlordScouting(BWAPI::Unit overlord)
 	} else {
 		OverlordScoutingAfterBaseFound(overlord);
 	}
+}
+
+class Decision : public Selector {
+public:
+	Decision() {}
+	~Decision() {}
+	Decision(Blackboard::Ptr blackboard) : blackboard(blackboard) {}
+
+	Status update() override
+	{
+		if (!has_children()) {
+			return Status::Success;
+		}
+
+		bool result = condition();
+
+		if (result) {
+			auto& child = child_true;
+		}
+		else {
+			auto& child = child_false;
+		}
+		
+		// Keep going until a child behavior says it's running.
+		while (1) {
+			
+			auto &child = children.at(index);
+			auto status = child->tick();
+
+			// If the child succeeds, or keeps running, do the same.
+			if (status != Status::Failure) {
+				return status;
+			}
+
+			// Hit the end of the array, it didn't end well...
+			if (++index == children.size()) {
+				return Status::Failure;
+			}
+		}
+
+		return s;
+	}
+
+protected:
+	Blackboard::Ptr blackboard;
+	std::function<bool()> condition;
+};
+
+void InformationManager::OverlordScoutingBT(BWAPI::Unit u)
+{
+	BehaviorTree tree;
+
+
+
 }
 
 void InformationManager::OverlordScoutingAtGameStart(BWAPI::Unit overlord)
