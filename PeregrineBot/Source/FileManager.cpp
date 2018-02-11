@@ -21,7 +21,7 @@ FileManager& FileManager::Instance()
 bool FileManager::readJsonConfig()
 {
 	// TOML snippet for later?
-	boost::filesystem::path toml_config_path("./bwapi-data/read/config.toml");
+	boost::filesystem::path toml_config_path("./bwapi-data/read/PeregrineConfig.toml");
 
 	bool debug_flag_toml = false;
 
