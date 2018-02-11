@@ -44,20 +44,23 @@ void UtilityManager::constructOptions()
 	if (enemyRace != Races::Unknown) {
 		switch (enemyRace) {
 		case Races::Enum::Protoss: {
-			auto utilityClosest = [](Unit u) -> std::pair<double, Unit> {
-				Unit other = u->getClosestUnit(
-				    IsEnemy && (GetType == UnitTypes::Protoss_Zealot || GetType == UnitTypes::Protoss_Photon_Cannon));
-				double score = other ? 1 : 0;
+			auto utilityClosest = [& scores = scores](Unit u) -> std::pair<double, Unit> {
+				auto filter = IsEnemy
+				    && (GetType == UnitTypes::Protoss_Zealot
+				        || GetType == UnitTypes::Protoss_Photon_Cannon);
+				Unit other   = u->getClosestUnit(filter);
+				double score = other ? scores.p.closestZealCann : 0;
 				auto p       = std::make_pair(score, other);
 				return p;
 			};
 			Option enemyClosest = Option(utilityClosest, "attack closest zealot/cannon");
 			options.push_back(enemyClosest);
 
-			auto utilitySupply = [](Unit u) -> std::pair<double, Unit> {
-				Unit supply = u->getClosestUnit(
-				    IsEnemy && GetType == UnitTypes::Protoss_Pylon);
-				double score = supply ? 0.9 : 0;
+			auto utilitySupply = [& scores = scores](Unit u) -> std::pair<double, Unit> {
+				auto filter = IsEnemy
+				    && GetType == UnitTypes::Protoss_Pylon;
+				Unit supply  = u->getClosestUnit(filter);
+				double score = supply ? scores.p.closestPyln : 0;
 				auto p       = std::make_pair(score, supply);
 				return p;
 			};
@@ -65,18 +68,20 @@ void UtilityManager::constructOptions()
 			Option enemySupply = Option(utilitySupply, "attack closest pylon");
 			options.push_back(enemySupply);
 
-			auto utilityWorker = [](Unit u) -> std::pair<double, Unit> {
-				Unit worker  = u->getClosestUnit(IsEnemy && IsWorker);
-				double score = worker ? 0.8 : 0;
+			auto utilityWorker = [& scores = scores](Unit u) -> std::pair<double, Unit> {
+				auto filter  = IsEnemy && IsWorker;
+				Unit worker  = u->getClosestUnit(filter);
+				double score = worker ? scores.p.closestWork : 0;
 				auto p       = std::make_pair(score, worker);
 				return p;
 			};
 			Option enemyWorker = Option(utilityWorker, "attack closest worker");
 			options.push_back(enemyWorker);
 
-			auto utilityAtAll = [](Unit u) -> std::pair<double, Unit> {
-				Unit any     = u->getClosestUnit(IsEnemy && !IsFlying);
-				double score = any ? 0.7 : 0;
+			auto utilityAtAll = [& scores = scores](Unit u) -> std::pair<double, Unit> {
+				auto filter  = IsEnemy && !IsFlying;
+				Unit any     = u->getClosestUnit(filter);
+				double score = any ? scores.p.closestAll : 0;
 				auto p       = std::make_pair(score, any);
 				return p;
 			};
@@ -86,28 +91,46 @@ void UtilityManager::constructOptions()
 			break;
 		}
 		case Races::Enum::Zerg: {
-			auto utilityClosest = [](Unit u) -> std::pair<double, Unit> {
-				Unit other = u->getClosestUnit(
-				    IsEnemy && (GetType == UnitTypes::Zerg_Zergling || GetType == UnitTypes::Zerg_Sunken_Colony || IsWorker));
-				double score = other ? 1 : 0;
+			// stateful lambdas - https://youtu.be/_1X9D8Z5huA
+			auto utilityClosest = [& scores = scores](Unit u) -> std::pair<double, Unit> {
+				auto filter = IsEnemy
+				    && (GetType == UnitTypes::Zerg_Zergling
+				        || GetType == UnitTypes::Zerg_Sunken_Colony
+				        || IsWorker);
+				Unit other   = u->getClosestUnit(filter);
+				double score = other ? scores.z.closestLingSunkWork : 0;
 				auto p       = std::make_pair(score, other);
 				return p;
 			};
 			Option enemyClosest = Option(utilityClosest, "attack closest zergling/sunken/worker");
 			options.push_back(enemyClosest);
 
-			auto utilityWorker = [](Unit u) -> std::pair<double, Unit> {
-				Unit worker  = u->getClosestUnit(IsEnemy && IsWorker);
-				double score = worker ? 0.9 : 0;
+			auto utilityWorker = [& scores = scores](Unit u) -> std::pair<double, Unit> {
+				auto filter  = IsEnemy && IsWorker;
+				Unit worker  = u->getClosestUnit(filter);
+				double score = worker ? scores.z.closestWork : 0;
 				auto p       = std::make_pair(score, worker);
 				return p;
 			};
 			Option enemyWorker = Option(utilityWorker, "attack closest worker");
 			options.push_back(enemyWorker);
 
-			auto utilityAtAll = [](Unit u) -> std::pair<double, Unit> {
-				Unit any     = u->getClosestUnit(IsEnemy && !IsFlying);
-				double score = any ? 0.8 : 0;
+			auto utilityEnemy = [& scores = scores](Unit u) -> std::pair<double, Unit> {
+				auto filter  = IsEnemy && !IsFlying;
+				Unit any     = u->getClosestUnit(filter);
+				double score = any ? scores.z.closestAllNotLarvEgg : 0;
+				auto p       = std::make_pair(score, any);
+				return p;
+			};
+			Option enemyEnemy = Option(utilityEnemy, "attack closest ground enemy(!larva/egg)");
+			options.push_back(enemyEnemy);
+
+			auto utilityAtAll = [& scores = scores](Unit u) -> std::pair<double, Unit> {
+				auto filter = IsEnemy && !IsFlying
+				    && (GetType != UnitTypes::Zerg_Larva
+				        || GetType != UnitTypes::Zerg_Egg);
+				Unit any     = u->getClosestUnit(filter);
+				double score = any ? scores.z.closestAll : 0;
 				auto p       = std::make_pair(score, any);
 				return p;
 			};
@@ -117,10 +140,14 @@ void UtilityManager::constructOptions()
 			break;
 		}
 		case Races::Enum::Terran: {
-			auto utilityClosest = [](Unit u) -> std::pair<double, Unit> {
-				Unit other = u->getClosestUnit(
-				    IsEnemy && (GetType == UnitTypes::Terran_Marine || GetType == UnitTypes::Terran_Firebat || GetType == UnitTypes::Terran_Bunker || IsWorker));
-				double score = other ? 1 : 0;
+			auto utilityClosest = [& scores = scores](Unit u) -> std::pair<double, Unit> {
+				auto filter = IsEnemy
+				    && (GetType == UnitTypes::Terran_Marine
+				        || GetType == UnitTypes::Terran_Firebat
+				        || GetType == UnitTypes::Terran_Bunker
+				        || IsWorker);
+				Unit other   = u->getClosestUnit(filter);
+				double score = other ? scores.t.closestMrneFireBunkWork : 0;
 				auto p       = std::make_pair(score, other);
 				return p;
 			};
@@ -128,28 +155,31 @@ void UtilityManager::constructOptions()
 			    utilityClosest, "attack closest marine/firebat/bunker/worker");
 			options.push_back(enemyClosest);
 
-			auto utilityWorker = [](Unit u) -> std::pair<double, Unit> {
-				Unit worker  = u->getClosestUnit(IsEnemy && IsWorker);
-				double score = worker ? 0.9 : 0;
+			auto utilityWorker = [& scores = scores](Unit u) -> std::pair<double, Unit> {
+				auto filter  = IsEnemy && IsWorker;
+				Unit worker  = u->getClosestUnit(filter);
+				double score = worker ? scores.t.closestWork : 0;
 				auto p       = std::make_pair(score, worker);
 				return p;
 			};
 			Option enemyWorker = Option(utilityWorker, "attack closest worker");
 			options.push_back(enemyWorker);
 
-			auto utilitySupply = [](Unit u) -> std::pair<double, Unit> {
-				Unit supply = u->getClosestUnit(
-				    IsEnemy && GetType == UnitTypes::Terran_Supply_Depot);
-				double score = supply ? 0.8 : 0;
+			auto utilitySupply = [& scores = scores](Unit u) -> std::pair<double, Unit> {
+				auto filter = IsEnemy
+				    && GetType == UnitTypes::Terran_Supply_Depot;
+				Unit supply  = u->getClosestUnit(filter);
+				double score = supply ? scores.t.closestSdpt : 0;
 				auto p       = std::make_pair(score, supply);
 				return p;
 			};
 			Option enemySupply = Option(utilitySupply, "attack closest depot");
 			options.push_back(enemySupply);
 
-			auto utilityAtAll = [](Unit u) -> std::pair<double, Unit> {
-				Unit any     = u->getClosestUnit(IsEnemy && !IsFlying);
-				double score = any ? 0.7 : 0;
+			auto utilityAtAll = [& scores = scores](Unit u) -> std::pair<double, Unit> {
+				auto filter  = IsEnemy && !IsFlying;
+				Unit any     = u->getClosestUnit(filter);
+				double score = any ? scores.t.closestAll : 0;
 				auto p       = std::make_pair(score, any);
 				return p;
 			};
