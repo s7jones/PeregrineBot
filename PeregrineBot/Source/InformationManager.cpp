@@ -261,18 +261,14 @@ void InformationManager::OverlordScouting(BWAPI::Unit overlord)
 	}
 }
 
-class Decision : public Selector {
+class Decision : public Node {
 public:
 	Decision() {}
 	~Decision() {}
 	Decision(Blackboard::Ptr blackboard) : blackboard(blackboard) {}
 
-	Status update() override
+	void initialize() override
 	{
-		if (!has_children()) {
-			return Status::Success;
-		}
-
 		bool result = condition();
 
 		if (result) {
@@ -281,30 +277,22 @@ public:
 		else {
 			auto& child = child_false;
 		}
-		
-		// Keep going until a child behavior says it's running.
-		while (1) {
-			
-			auto &child = children.at(index);
-			auto status = child->tick();
+	}
 
-			// If the child succeeds, or keeps running, do the same.
-			if (status != Status::Failure) {
-				return status;
-			}
+	Status update() override
+	{
+		auto status = child->tick();
 
-			// Hit the end of the array, it didn't end well...
-			if (++index == children.size()) {
-				return Status::Failure;
-			}
-		}
-
-		return s;
+		return status;
 	}
 
 protected:
 	Blackboard::Ptr blackboard;
 	std::function<bool()> condition;
+
+	Node::Ptr child;
+	Node::Ptr child_true;
+	Node::Ptr child_false;
 };
 
 void InformationManager::OverlordScoutingBT(BWAPI::Unit u)
