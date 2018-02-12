@@ -70,7 +70,6 @@ public:
 	void OverlordScoutingAfterBaseFound(BWAPI::Unit overlord);
 	void OverlordRetreatToHome(BWAPI::Unit overlord);
 
-	BWAPI::Position enemyBase = { 0, 0 };
 	bool isEnemyBaseDeduced   = false;
 	bool isEnemyBaseFound     = false;
 	bool isEnemyBaseReached   = false;
@@ -92,6 +91,7 @@ public:
 
 	std::set<UnitInfo> enemyBuildings;
 	std::set<UnitInfo> enemyArmy;
+	std::shared_ptr<UnitInfo> enemyMain = nullptr;
 
 private:
 	void addToEnemyBuildings(BWAPI::Unit unit);

@@ -35,7 +35,8 @@ private:
 			double closestMrneFireBunkWork = 1;
 			double closestWork             = 0.9;
 			double closestSdpt             = 0.8;
-			double closestAll              = 0.7;
+			double enemyBase               = 0.7;
+			double closestAll              = 0.6;
 		} t;
 		struct zutilities {
 			double closestLingSunkWork  = 1;

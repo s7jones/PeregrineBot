@@ -3,6 +3,7 @@
 #include "GUIManager.h"
 #include "InformationManager.h"
 #include "OrderManager.h"
+#include "UnitInfo.h"
 
 using namespace BWAPI;
 using namespace Filter;
@@ -21,8 +22,8 @@ bool UtilityManager::getBestActionForZergling(BWAPI::Unit zergling)
 	bool flag             = false;
 	auto isEnemyBaseFound = InformationManager::Instance().isEnemyBaseFound;
 	if (isEnemyBaseFound) {
-		auto enemyBase = InformationManager::Instance().enemyBase;
-		if (BWTA::getRegion(enemyBase) == BWTA::getRegion(zergling->getPosition())) {
+		auto enemyMain = InformationManager::Instance().enemyMain;
+		if (BWTA::getRegion(enemyMain->getPosition()) == BWTA::getRegion(zergling->getPosition())) {
 			flag = performBestActionForZerglingInEnemyBase(zergling);
 			if (flag) return true;
 		}
@@ -182,6 +183,27 @@ void UtilityManager::constructOptions()
 			options.push_back(enemyAtAll);
 
 			break;
+
+			auto utilityEnemyBase = [& scores = scores](Unit u) -> std::pair<double, Unit> {
+				auto enemyMain = InformationManager::Instance().enemyMain;
+				double score   = scores.t.enemyBase;
+				if (!enemyMain->u) {
+					score = 0;
+				} else {
+					auto p = enemyMain->getPosition();
+					if (Broodwar->isVisible(TilePosition(p))) {
+						auto unitsOnBaseTile = Broodwar->getUnitsOnTile(TilePosition(p),
+						                                                IsEnemy && IsVisible && Exists && IsResourceDepot && !IsLifted);
+						if (unitsOnBaseTile.size() == 0) {
+							score = 0;
+						}
+					}
+				}
+				auto p = std::make_pair(score, enemyMain->u);
+				return p;
+			};
+			Option enemyBase = Option(utilityEnemyBase, "attack known main base");
+			options.push_back(enemyBase);
 		}
 		}
 	}

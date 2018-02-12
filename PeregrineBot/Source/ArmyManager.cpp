@@ -19,7 +19,7 @@ ArmyManager& ArmyManager::Instance()
 
 void ArmyManager::ZerglingAttack(Unit u)
 {
-	auto enemyBase                       = InformationManager::Instance().enemyBase;
+	auto enemyMain                       = InformationManager::Instance().enemyMain;
 	auto enemyRace                       = InformationManager::Instance().enemyRace;
 	auto unscoutedPositions              = InformationManager::Instance().unscoutedPositions;
 	auto isEnemyBaseFromOverlordSpotting = InformationManager::Instance().isEnemyBaseFromOverlordSpotting;
@@ -31,7 +31,7 @@ void ArmyManager::ZerglingAttack(Unit u)
 	auto enemyBuildings                  = InformationManager::Instance().enemyBuildings;
 
 	if (isEnemyBaseFound) {
-		if ((!isEnemyBaseReached) && (BWTA::getRegion(u->getPosition()) == BWTA::getRegion(enemyBase))) {
+		if ((!isEnemyBaseReached) && (BWTA::getRegion(u->getPosition()) == BWTA::getRegion(enemyMain->getPosition()))) {
 			InformationManager::Instance().isEnemyBaseReached = true;
 			DebugMessenger::Instance()
 			    << "reach enemy base: " << Broodwar->getFrameCount() << "F"
@@ -64,13 +64,13 @@ void ArmyManager::ZerglingAttack(Unit u)
 			} else {
 				if (isEnemyBaseFound) {
 					if (!isEnemyBaseDestroyed) {
-						if (!Broodwar->isVisible(TilePosition(enemyBase))) {
-							OrderManager::Instance().Attack(u, enemyBase);
+						if (!Broodwar->isVisible(TilePosition(enemyMain->getPosition()))) {
+							OrderManager::Instance().Attack(u, *enemyMain);
 						} else if (!Broodwar->getUnitsOnTile(
-						                        TilePosition(enemyBase),
+						                        TilePosition(enemyMain->getPosition()),
 						                        IsEnemy && IsVisible && Exists && IsBuilding && !IsLifted)
 						                .empty()) {
-							OrderManager::Instance().Attack(u, enemyBase);
+							OrderManager::Instance().Attack(u, *enemyMain);
 						} else if (enemyBuildings.size() != 0) {
 							ZerglingAttackKnownBuildings(u);
 						} else {
@@ -85,7 +85,7 @@ void ArmyManager::ZerglingAttack(Unit u)
 					if (enemyBuildings.size() != 0) {
 						ZerglingAttackKnownBuildings(u);
 					} else if (isEnemyBaseFromOverlordSpotting) {
-						OrderManager::Instance().Move(u, enemyBase);
+						OrderManager::Instance().Move(u, *enemyMain);
 						DebugMessenger::Instance() << "scout overlord spot" << std::endl;
 					} else {
 						ZerglingScoutingBeforeBaseFound(u);

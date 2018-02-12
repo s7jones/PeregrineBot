@@ -1,5 +1,7 @@
 #include "OrderManager.h"
 
+#include "UnitInfo.h"
+
 using namespace BWAPI;
 
 OrderManager::OrderManager()
@@ -48,16 +50,20 @@ void OrderManager::Attack(BWAPI::Unit attacker, BWAPI::Unit u)
 	attacker->attack(u);
 }
 
-void OrderManager::Move(BWAPI::Unit mover, BWAPI::Position p)
+void OrderManager::Attack(BWAPI::Unit attacker, UnitInfo u)
 {
-	unitsToWaitAfterOrder.insert({ mover, 0 });
-	mover->move(p, false);
+	Attack(attacker, u.getPosition());
 }
 
 void OrderManager::Move(BWAPI::Unit mover, BWAPI::Position p, bool shiftClick)
 {
 	unitsToWaitAfterOrder.insert({ mover, 0 });
 	mover->move(p, shiftClick);
+}
+
+void OrderManager::Move(BWAPI::Unit mover, UnitInfo u, bool shiftClick)
+{
+	Move(mover, u.getPosition(), shiftClick);
 }
 
 void OrderManager::Build(BWAPI::Unit builder, BWAPI::UnitType buildingType, BWAPI::TilePosition buildPosition)
