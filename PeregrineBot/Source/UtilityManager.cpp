@@ -44,6 +44,40 @@ void UtilityManager::constructOptions()
 	if (enemyRace != Races::Unknown) {
 		switch (enemyRace) {
 		case Races::Enum::Protoss: {
+			auto utilityInjrZeal = [& scores = scores](const Unit u) -> UtilResult {
+				auto weapon        = u->getType().groundWeapon();
+				const auto enemies = u->getUnitsInRadius(
+				    weapon.maxRange() * 2,
+				    IsEnemy
+				        && (GetType == UnitTypes::Protoss_Zealot));
+				double bestScore = 0;
+				int bestHits     = std::numeric_limits<int>::infinity();
+				int worstHits    = 0;
+				Unit bestChoice  = NULL;
+				for (const auto enemy : enemies) {
+					int effectiveDamage = weapon.damageAmount() - enemy->getType().armor();
+					int hp              = enemy->getHitPoints();
+					int hits            = ceil(hp / effectiveDamage);
+					if (hits < bestHits) {
+						bestHits = hits;
+					}
+					if (hits > worstHits) {
+						worstHits = hits;
+					}
+					int maxHits  = ceil(UnitTypes::Protoss_Zealot.maxHitPoints() / effectiveDamage);
+					double score = scores.p.injrZeal
+					    + (maxHits - hits) / maxHits;
+					if (bestScore < score) {
+						bestScore  = score;
+						bestChoice = enemy;
+					}
+				}
+				auto p = std::make_pair(bestScore, bestChoice);
+				return p;
+			};
+			Option injrZeal = Option(utilityInjrZeal, "attack injured zealot");
+			options.push_back(injrZeal);
+
 			// couldn't take unit filter out of getClosestUnit without a runtime crash
 			auto utilityClosest = [& scores = scores](const Unit u) -> UtilResult {
 				const Unit other = u->getClosestUnit(
@@ -111,7 +145,8 @@ void UtilityManager::constructOptions()
 					if (hits > worstHits) {
 						worstHits = hits;
 					}
-					double score = scores.z.injrZerg + (7 - hits) / 7;
+					int maxHits  = ceil(UnitTypes::Zerg_Zergling.maxHitPoints() / effectiveDamage);
+					double score = scores.z.injrZerg + (maxHits - hits) / maxHits;
 					if (bestScore < score) {
 						bestScore  = score;
 						bestChoice = enemy;

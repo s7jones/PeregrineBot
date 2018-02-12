@@ -19,6 +19,7 @@ private:
 
 	struct utilities {
 		struct putilities {
+			double injrZeal        = 2;
 			double closestZealCann = 1;
 			double closestPyln     = 0.9;
 			double closestWork     = 0.8;
