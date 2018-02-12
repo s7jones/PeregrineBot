@@ -5,7 +5,7 @@
 using namespace BWAPI;
 using namespace Filter;
 
-UnitInfo::UnitInfo(const Unit unitToWrap)
+UnitInfo::UnitInfo(const BWAPI::Unit unitToWrap)
 {
 	if (unitToWrap) {
 		u = unitToWrap;

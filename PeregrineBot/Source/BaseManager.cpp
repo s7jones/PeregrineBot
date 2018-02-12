@@ -17,7 +17,7 @@ BaseManager& BaseManager::Instance()
 	return instance;
 }
 
-void BaseManager::ManageBases(const Unit base)
+void BaseManager::ManageBases(const BWAPI::Unit base)
 {
 	auto result = hatcheries.emplace(base);
 
