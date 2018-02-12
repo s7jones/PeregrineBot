@@ -97,6 +97,6 @@ private:
 	void addToEnemyArmy(const BWAPI::Unit& unit);
 	void validateEnemyUnits();
 
-	float maxBaseToBaseDistance;
+	double maxBaseToBaseDistance;
 	bool isPastSpottingTime = false;
 };

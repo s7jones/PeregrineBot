@@ -32,6 +32,7 @@ private:
 			double closestAll              = 0.6;
 		} t;
 		struct zutilities {
+			double injrZerg             = 2;
 			double closestLingSunkWork  = 1;
 			double closestWork          = 0.9;
 			double closestAllNotLarvEgg = 0.8;

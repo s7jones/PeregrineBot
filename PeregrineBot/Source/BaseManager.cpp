@@ -172,7 +172,7 @@ Base::Base(const BWAPI::Unit& u)
 
 BWAPI::Unitset Base::checkForInvaders() const
 {
-	auto units = base->getUnitsInRadius(borderRadius, IsEnemy && !IsFlying);
+	auto units = base->getUnitsInRadius((int)floor(borderRadius), IsEnemy && !IsFlying);
 	auto it    = units.begin();
 	while (it != units.end()) {
 		auto unit = *it;

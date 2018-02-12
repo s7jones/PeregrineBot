@@ -157,12 +157,12 @@ void ArmyManager::ZerglingAttackKnownBuildings(const Unit& u)
 
 	if (enemyBuildingsAccessible.size() != 0) {
 
-		float distanceEnemyBuildingAccessible = std::numeric_limits<float>::infinity();
+		double distanceEnemyBuildingAccessible = std::numeric_limits<double>::infinity();
 		Position buildingAccessiblePos;
 
 		for (auto building : enemyBuildingsAccessible) {
-			Position buildingPos   = building.getPosition();
-			float distanceBuilding = DistanceAir(u->getPosition(), buildingPos);
+			Position buildingPos    = building.getPosition();
+			double distanceBuilding = DistanceAir(u->getPosition(), buildingPos);
 			if (distanceBuilding < distanceEnemyBuildingAccessible) {
 				distanceEnemyBuildingAccessible = distanceBuilding;
 				buildingAccessiblePos           = buildingPos;
