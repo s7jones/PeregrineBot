@@ -19,10 +19,9 @@ bool UtilityManager::getBestActionForZergling(BWAPI::Unit zergling)
 	if (options.size() == 0) {
 		constructOptions();
 	}
-	bool flag             = false;
-	auto isEnemyBaseFound = InformationManager::Instance().isEnemyBaseFound;
-	if (isEnemyBaseFound) {
-		auto enemyMain = InformationManager::Instance().enemyMain;
+	bool flag      = false;
+	auto enemyMain = InformationManager::Instance().enemyMain;
+	if (enemyMain) {
 		if (BWTA::getRegion(enemyMain->getPosition()) == BWTA::getRegion(zergling->getPosition())) {
 			flag = performBestActionForZerglingInEnemyBase(zergling);
 			if (flag) return true;
@@ -187,7 +186,7 @@ void UtilityManager::constructOptions()
 			auto utilityEnemyBase = [& scores = scores](Unit u) -> std::pair<double, Unit> {
 				auto enemyMain = InformationManager::Instance().enemyMain;
 				double score   = scores.t.enemyBase;
-				if (!enemyMain->u) {
+				if (!enemyMain) {
 					score = 0;
 				} else {
 					auto p = enemyMain->getPosition();

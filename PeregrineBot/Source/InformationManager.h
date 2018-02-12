@@ -71,7 +71,6 @@ public:
 	void OverlordRetreatToHome(BWAPI::Unit overlord);
 
 	bool isEnemyBaseDeduced   = false;
-	bool isEnemyBaseFound     = false;
 	bool isEnemyBaseReached   = false;
 	bool isEnemyBaseDestroyed = false;
 	BWAPI::Race enemyRace     = BWAPI::Races::Unknown;

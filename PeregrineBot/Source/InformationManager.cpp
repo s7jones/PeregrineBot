@@ -218,14 +218,13 @@ void InformationManager::UpdateScouting()
 		if (Broodwar->isVisible(TilePosition(p))) {
 			scoutedPositions.insert(p);
 			it = unscoutedPositions.erase(it);
-			if (!isEnemyBaseFound) {
+			if (!enemyMain) {
 				// replace IsBuilding by IsResourceDepot?
 				auto unitsOnBaseTile = Broodwar->getUnitsOnTile(TilePosition(p),
 				                                                IsEnemy && IsVisible && Exists && IsResourceDepot && !IsLifted);
 				if (unitsOnBaseTile.size() > 0) {
 					enemyMain          = std::make_shared<UnitInfo>(*unitsOnBaseTile.begin());
 					isEnemyBaseDeduced = true;
-					isEnemyBaseFound   = true;
 					DebugMessenger::Instance() << "Found enemy base at: " << Broodwar->getFrameCount() << "F" << std::endl;
 					if ((enemyMain->x() == 0) && (enemyMain->y() == 0)) {
 						errorMessage("Found enemy base at 0,0P");
@@ -240,7 +239,7 @@ void InformationManager::UpdateScouting()
 	// add logic here for "not" finding base even after scouting everything
 	// probably only applicable to Terran weird lifting stuff
 
-	if (!(isEnemyBaseDeduced || isEnemyBaseFound) && unscoutedPositions.size() == 1) {
+	if (!(isEnemyBaseDeduced || enemyMain) && unscoutedPositions.size() == 1) {
 		isEnemyBaseDeduced   = true;
 		BWAPI::Position base = (*unscoutedPositions.begin());
 		DebugMessenger::Instance() << "Enemy base deduced to be at: " << base.x << ", " << base.y << "P" << std::endl;
@@ -254,7 +253,7 @@ void InformationManager::OverlordScouting(BWAPI::Unit overlord)
 		return;
 	}
 
-	if (!isEnemyBaseFound) {
+	if (!enemyMain) {
 		OverlordScoutingAtGameStart(overlord);
 	} else {
 		OverlordScoutingAfterBaseFound(overlord);
@@ -384,9 +383,11 @@ void InformationManager::onUnitDestroy(BWAPI::Unit unit)
 	if ((IsEnemy)(unit)) {
 		if ((IsBuilding)(unit)) {
 			enemyBuildings.erase(unit);
-			if (((IsResourceDepot)(unit) == true) && (unit->getPosition() == enemyMain->getPosition())) {
-				isEnemyBaseDestroyed = true;
-				DebugMessenger::Instance() << "destroyed enemy base: " << Broodwar->getFrameCount() << std::endl;
+			if (enemyMain) {
+				if (((IsResourceDepot)(unit) == true) && (unit->getPosition() == enemyMain->getPosition())) {
+					isEnemyBaseDestroyed = true;
+					DebugMessenger::Instance() << "destroyed enemy base: " << Broodwar->getFrameCount() << std::endl;
+				}
 			}
 		} else {
 			enemyArmy.erase(unit);
