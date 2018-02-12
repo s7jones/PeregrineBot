@@ -91,9 +91,37 @@ void UtilityManager::constructOptions()
 		}
 		case Races::Enum::Zerg: {
 			// stateful lambdas - https://youtu.be/_1X9D8Z5huA
-			//auto utilityInjrZerg = [& scores = scores](const Unit& u) -> UtilResult {
-			//	Broodwar->getBestUnit( , , u->getPosition(),)
-			//};
+			auto utilityInjrZerg = [& scores = scores](const Unit& u) -> UtilResult {
+				auto weapon        = u->getType().groundWeapon();
+				const auto enemies = u->getUnitsInRadius(
+				    weapon.maxRange() * 2,
+				    IsEnemy
+				        && (GetType == UnitTypes::Zerg_Zergling));
+				double bestScore = 0;
+				int bestHits     = std::numeric_limits<int>::infinity();
+				int worstHits    = 0;
+				Unit bestChoice  = NULL;
+				for (const auto enemy : enemies) {
+					int effectiveDamage = weapon.damageAmount() - enemy->getType().armor();
+					int hp              = enemy->getHitPoints();
+					int hits            = ceil(hp / effectiveDamage);
+					if (hits < bestHits) {
+						bestHits = hits;
+					}
+					if (hits > worstHits) {
+						worstHits = hits;
+					}
+					double score = scores.z.injrZerg + (7 - hits) / 7;
+					if (bestScore < score) {
+						bestScore  = score;
+						bestChoice = enemy;
+					}
+				}
+				auto p = std::make_pair(bestScore, bestChoice);
+				return p;
+			};
+			Option injrZerg = Option(utilityInjrZerg, "attack injured zerg");
+			options.push_back(injrZerg);
 
 			auto utilityClosest = [& scores = scores](const Unit& u) -> UtilResult {
 				const Unit& other = u->getClosestUnit(
