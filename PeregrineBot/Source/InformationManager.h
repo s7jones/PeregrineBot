@@ -57,18 +57,18 @@ class InformationManager {
 
 public:
 	static InformationManager& Instance();
-	void onUnitShow(const BWAPI::Unit& unit);
-	void onUnitDestroy(const BWAPI::Unit& unit);
-	void onUnitMorph(const BWAPI::Unit& unit);
+	void onUnitShow(const BWAPI::Unit unit);
+	void onUnitDestroy(const BWAPI::Unit unit);
+	void onUnitMorph(const BWAPI::Unit unit);
 
 	void Setup();
 	void SetupScouting();
 	void Update();
 	void UpdateScouting();
-	void OverlordScouting(const BWAPI::Unit& overlord);
-	void OverlordScoutingAtGameStart(const BWAPI::Unit& overlord);
-	void OverlordScoutingAfterBaseFound(const BWAPI::Unit& overlord);
-	void OverlordRetreatToHome(const BWAPI::Unit& overlord);
+	void OverlordScouting(const BWAPI::Unit overlord);
+	void OverlordScoutingAtGameStart(const BWAPI::Unit overlord);
+	void OverlordScoutingAfterBaseFound(const BWAPI::Unit overlord);
+	void OverlordRetreatToHome(const BWAPI::Unit overlord);
 
 	bool isEnemyBaseDeduced   = false;
 	bool isEnemyBaseReached   = false;
@@ -93,8 +93,8 @@ public:
 	std::shared_ptr<UnitInfo> enemyMain = nullptr;
 
 private:
-	void addToEnemyBuildings(const BWAPI::Unit& unit);
-	void addToEnemyArmy(const BWAPI::Unit& unit);
+	void addToEnemyBuildings(const BWAPI::Unit unit);
+	void addToEnemyArmy(const BWAPI::Unit unit);
 	void validateEnemyUnits();
 
 	double maxBaseToBaseDistance;

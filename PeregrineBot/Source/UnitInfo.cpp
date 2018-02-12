@@ -5,7 +5,7 @@
 using namespace BWAPI;
 using namespace Filter;
 
-UnitInfo::UnitInfo(const Unit& unitToWrap)
+UnitInfo::UnitInfo(const Unit unitToWrap)
 {
 	if (unitToWrap) {
 		u = unitToWrap;
@@ -52,11 +52,11 @@ bool UnitInfo::operator<(const UnitInfo& other) const
 	return u < other.u;
 }
 
-bool operator<(const UnitInfo& lhs, const BWAPI::Unit& rhs)
+bool operator<(const UnitInfo& lhs, const BWAPI::Unit rhs)
 {
 	return lhs.u < rhs;
 }
-bool operator<(const BWAPI::Unit& lhs, const UnitInfo& rhs)
+bool operator<(const BWAPI::Unit lhs, const UnitInfo& rhs)
 {
 	return lhs < rhs.u;
 }

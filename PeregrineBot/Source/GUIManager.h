@@ -9,12 +9,12 @@ struct MessageAndFrames {
 class GUIManager {
 public:
 	static GUIManager& Instance();
-	void drawTextOnScreen(const BWAPI::Unit& u, std::string format, int frames);
+	void drawTextOnScreen(const BWAPI::Unit u, std::string format, int frames);
 	void draw();
 
 private:
 	GUIManager();
-	void drawTextOnUnit(const BWAPI::Unit& u, std::string format);
+	void drawTextOnUnit(const BWAPI::Unit u, std::string format);
 	void drawOnScreenMessages();
 	void drawTopLeftOverlay();
 	void calculateAverageFrameTime();

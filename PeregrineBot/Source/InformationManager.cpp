@@ -60,7 +60,7 @@ void InformationManager::Setup()
 void InformationManager::SetupScouting()
 {
 	std::set<Unit> overlords;
-	for (const Unit& u : Broodwar->self()->getUnits()) {
+	for (const Unit u : Broodwar->self()->getUnits()) {
 		if (u->getType() == UnitTypes::Zerg_Overlord)
 			overlords.insert(u);
 	}
@@ -246,7 +246,7 @@ void InformationManager::UpdateScouting()
 	}
 }
 
-void InformationManager::OverlordScouting(const BWAPI::Unit& overlord)
+void InformationManager::OverlordScouting(const BWAPI::Unit overlord)
 {
 	if (overlord->isUnderAttack()) { // if overlord is under attack run back to own base
 		OverlordRetreatToHome(overlord);
@@ -260,7 +260,7 @@ void InformationManager::OverlordScouting(const BWAPI::Unit& overlord)
 	}
 }
 
-void InformationManager::OverlordScoutingAtGameStart(const BWAPI::Unit& overlord)
+void InformationManager::OverlordScoutingAtGameStart(const BWAPI::Unit overlord)
 {
 	if (overlord->isIdle()) {
 		if (Broodwar->getStartLocations().size() == 4) { // map size is 4, use new scouting
@@ -320,7 +320,7 @@ void InformationManager::OverlordScoutingAtGameStart(const BWAPI::Unit& overlord
 	}
 }
 
-void InformationManager::OverlordScoutingAfterBaseFound(const BWAPI::Unit& overlord)
+void InformationManager::OverlordScoutingAfterBaseFound(const BWAPI::Unit overlord)
 {
 	if (overlord->isIdle()) {
 		if (enemyRace != Races::Terran) {
@@ -354,7 +354,7 @@ void InformationManager::OverlordScoutingAfterBaseFound(const BWAPI::Unit& overl
 	}
 }
 
-void InformationManager::OverlordRetreatToHome(const BWAPI::Unit& overlord)
+void InformationManager::OverlordRetreatToHome(const BWAPI::Unit overlord)
 {
 	auto ownBasePos          = GetBasePos(Broodwar->self()->getStartLocation());
 	auto distanceFromOwnBase = overlord->getDistance(ownBasePos);
@@ -367,7 +367,7 @@ void InformationManager::OverlordRetreatToHome(const BWAPI::Unit& overlord)
 	}
 }
 
-void InformationManager::onUnitShow(const BWAPI::Unit& unit)
+void InformationManager::onUnitShow(const BWAPI::Unit unit)
 {
 	if ((IsEnemy)(unit)) {
 		if ((IsBuilding)(unit)) {
@@ -378,7 +378,7 @@ void InformationManager::onUnitShow(const BWAPI::Unit& unit)
 	}
 }
 
-void InformationManager::onUnitDestroy(const BWAPI::Unit& unit)
+void InformationManager::onUnitDestroy(const BWAPI::Unit unit)
 {
 	if ((IsEnemy)(unit)) {
 		if ((IsBuilding)(unit)) {
@@ -395,7 +395,7 @@ void InformationManager::onUnitDestroy(const BWAPI::Unit& unit)
 	}
 }
 
-void InformationManager::onUnitMorph(const BWAPI::Unit& unit)
+void InformationManager::onUnitMorph(const BWAPI::Unit unit)
 {
 	if ((IsEnemy)(unit)) {
 		if ((IsBuilding)(unit)) {
@@ -408,7 +408,7 @@ void InformationManager::onUnitMorph(const BWAPI::Unit& unit)
 	}
 }
 
-void InformationManager::addToEnemyBuildings(const BWAPI::Unit& unit)
+void InformationManager::addToEnemyBuildings(const BWAPI::Unit unit)
 {
 	auto iterAndBool = enemyBuildings.emplace(unit);
 
@@ -418,7 +418,7 @@ void InformationManager::addToEnemyBuildings(const BWAPI::Unit& unit)
 	}
 }
 
-void InformationManager::addToEnemyArmy(const BWAPI::Unit& unit)
+void InformationManager::addToEnemyArmy(const BWAPI::Unit unit)
 {
 	auto iterAndBool = enemyArmy.emplace(unit);
 

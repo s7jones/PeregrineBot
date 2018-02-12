@@ -19,14 +19,14 @@ GUIManager::GUIManager()
 {
 }
 
-void GUIManager::drawTextOnScreen(const BWAPI::Unit& u, std::string format, int frames)
+void GUIManager::drawTextOnScreen(const BWAPI::Unit u, std::string format, int frames)
 {
 	MessageAndFrames mnf = { format, frames };
 
 	messageBuffer.insert_or_assign(u, mnf);
 }
 
-void GUIManager::drawTextOnUnit(const BWAPI::Unit& u, std::string format)
+void GUIManager::drawTextOnUnit(const BWAPI::Unit u, std::string format)
 {
 	if (!u->exists()) {
 		return;

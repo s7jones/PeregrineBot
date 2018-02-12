@@ -17,7 +17,7 @@ BaseManager& BaseManager::Instance()
 	return instance;
 }
 
-void BaseManager::ManageBases(const Unit& base)
+void BaseManager::ManageBases(const Unit base)
 {
 	auto result = hatcheries.emplace(base);
 
@@ -118,7 +118,7 @@ void BaseManager::ManageBases(const Unit& base)
 	}
 }
 
-void BaseManager::onUnitShow(const BWAPI::Unit& unit)
+void BaseManager::onUnitShow(const BWAPI::Unit unit)
 {
 	// if something morphs into a worker, add it
 	if (unit->getType().isWorker() && unit->getPlayer() == Broodwar->self() && unit->getHitPoints() >= 0) {
@@ -126,7 +126,7 @@ void BaseManager::onUnitShow(const BWAPI::Unit& unit)
 	}
 }
 
-void BaseManager::onUnitCreate(const BWAPI::Unit& unit)
+void BaseManager::onUnitCreate(const BWAPI::Unit unit)
 {
 	// if something morphs into a worker, add it
 	if (unit->getType().isWorker() && unit->getPlayer() == Broodwar->self() && unit->getHitPoints() >= 0) {
@@ -134,7 +134,7 @@ void BaseManager::onUnitCreate(const BWAPI::Unit& unit)
 	}
 }
 
-void BaseManager::onUnitDestroy(const BWAPI::Unit& unit)
+void BaseManager::onUnitDestroy(const BWAPI::Unit unit)
 {
 	if (unit->getType().isResourceDepot() && unit->getPlayer() == Broodwar->self()) {
 		hatcheries.erase(Base(unit));
@@ -145,7 +145,7 @@ void BaseManager::onUnitDestroy(const BWAPI::Unit& unit)
 	}
 }
 
-void BaseManager::onUnitMorph(const BWAPI::Unit& unit)
+void BaseManager::onUnitMorph(const BWAPI::Unit unit)
 {
 	// if something morphs into a worker, add it
 	if (unit->getType().isWorker() && unit->getPlayer() == Broodwar->self() && unit->getHitPoints() >= 0) {
@@ -158,14 +158,14 @@ void BaseManager::onUnitMorph(const BWAPI::Unit& unit)
 	}
 }
 
-void BaseManager::onUnitRenegade(const BWAPI::Unit& unit)
+void BaseManager::onUnitRenegade(const BWAPI::Unit unit)
 {
 	if (unit->getType().isWorker() && unit->getPlayer() == Broodwar->self()) {
 		workers.erase(unit);
 	}
 }
 
-Base::Base(const BWAPI::Unit& u)
+Base::Base(const BWAPI::Unit u)
     : base(u)
 {
 }
