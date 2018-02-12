@@ -3,7 +3,7 @@
 
 class UnitInfo {
 public:
-	UnitInfo(const BWAPI::Unit unitToWrap);
+	UnitInfo(BWAPI::Unit unitToWrap);
 	void update() const;
 	bool exists() const;
 	BWAPI::Position getPosition() const;
@@ -17,8 +17,8 @@ public:
 	}
 
 	bool operator<(const UnitInfo& other) const;
-	friend bool operator<(const UnitInfo& lhs, const BWAPI::Unit rhs);
-	friend bool operator<(const BWAPI::Unit lhs, const UnitInfo& rhs);
+	friend bool operator<(const UnitInfo& lhs, BWAPI::Unit rhs);
+	friend bool operator<(BWAPI::Unit lhs, const UnitInfo& rhs);
 	// transparent comparators
 	// https://www.youtube.com/watch?v=BBUacofxOP8
 	using is_transparent = void;

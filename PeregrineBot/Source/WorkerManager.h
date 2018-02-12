@@ -4,7 +4,7 @@
 class WorkerManager {
 public:
 	static WorkerManager& Instance();
-	void DoAllWorkerTasks(const BWAPI::Unit u);
+	void DoAllWorkerTasks(BWAPI::Unit u);
 
 private:
 	WorkerManager();

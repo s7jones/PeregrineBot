@@ -14,7 +14,7 @@ UtilityManager& UtilityManager::Instance()
 	return instance;
 }
 
-bool UtilityManager::getBestActionForZergling(const BWAPI::Unit zergling)
+bool UtilityManager::getBestActionForZergling(BWAPI::Unit zergling)
 {
 	if (options.size() == 0) {
 		constructOptions();
@@ -44,7 +44,7 @@ void UtilityManager::constructOptions()
 	if (enemyRace != Races::Unknown) {
 		switch (enemyRace) {
 		case Races::Enum::Protoss: {
-			auto utilityInjrZeal = [& scores = scores](const Unit u) -> UtilResult {
+			auto utilityInjrZeal = [& scores = scores](Unit u) -> UtilResult {
 				auto weapon        = u->getType().groundWeapon();
 				const auto enemies = u->getUnitsInRadius(
 				    weapon.maxRange() * 2,
@@ -79,8 +79,8 @@ void UtilityManager::constructOptions()
 			options.push_back(injrZeal);
 
 			// couldn't take unit filter out of getClosestUnit without a runtime crash
-			auto utilityClosest = [& scores = scores](const Unit u) -> UtilResult {
-				const Unit other = u->getClosestUnit(
+			auto utilityClosest = [& scores = scores](Unit u) -> UtilResult {
+				Unit other = u->getClosestUnit(
 				    IsEnemy
 				    && (GetType == UnitTypes::Protoss_Zealot
 				        || GetType == UnitTypes::Protoss_Photon_Cannon));
@@ -91,8 +91,8 @@ void UtilityManager::constructOptions()
 			Option enemyClosest = Option(utilityClosest, "attack closest zealot/cannon");
 			options.push_back(enemyClosest);
 
-			auto utilitySupply = [& scores = scores](const Unit u) -> UtilResult {
-				const Unit supply = u->getClosestUnit(
+			auto utilitySupply = [& scores = scores](Unit u) -> UtilResult {
+				Unit supply = u->getClosestUnit(
 				    IsEnemy
 				    && GetType == UnitTypes::Protoss_Pylon);
 				double score = supply ? scores.p.closestPyln : 0;
@@ -103,19 +103,19 @@ void UtilityManager::constructOptions()
 			Option enemySupply = Option(utilitySupply, "attack closest pylon");
 			options.push_back(enemySupply);
 
-			auto utilityWorker = [& scores = scores](const Unit u) -> UtilResult {
-				const Unit worker = u->getClosestUnit(IsEnemy && IsWorker);
-				double score      = worker ? scores.p.closestWork : 0;
-				auto p            = std::make_pair(score, worker);
+			auto utilityWorker = [& scores = scores](Unit u) -> UtilResult {
+				Unit worker  = u->getClosestUnit(IsEnemy && IsWorker);
+				double score = worker ? scores.p.closestWork : 0;
+				auto p       = std::make_pair(score, worker);
 				return p;
 			};
 			Option enemyWorker = Option(utilityWorker, "attack closest worker");
 			options.push_back(enemyWorker);
 
-			auto utilityAtAll = [& scores = scores](const Unit u) -> UtilResult {
-				const Unit any = u->getClosestUnit(IsEnemy && !IsFlying);
-				double score   = any ? scores.p.closestAll : 0;
-				auto p         = std::make_pair(score, any);
+			auto utilityAtAll = [& scores = scores](Unit u) -> UtilResult {
+				Unit any     = u->getClosestUnit(IsEnemy && !IsFlying);
+				double score = any ? scores.p.closestAll : 0;
+				auto p       = std::make_pair(score, any);
 				return p;
 			};
 			Option enemyAtAll = Option(utilityAtAll, "attack closest ground enemy");
@@ -125,7 +125,7 @@ void UtilityManager::constructOptions()
 		}
 		case Races::Enum::Zerg: {
 			// stateful lambdas - https://youtu.be/_1X9D8Z5huA
-			auto utilityInjrZerg = [& scores = scores](const Unit u) -> UtilResult {
+			auto utilityInjrZerg = [& scores = scores](Unit u) -> UtilResult {
 				auto weapon        = u->getType().groundWeapon();
 				const auto enemies = u->getUnitsInRadius(
 				    weapon.maxRange() * 2,
@@ -158,8 +158,8 @@ void UtilityManager::constructOptions()
 			Option injrZerg = Option(utilityInjrZerg, "attack injured zerg");
 			options.push_back(injrZerg);
 
-			auto utilityClosest = [& scores = scores](const Unit u) -> UtilResult {
-				const Unit other = u->getClosestUnit(
+			auto utilityClosest = [& scores = scores](Unit u) -> UtilResult {
+				Unit other = u->getClosestUnit(
 				    IsEnemy
 				    && (GetType == UnitTypes::Zerg_Zergling
 				        || GetType == UnitTypes::Zerg_Sunken_Colony
@@ -171,26 +171,26 @@ void UtilityManager::constructOptions()
 			Option enemyClosest = Option(utilityClosest, "attack closest zergling/sunken/worker");
 			options.push_back(enemyClosest);
 
-			auto utilityWorker = [& scores = scores](const Unit u) -> UtilResult {
-				const Unit worker = u->getClosestUnit(IsEnemy && IsWorker);
-				double score      = worker ? scores.z.closestWork : 0;
-				auto p            = std::make_pair(score, worker);
+			auto utilityWorker = [& scores = scores](Unit u) -> UtilResult {
+				Unit worker  = u->getClosestUnit(IsEnemy && IsWorker);
+				double score = worker ? scores.z.closestWork : 0;
+				auto p       = std::make_pair(score, worker);
 				return p;
 			};
 			Option enemyWorker = Option(utilityWorker, "attack closest worker");
 			options.push_back(enemyWorker);
 
-			auto utilityEnemy = [& scores = scores](const Unit u) -> UtilResult {
-				const Unit any = u->getClosestUnit(IsEnemy && !IsFlying);
-				double score   = any ? scores.z.closestAllNotLarvEgg : 0;
-				auto p         = std::make_pair(score, any);
+			auto utilityEnemy = [& scores = scores](Unit u) -> UtilResult {
+				Unit any     = u->getClosestUnit(IsEnemy && !IsFlying);
+				double score = any ? scores.z.closestAllNotLarvEgg : 0;
+				auto p       = std::make_pair(score, any);
 				return p;
 			};
 			Option enemyEnemy = Option(utilityEnemy, "attack closest ground enemy(!larva/egg)");
 			options.push_back(enemyEnemy);
 
-			auto utilityAtAll = [& scores = scores](const Unit u) -> UtilResult {
-				const Unit any = u->getClosestUnit(
+			auto utilityAtAll = [& scores = scores](Unit u) -> UtilResult {
+				Unit any = u->getClosestUnit(
 				    IsEnemy && !IsFlying
 				    && (GetType != UnitTypes::Zerg_Larva
 				        || GetType != UnitTypes::Zerg_Egg));
@@ -204,8 +204,8 @@ void UtilityManager::constructOptions()
 			break;
 		}
 		case Races::Enum::Terran: {
-			auto utilityClosest = [& scores = scores](const Unit u) -> UtilResult {
-				const Unit other = u->getClosestUnit(
+			auto utilityClosest = [& scores = scores](Unit u) -> UtilResult {
+				Unit other = u->getClosestUnit(
 				    IsEnemy
 				    && (GetType == UnitTypes::Terran_Marine
 				        || GetType == UnitTypes::Terran_Firebat
@@ -219,17 +219,17 @@ void UtilityManager::constructOptions()
 			    utilityClosest, "attack closest marine/firebat/bunker/worker");
 			options.push_back(enemyClosest);
 
-			auto utilityWorker = [& scores = scores](const Unit u) -> UtilResult {
-				const Unit worker = u->getClosestUnit(IsEnemy && IsWorker);
-				double score      = worker ? scores.t.closestWork : 0;
-				auto p            = std::make_pair(score, worker);
+			auto utilityWorker = [& scores = scores](Unit u) -> UtilResult {
+				Unit worker  = u->getClosestUnit(IsEnemy && IsWorker);
+				double score = worker ? scores.t.closestWork : 0;
+				auto p       = std::make_pair(score, worker);
 				return p;
 			};
 			Option enemyWorker = Option(utilityWorker, "attack closest worker");
 			options.push_back(enemyWorker);
 
-			auto utilitySupply = [& scores = scores](const Unit u) -> UtilResult {
-				const Unit supply = u->getClosestUnit(
+			auto utilitySupply = [& scores = scores](Unit u) -> UtilResult {
+				Unit supply = u->getClosestUnit(
 				    IsEnemy
 				    && GetType == UnitTypes::Terran_Supply_Depot);
 				double score = supply ? scores.t.closestSdpt : 0;
@@ -239,10 +239,10 @@ void UtilityManager::constructOptions()
 			Option enemySupply = Option(utilitySupply, "attack closest depot");
 			options.push_back(enemySupply);
 
-			auto utilityAtAll = [& scores = scores](const Unit u) -> UtilResult {
-				const Unit any = u->getClosestUnit(IsEnemy && !IsFlying);
-				double score   = any ? scores.t.closestAll : 0;
-				auto p         = std::make_pair(score, any);
+			auto utilityAtAll = [& scores = scores](Unit u) -> UtilResult {
+				Unit any     = u->getClosestUnit(IsEnemy && !IsFlying);
+				double score = any ? scores.t.closestAll : 0;
+				auto p       = std::make_pair(score, any);
 				return p;
 			};
 			Option enemyAtAll = Option(utilityAtAll, "attack closest ground enemy");
@@ -250,7 +250,7 @@ void UtilityManager::constructOptions()
 
 			break;
 
-			auto utilityEnemyBase = [& scores = scores](const Unit u) -> UtilResult {
+			auto utilityEnemyBase = [& scores = scores](Unit u) -> UtilResult {
 				auto enemyMain = InformationManager::Instance().enemyMain;
 				double score   = scores.t.enemyBase;
 				UtilResult p;
@@ -278,7 +278,7 @@ void UtilityManager::constructOptions()
 }
 
 bool UtilityManager::performBestActionForZerglingInEnemyBase(
-    const BWAPI::Unit zergling)
+    BWAPI::Unit zergling)
 {
 	std::string bestOptionDescription;
 	UtilResult bestOptionResult = { 0, NULL };

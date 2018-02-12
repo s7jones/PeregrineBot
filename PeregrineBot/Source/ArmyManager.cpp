@@ -17,7 +17,7 @@ ArmyManager& ArmyManager::Instance()
 	return instance;
 }
 
-void ArmyManager::ZerglingAttack(const BWAPI::Unit u)
+void ArmyManager::ZerglingAttack(BWAPI::Unit u)
 {
 	auto enemyMain                       = InformationManager::Instance().enemyMain;
 	auto enemyRace                       = InformationManager::Instance().enemyRace;
@@ -57,7 +57,7 @@ void ArmyManager::ZerglingAttack(const BWAPI::Unit u)
 
 	if (!priorityTarget) {
 		if (u->isIdle()) {
-			const Unit closestGroundEnemy = u->getClosestUnit(IsEnemy && !IsFlying);
+			Unit closestGroundEnemy = u->getClosestUnit(IsEnemy && !IsFlying);
 			if (closestGroundEnemy) {
 				OrderManager::Instance().Attack(u, closestGroundEnemy);
 			} else {
@@ -114,7 +114,7 @@ void ArmyManager::ZerglingAttack(const BWAPI::Unit u)
 	}
 }
 
-std::set<UnitInfo> ArmyManager::GetZerglingAccessibleBuildings(const BWAPI::Unit u)
+std::set<UnitInfo> ArmyManager::GetZerglingAccessibleBuildings(BWAPI::Unit u)
 {
 	auto enemyBuildings = InformationManager::Instance().enemyBuildings;
 	std::set<UnitInfo> enemyBuildingsAccessible;
@@ -151,7 +151,7 @@ std::set<UnitInfo> ArmyManager::GetZerglingAccessibleBuildings(const BWAPI::Unit
 	return enemyBuildingsAccessible;
 }
 
-void ArmyManager::ZerglingAttackKnownBuildings(const BWAPI::Unit u)
+void ArmyManager::ZerglingAttackKnownBuildings(BWAPI::Unit u)
 {
 	auto enemyBuildingsAccessible = GetZerglingAccessibleBuildings(u);
 
@@ -176,7 +176,7 @@ void ArmyManager::ZerglingAttackKnownBuildings(const BWAPI::Unit u)
 	}
 }
 
-void ArmyManager::ZerglingScoutingBeforeBaseFound(const BWAPI::Unit u)
+void ArmyManager::ZerglingScoutingBeforeBaseFound(BWAPI::Unit u)
 {
 	auto scoutingOptions    = InformationManager::Instance().scoutingOptions;
 	auto scoutedPositions   = InformationManager::Instance().scoutedPositions;
@@ -215,7 +215,7 @@ void ArmyManager::ZerglingScoutingBeforeBaseFound(const BWAPI::Unit u)
 	}
 }
 
-void ArmyManager::ZerglingScoutSpreadOut(const BWAPI::Unit u)
+void ArmyManager::ZerglingScoutSpreadOut(BWAPI::Unit u)
 {
 	auto enemyBuildings     = InformationManager::Instance().enemyBuildings;
 	auto unscoutedPositions = InformationManager::Instance().unscoutedPositions;

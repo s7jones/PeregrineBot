@@ -17,7 +17,7 @@ WorkerManager& WorkerManager::Instance()
 	return instance;
 }
 
-void WorkerManager::DoAllWorkerTasks(const BWAPI::Unit u)
+void WorkerManager::DoAllWorkerTasks(BWAPI::Unit u)
 {
 	// if our worker is idle
 	if (u->isIdle()) {
