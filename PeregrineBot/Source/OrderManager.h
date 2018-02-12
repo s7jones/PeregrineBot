@@ -4,11 +4,9 @@
 #include "UnitInfo.h"
 
 class OrderManager {
-	OrderManager();
-
 public:
 	static OrderManager& Instance();
-	void Update();
+	void update();
 	void UpdateUnitsWaitingSinceLastOrder();
 	bool DoesUnitHasOrder(BWAPI::Unit unit);
 	void Attack(BWAPI::Unit attacker, BWAPI::Position p);
@@ -21,4 +19,5 @@ public:
 
 private:
 	std::map<BWAPI::Unit, int> unitsToWaitAfterOrder;
+	OrderManager();
 };

@@ -1,9 +1,9 @@
 #include "PeregrineBot.h"
 
 #include "ArmyManager.h"
+#include "BWTAManager.h"
 #include "BaseManager.h"
 #include "BuildOrderManager.h"
-#include "BWTAManager.h"
 #include "FileManager.h"
 #include "GUIManager.h"
 #include "InformationManager.h"
@@ -28,6 +28,10 @@ for drawExtendedInterface function and useful onUnitDestroy,etc functions for wo
 With thanks to Martin Rooijackers' LetaBot(CIG2016)
 @ http://cilab.sejong.ac.kr/sc_competition2016/posting_data/source/LetaBot.rar
 for his BaseManager.
+
+With thanks to Dan Gants' PurpleWave
+@ https://github.com/dgant/PurpleWave
+for his Commander logic for issuing commands.
 
 Thanks to the following for help in iRC/Discord:
 jaj22, krasi0, ++N00byEdge, PurpleWaveJadien.
@@ -115,9 +119,9 @@ void PeregrineBot::onFrame()
 	if (Broodwar->getFrameCount() % Broodwar->getLatencyFrames() != 0)
 		return;
 
-	// Update waiting units
-	OrderManager::Instance().Update();
-	InformationManager::Instance().Update();
+	// update waiting units
+	OrderManager::Instance().update();
+	InformationManager::Instance().update();
 
 	// Iterate through all the units that we own
 	for (auto& u : Broodwar->self()->getUnits()) {

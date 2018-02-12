@@ -192,7 +192,7 @@ void InformationManager::SetupScouting()
 	}
 }
 
-void InformationManager::Update()
+void InformationManager::update()
 {
 	if (enemyRace == Races::Unknown) {
 		auto enemy = Broodwar->enemy();

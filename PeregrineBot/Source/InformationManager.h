@@ -63,7 +63,7 @@ public:
 
 	void Setup();
 	void SetupScouting();
-	void Update();
+	void update();
 	void UpdateScouting();
 	void OverlordScouting(BWAPI::Unit overlord);
 	void OverlordScoutingAtGameStart(BWAPI::Unit overlord);

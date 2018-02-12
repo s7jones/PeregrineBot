@@ -14,13 +14,11 @@ OrderManager& OrderManager::Instance()
 	return instance;
 }
 
-void OrderManager::Update()
+void OrderManager::update() // run()
 {
-	UpdateUnitsWaitingSinceLastOrder();
-}
-
-void OrderManager::UpdateUnitsWaitingSinceLastOrder()
-{
+	// https://github.com/dgant/PurpleWave/blob/master/src/Micro/Agency/Commander.scala
+	//nextOrderFrame.keys.filterNot(_.alive).foreach(nextOrderFrame.remove)
+	//nextOrderFrame.keys.foreach(unit = > nextOrderFrame(unit) = Math.max(nextOrderFrame(unit), AttackDelay.nextSafeOrderFrame(unit)))
 	auto it = unitsToWaitAfterOrder.begin();
 	while (it != unitsToWaitAfterOrder.end()) {
 		++(it->second); // increment counter
@@ -32,7 +30,7 @@ void OrderManager::UpdateUnitsWaitingSinceLastOrder()
 	}
 }
 
-bool OrderManager::DoesUnitHasOrder(BWAPI::Unit unit)
+bool OrderManager::DoesUnitHasOrder(BWAPI::Unit unit) // ready()
 {
 	auto it = unitsToWaitAfterOrder.find(unit);
 	return (it != unitsToWaitAfterOrder.end());
@@ -44,10 +42,27 @@ void OrderManager::Attack(BWAPI::Unit attacker, BWAPI::Position p)
 	attacker->attack(p);
 }
 
-void OrderManager::Attack(BWAPI::Unit attacker, BWAPI::Unit u)
+void OrderManager::Attack(BWAPI::Unit attacker, BWAPI::Unit target)
 {
+	if (!DoesUnitHasOrder(attacker)) return;
+
+	//ready for attack order?
+
+	if (attacker->getType() == UnitTypes::Protoss_Photon_Cannon) return;
+
+	auto interceptors = attacker->getInterceptors();
+	if (attacker->getInterceptorCount()) {
+		attacker->attack(target.getPosition());
+	} else if (target->isVisible()) {
+		auto moving          = attacker->isMoving();
+		auto alreadyInRange  = attacker->isInWeaponRange(target);
+		auto overdueToAttack = attacker->cooldown
+
+		                       auto shouldOrder
+	}
+
 	unitsToWaitAfterOrder.insert({ attacker, 0 });
-	attacker->attack(u);
+	attacker->attack(target);
 }
 
 void OrderManager::Attack(BWAPI::Unit attacker, UnitInfo u)
