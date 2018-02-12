@@ -2,6 +2,7 @@
 
 #include "BWTAManager.h"
 #include "BaseManager.h"
+#include "BuildOrderManager.h"
 #include "InformationManager.h"
 #include "WorkerManager.h"
 
@@ -18,14 +19,14 @@ GUIManager::GUIManager()
 {
 }
 
-void GUIManager::drawTextOnScreen(BWAPI::Unit u, std::string format, int frames)
+void GUIManager::drawTextOnScreen(const BWAPI::Unit& u, std::string format, int frames)
 {
 	MessageAndFrames mnf = { format, frames };
 
 	messageBuffer.insert_or_assign(u, mnf);
 }
 
-void GUIManager::drawTextOnUnit(BWAPI::Unit u, std::string format)
+void GUIManager::drawTextOnUnit(const BWAPI::Unit& u, std::string format)
 {
 	if (!u->exists()) {
 		return;
@@ -96,8 +97,8 @@ void GUIManager::drawTopLeftOverlay()
 	int invaders = (BaseManager::Instance().hatcheries.size()) ? BaseManager::Instance().hatcheries.begin()->checkForInvaders().size() : 0;
 	Broodwar->drawTextScreen(1, 80, "Invaders: %i", invaders);
 
-	Broodwar->drawTextScreen(100, 0, "BO index: %i", std::distance(WorkerManager::Instance().bo.cbegin(), WorkerManager::Instance().boIndex));
-	Broodwar->drawTextScreen(100, 10, "Pool: %i", WorkerManager::Instance().pool);
+	Broodwar->drawTextScreen(100, 0, "BO index: %i", std::distance(BuildOrderManager::Instance().bo.cbegin(), BuildOrderManager::Instance().boIndex));
+	Broodwar->drawTextScreen(100, 10, "Pool: %i", BuildOrderManager::Instance().pool);
 	int screenVPos = 20;
 	int count      = 1;
 

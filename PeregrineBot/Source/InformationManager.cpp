@@ -60,7 +60,7 @@ void InformationManager::Setup()
 void InformationManager::SetupScouting()
 {
 	std::set<Unit> overlords;
-	for (Unit u : Broodwar->self()->getUnits()) {
+	for (const Unit& u : Broodwar->self()->getUnits()) {
 		if (u->getType() == UnitTypes::Zerg_Overlord)
 			overlords.insert(u);
 	}
@@ -218,17 +218,15 @@ void InformationManager::UpdateScouting()
 		if (Broodwar->isVisible(TilePosition(p))) {
 			scoutedPositions.insert(p);
 			it = unscoutedPositions.erase(it);
-			if (!isEnemyBaseFound) {
+			if (!enemyMain) {
 				// replace IsBuilding by IsResourceDepot?
-				if (Broodwar->getUnitsOnTile(TilePosition(p),
-				                             IsEnemy && IsVisible && Exists && IsBuilding && !IsLifted)
-				        .size()
-				    > 0) {
-					enemyBase          = p;
+				auto unitsOnBaseTile = Broodwar->getUnitsOnTile(TilePosition(p),
+				                                                IsEnemy && IsVisible && Exists && IsResourceDepot && !IsLifted);
+				if (unitsOnBaseTile.size() > 0) {
+					enemyMain          = std::make_shared<UnitInfo>(*unitsOnBaseTile.begin());
 					isEnemyBaseDeduced = true;
-					isEnemyBaseFound   = true;
 					DebugMessenger::Instance() << "Found enemy base at: " << Broodwar->getFrameCount() << "F" << std::endl;
-					if ((enemyBase.x == 0) && (enemyBase.y == 0)) {
+					if ((enemyMain->x() == 0) && (enemyMain->y() == 0)) {
 						errorMessage("Found enemy base at 0,0P");
 					}
 				}
@@ -238,28 +236,31 @@ void InformationManager::UpdateScouting()
 		}
 	}
 
-	if (!(isEnemyBaseDeduced || isEnemyBaseFound) && unscoutedPositions.size() == 1) {
+	// add logic here for "not" finding base even after scouting everything
+	// probably only applicable to Terran weird lifting stuff
+
+	if (!(isEnemyBaseDeduced || enemyMain) && unscoutedPositions.size() == 1) {
 		isEnemyBaseDeduced   = true;
 		BWAPI::Position base = (*unscoutedPositions.begin());
 		DebugMessenger::Instance() << "Enemy base deduced to be at: " << base.x << ", " << base.y << "P" << std::endl;
 	}
 }
 
-void InformationManager::OverlordScouting(BWAPI::Unit overlord)
+void InformationManager::OverlordScouting(const BWAPI::Unit& overlord)
 {
 	if (overlord->isUnderAttack()) { // if overlord is under attack run back to own base
 		OverlordRetreatToHome(overlord);
 		return;
 	}
 
-	if (!isEnemyBaseFound) {
+	if (!enemyMain) {
 		OverlordScoutingAtGameStart(overlord);
 	} else {
 		OverlordScoutingAfterBaseFound(overlord);
 	}
 }
 
-void InformationManager::OverlordScoutingAtGameStart(BWAPI::Unit overlord)
+void InformationManager::OverlordScoutingAtGameStart(const BWAPI::Unit& overlord)
 {
 	if (overlord->isIdle()) {
 		if (Broodwar->getStartLocations().size() == 4) { // map size is 4, use new scouting
@@ -310,8 +311,8 @@ void InformationManager::OverlordScoutingAtGameStart(BWAPI::Unit overlord)
 					if (potentialStartsFromSpotting.size() == 1) {
 						isEnemyBaseFromOverlordSpotting = true;
 						auto base                       = *potentialStartsFromSpotting.begin();
-						enemyBaseSpottingGuess          = base;
-						Broodwar << "Overlord spotted overlord and determined base at: " << base.x << "," << base.y << "TP" << std::endl;
+						enemyBaseSpottingGuess          = GetBasePos(base);
+						Broodwar << "Overlord spotted overlord and determined base at: " << base.x << "," << base.y << "P" << std::endl;
 					}
 				}
 			}
@@ -319,7 +320,7 @@ void InformationManager::OverlordScoutingAtGameStart(BWAPI::Unit overlord)
 	}
 }
 
-void InformationManager::OverlordScoutingAfterBaseFound(BWAPI::Unit overlord)
+void InformationManager::OverlordScoutingAfterBaseFound(const BWAPI::Unit& overlord)
 {
 	if (overlord->isIdle()) {
 		if (enemyRace != Races::Terran) {
@@ -328,7 +329,7 @@ void InformationManager::OverlordScoutingAfterBaseFound(BWAPI::Unit overlord)
 			//DebugMessenger::Instance() << "Overlord Scouting!" << std::endl;
 			static std::deque<Position> scoutLocations;
 			if (scoutLocations.empty()) {
-				auto enemyRegion = BWTA::getRegion(enemyBase);
+				auto enemyRegion = BWTA::getRegion(enemyMain->getPosition());
 				auto& poly       = enemyRegion->getPolygon();
 				for (size_t j = 0; j < poly.size(); ++j) {
 					// The points in Polygon appear to be all along the perimeter.
@@ -353,7 +354,7 @@ void InformationManager::OverlordScoutingAfterBaseFound(BWAPI::Unit overlord)
 	}
 }
 
-void InformationManager::OverlordRetreatToHome(BWAPI::Unit overlord)
+void InformationManager::OverlordRetreatToHome(const BWAPI::Unit& overlord)
 {
 	auto ownBasePos          = GetBasePos(Broodwar->self()->getStartLocation());
 	auto distanceFromOwnBase = overlord->getDistance(ownBasePos);
@@ -366,7 +367,7 @@ void InformationManager::OverlordRetreatToHome(BWAPI::Unit overlord)
 	}
 }
 
-void InformationManager::onUnitShow(BWAPI::Unit unit)
+void InformationManager::onUnitShow(const BWAPI::Unit& unit)
 {
 	if ((IsEnemy)(unit)) {
 		if ((IsBuilding)(unit)) {
@@ -377,14 +378,16 @@ void InformationManager::onUnitShow(BWAPI::Unit unit)
 	}
 }
 
-void InformationManager::onUnitDestroy(BWAPI::Unit unit)
+void InformationManager::onUnitDestroy(const BWAPI::Unit& unit)
 {
 	if ((IsEnemy)(unit)) {
 		if ((IsBuilding)(unit)) {
 			enemyBuildings.erase(unit);
-			if (((IsResourceDepot)(unit) == true) && (unit->getPosition() == enemyBase)) {
-				isEnemyBaseDestroyed = true;
-				DebugMessenger::Instance() << "destroyed enemy base: " << Broodwar->getFrameCount() << std::endl;
+			if (enemyMain) {
+				if (((IsResourceDepot)(unit) == true) && (unit->getPosition() == enemyMain->getPosition())) {
+					isEnemyBaseDestroyed = true;
+					DebugMessenger::Instance() << "destroyed enemy base: " << Broodwar->getFrameCount() << std::endl;
+				}
 			}
 		} else {
 			enemyArmy.erase(unit);
@@ -392,7 +395,7 @@ void InformationManager::onUnitDestroy(BWAPI::Unit unit)
 	}
 }
 
-void InformationManager::onUnitMorph(BWAPI::Unit unit)
+void InformationManager::onUnitMorph(const BWAPI::Unit& unit)
 {
 	if ((IsEnemy)(unit)) {
 		if ((IsBuilding)(unit)) {
@@ -405,7 +408,7 @@ void InformationManager::onUnitMorph(BWAPI::Unit unit)
 	}
 }
 
-void InformationManager::addToEnemyBuildings(BWAPI::Unit unit)
+void InformationManager::addToEnemyBuildings(const BWAPI::Unit& unit)
 {
 	auto iterAndBool = enemyBuildings.emplace(unit);
 
@@ -415,7 +418,7 @@ void InformationManager::addToEnemyBuildings(BWAPI::Unit unit)
 	}
 }
 
-void InformationManager::addToEnemyArmy(BWAPI::Unit unit)
+void InformationManager::addToEnemyArmy(const BWAPI::Unit& unit)
 {
 	auto iterAndBool = enemyArmy.emplace(unit);
 

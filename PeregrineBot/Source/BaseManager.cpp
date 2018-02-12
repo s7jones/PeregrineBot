@@ -1,5 +1,6 @@
 #include "BaseManager.h"
 
+#include "BuildOrderManager.h"
 #include "Utility.h"
 #include "WorkerManager.h"
 
@@ -16,7 +17,7 @@ BaseManager& BaseManager::Instance()
 	return instance;
 }
 
-void BaseManager::ManageBases(Unit base)
+void BaseManager::ManageBases(const Unit& base)
 {
 	auto result = hatcheries.emplace(base);
 
@@ -52,34 +53,34 @@ void BaseManager::ManageBases(Unit base)
 		}
 	}
 
-	if (!WorkerManager::Instance().buildOrderComplete) {
+	if (!BuildOrderManager::Instance().buildOrderComplete) {
 		if ((Broodwar->self()->minerals() >= UnitTypes::Zerg_Drone.mineralPrice())
-		    && (*WorkerManager::Instance().boIndex == UnitTypes::Zerg_Drone)) {
+		    && (*BuildOrderManager::Instance().boIndex == UnitTypes::Zerg_Drone)) {
 			if (!base->getLarva().empty()) {
 				base->train(UnitTypes::Zerg_Drone);
-				WorkerManager::Instance().incrementBuildOrder();
+				BuildOrderManager::Instance().incrementBuildOrder();
 			}
 		}
 
 		if ((Broodwar->self()->minerals() >= UnitTypes::Zerg_Overlord.mineralPrice())
-		    && (*WorkerManager::Instance().boIndex == UnitTypes::Zerg_Overlord)) {
+		    && (*BuildOrderManager::Instance().boIndex == UnitTypes::Zerg_Overlord)) {
 			if (!base->getLarva().empty()) {
 				base->train(UnitTypes::Zerg_Overlord);
-				WorkerManager::Instance().incrementBuildOrder();
+				BuildOrderManager::Instance().incrementBuildOrder();
 			}
 		}
 
-		auto poolready     = WorkerManager::Instance().poolready;
+		auto poolready     = BuildOrderManager::Instance().poolready;
 		auto gotZergMoney  = Broodwar->self()->minerals() >= UnitTypes::Zerg_Zergling.mineralPrice();
 		auto gotZergSupply = Broodwar->self()->supplyTotal() - Broodwar->self()->supplyUsed() > 0;
-		auto zergBO        = *WorkerManager::Instance().boIndex == UnitTypes::Zerg_Zergling;
+		auto zergBO        = *BuildOrderManager::Instance().boIndex == UnitTypes::Zerg_Zergling;
 
 		if (poolready && gotZergMoney
 		    && gotZergSupply
 		    && zergBO) {
 			if (!base->getLarva().empty()) {
 				base->train(UnitTypes::Zerg_Zergling);
-				WorkerManager::Instance().incrementBuildOrder();
+				BuildOrderManager::Instance().incrementBuildOrder();
 			}
 		}
 
@@ -91,7 +92,7 @@ void BaseManager::ManageBases(Unit base)
 			}
 		}
 
-		auto poolready     = WorkerManager::Instance().poolready;
+		auto poolready     = BuildOrderManager::Instance().poolready;
 		auto gotZergMoney  = Broodwar->self()->minerals() >= UnitTypes::Zerg_Zergling.mineralPrice();
 		auto gotZergSupply = Broodwar->self()->supplyTotal() - Broodwar->self()->supplyUsed() > 0;
 
@@ -117,7 +118,7 @@ void BaseManager::ManageBases(Unit base)
 	}
 }
 
-void BaseManager::onUnitShow(BWAPI::Unit unit)
+void BaseManager::onUnitShow(const BWAPI::Unit& unit)
 {
 	// if something morphs into a worker, add it
 	if (unit->getType().isWorker() && unit->getPlayer() == Broodwar->self() && unit->getHitPoints() >= 0) {
@@ -125,7 +126,7 @@ void BaseManager::onUnitShow(BWAPI::Unit unit)
 	}
 }
 
-void BaseManager::onUnitCreate(BWAPI::Unit unit)
+void BaseManager::onUnitCreate(const BWAPI::Unit& unit)
 {
 	// if something morphs into a worker, add it
 	if (unit->getType().isWorker() && unit->getPlayer() == Broodwar->self() && unit->getHitPoints() >= 0) {
@@ -133,7 +134,7 @@ void BaseManager::onUnitCreate(BWAPI::Unit unit)
 	}
 }
 
-void BaseManager::onUnitDestroy(BWAPI::Unit unit)
+void BaseManager::onUnitDestroy(const BWAPI::Unit& unit)
 {
 	if (unit->getType().isResourceDepot() && unit->getPlayer() == Broodwar->self()) {
 		hatcheries.erase(Base(unit));
@@ -144,7 +145,7 @@ void BaseManager::onUnitDestroy(BWAPI::Unit unit)
 	}
 }
 
-void BaseManager::onUnitMorph(BWAPI::Unit unit)
+void BaseManager::onUnitMorph(const BWAPI::Unit& unit)
 {
 	// if something morphs into a worker, add it
 	if (unit->getType().isWorker() && unit->getPlayer() == Broodwar->self() && unit->getHitPoints() >= 0) {
@@ -157,21 +158,21 @@ void BaseManager::onUnitMorph(BWAPI::Unit unit)
 	}
 }
 
-void BaseManager::onUnitRenegade(BWAPI::Unit unit)
+void BaseManager::onUnitRenegade(const BWAPI::Unit& unit)
 {
 	if (unit->getType().isWorker() && unit->getPlayer() == Broodwar->self()) {
 		workers.erase(unit);
 	}
 }
 
-Base::Base(BWAPI::Unit u)
+Base::Base(const BWAPI::Unit& u)
     : base(u)
 {
 }
 
 BWAPI::Unitset Base::checkForInvaders() const
 {
-	auto units = base->getUnitsInRadius(borderRadius, IsEnemy && !IsFlying);
+	auto units = base->getUnitsInRadius((int)floor(borderRadius), IsEnemy && !IsFlying);
 	auto it    = units.begin();
 	while (it != units.end()) {
 		auto unit = *it;

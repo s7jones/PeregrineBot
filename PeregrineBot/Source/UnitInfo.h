@@ -3,10 +3,19 @@
 
 class UnitInfo {
 public:
-	UnitInfo(BWAPI::Unit unitToWrap);
+	UnitInfo(const BWAPI::Unit& unitToWrap);
 	void update() const;
 	bool exists() const;
 	BWAPI::Position getPosition() const;
+	int x()
+	{
+		return getPosition().x;
+	}
+	int y()
+	{
+		return getPosition().y;
+	}
+
 	bool operator<(const UnitInfo& other) const;
 	friend bool operator<(const UnitInfo& lhs, const BWAPI::Unit& rhs);
 	friend bool operator<(const BWAPI::Unit& lhs, const UnitInfo& rhs);

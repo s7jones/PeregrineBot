@@ -1,10 +1,10 @@
 #include "FileManager.h"
 
+#include <cpptoml.h>
 #include <rapidjson\document.h>
 #include <rapidjson\filereadstream.h>
 #include <rapidjson\rapidjson.h>
 #include <rapidjson\reader.h>
-//#include <cpptoml.h>
 
 #include "InformationManager.h"
 
@@ -20,34 +20,27 @@ FileManager& FileManager::Instance()
 
 bool FileManager::readJsonConfig()
 {
-	/*
 	// TOML snippet for later?
-	boost::filesystem::path config_file_path("./bwapi-data/read/config.toml");
+	boost::filesystem::path toml_config_path("./bwapi-data/read/PeregrineConfig.toml");
 
 	bool debug_flag_toml = false;
 
 	try {
-	auto config = cpptoml::parse_file(config_file_path.string());
+		auto config = cpptoml::parse_file(toml_config_path.string());
 
-	debug_flag_toml = config->get_as<bool>("debug").value_or(false); // val is bool value in toml or false
+		debug_flag_toml = config->get_as<bool>("debug_msgs_enabled").value_or(false); // val is bool value in toml or false
+	} catch (const cpptoml::parse_exception& e) {
+		BWAPI::Broodwar << "Config file not read, " << e.what() << std::endl;
 	}
-	catch (const cpptoml::parse_exception& e) {
-	BWAPI::Broodwar << "Config file not read" << std::endl;
-	}
-
-	if (debug_flag_toml || debug_flag_define) {
-	debug_enabled = true;
-	}
-	*/
 
 	bool debug_flag_json = false;
 
-	boost::filesystem::path config_file_path("./bwapi-data/read/PeregrineConfig.json");
+	boost::filesystem::path json_config_path("./bwapi-data/read/PeregrineConfig.json");
 
 	//FILE* fp = fopen_s(config_file_path.string(), "rb"); // rapidjson recommended fopen, but compiler recommends "safe" variant
 	FILE* fp;
 	const wchar_t* mode = L"rb";
-	errno_t err         = _wfopen_s(&fp, config_file_path.c_str(), mode);
+	errno_t err         = _wfopen_s(&fp, json_config_path.c_str(), mode);
 
 	if (!err) {
 
@@ -66,7 +59,7 @@ bool FileManager::readJsonConfig()
 		}
 	}
 
-	return debug_flag_json;
+	return debug_flag_json || debug_flag_toml;
 }
 
 void FileManager::writeStatisticsToFile(std::string botVersion, bool isWinner)

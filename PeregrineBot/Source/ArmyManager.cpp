@@ -17,21 +17,20 @@ ArmyManager& ArmyManager::Instance()
 	return instance;
 }
 
-void ArmyManager::ZerglingAttack(Unit u)
+void ArmyManager::ZerglingAttack(const Unit& u)
 {
-	auto enemyBase                       = InformationManager::Instance().enemyBase;
+	auto enemyMain                       = InformationManager::Instance().enemyMain;
 	auto enemyRace                       = InformationManager::Instance().enemyRace;
 	auto unscoutedPositions              = InformationManager::Instance().unscoutedPositions;
 	auto isEnemyBaseFromOverlordSpotting = InformationManager::Instance().isEnemyBaseFromOverlordSpotting;
 	auto isEnemyBaseDeduced              = InformationManager::Instance().isEnemyBaseDeduced;
 	auto isEnemyBaseReached              = InformationManager::Instance().isEnemyBaseReached;
-	auto isEnemyBaseFound                = InformationManager::Instance().isEnemyBaseFound;
 	auto isEnemyBaseDestroyed            = InformationManager::Instance().isEnemyBaseDestroyed;
 	auto enemyBaseSpottingGuess          = InformationManager::Instance().enemyBaseSpottingGuess;
 	auto enemyBuildings                  = InformationManager::Instance().enemyBuildings;
 
-	if (isEnemyBaseFound) {
-		if ((!isEnemyBaseReached) && (BWTA::getRegion(u->getPosition()) == BWTA::getRegion(enemyBase))) {
+	if (enemyMain) {
+		if ((!isEnemyBaseReached) && (BWTA::getRegion(u->getPosition()) == BWTA::getRegion(enemyMain->getPosition()))) {
 			InformationManager::Instance().isEnemyBaseReached = true;
 			DebugMessenger::Instance()
 			    << "reach enemy base: " << Broodwar->getFrameCount() << "F"
@@ -58,19 +57,19 @@ void ArmyManager::ZerglingAttack(Unit u)
 
 	if (!priorityTarget) {
 		if (u->isIdle()) {
-			Unit closestGroundEnemy = u->getClosestUnit(IsEnemy && !IsFlying);
+			const Unit& closestGroundEnemy = u->getClosestUnit(IsEnemy && !IsFlying);
 			if (closestGroundEnemy) {
 				OrderManager::Instance().Attack(u, closestGroundEnemy);
 			} else {
-				if (isEnemyBaseFound) {
+				if (enemyMain) {
 					if (!isEnemyBaseDestroyed) {
-						if (!Broodwar->isVisible(TilePosition(enemyBase))) {
-							OrderManager::Instance().Attack(u, enemyBase);
+						if (!Broodwar->isVisible(TilePosition(enemyMain->getPosition()))) {
+							OrderManager::Instance().Attack(u, *enemyMain);
 						} else if (!Broodwar->getUnitsOnTile(
-						                        TilePosition(enemyBase),
+						                        TilePosition(enemyMain->getPosition()),
 						                        IsEnemy && IsVisible && Exists && IsBuilding && !IsLifted)
 						                .empty()) {
-							OrderManager::Instance().Attack(u, enemyBase);
+							OrderManager::Instance().Attack(u, *enemyMain);
 						} else if (enemyBuildings.size() != 0) {
 							ZerglingAttackKnownBuildings(u);
 						} else {
@@ -85,7 +84,7 @@ void ArmyManager::ZerglingAttack(Unit u)
 					if (enemyBuildings.size() != 0) {
 						ZerglingAttackKnownBuildings(u);
 					} else if (isEnemyBaseFromOverlordSpotting) {
-						OrderManager::Instance().Move(u, enemyBase);
+						OrderManager::Instance().Move(u, enemyBaseSpottingGuess);
 						DebugMessenger::Instance() << "scout overlord spot" << std::endl;
 					} else {
 						ZerglingScoutingBeforeBaseFound(u);
@@ -103,9 +102,9 @@ void ArmyManager::ZerglingAttack(Unit u)
 					GUIManager::Instance().drawTextOnScreen(u, "recalculate scouting", 480);
 					// DebugMessenger::Instance() << "recalculate scouting" <<
 					// std::endl;
-				} else if ((!isEnemyBaseFound) && (isEnemyBaseFromOverlordSpotting)
-				           && (GetBasePos(enemyBaseSpottingGuess) != targetPos)) {
-					OrderManager::Instance().Move(u, GetBasePos(enemyBaseSpottingGuess));
+				} else if ((!enemyMain) && (isEnemyBaseFromOverlordSpotting)
+				           && enemyBaseSpottingGuess != targetPos) {
+					OrderManager::Instance().Move(u, enemyBaseSpottingGuess);
 					GUIManager::Instance().drawTextOnScreen(u, "recalculate scouting (overlord guess)", 480);
 					// DebugMessenger::Instance() << "recalculate scouting
 					// (overlord guess)" << std::endl;
@@ -115,7 +114,7 @@ void ArmyManager::ZerglingAttack(Unit u)
 	}
 }
 
-std::set<UnitInfo> ArmyManager::GetZerglingAccessibleBuildings(Unit u)
+std::set<UnitInfo> ArmyManager::GetZerglingAccessibleBuildings(const Unit& u)
 {
 	auto enemyBuildings = InformationManager::Instance().enemyBuildings;
 	std::set<UnitInfo> enemyBuildingsAccessible;
@@ -152,18 +151,18 @@ std::set<UnitInfo> ArmyManager::GetZerglingAccessibleBuildings(Unit u)
 	return enemyBuildingsAccessible;
 }
 
-void ArmyManager::ZerglingAttackKnownBuildings(Unit u)
+void ArmyManager::ZerglingAttackKnownBuildings(const Unit& u)
 {
 	auto enemyBuildingsAccessible = GetZerglingAccessibleBuildings(u);
 
 	if (enemyBuildingsAccessible.size() != 0) {
 
-		float distanceEnemyBuildingAccessible = std::numeric_limits<float>::infinity();
+		double distanceEnemyBuildingAccessible = std::numeric_limits<double>::infinity();
 		Position buildingAccessiblePos;
 
 		for (auto building : enemyBuildingsAccessible) {
-			Position buildingPos   = building.getPosition();
-			float distanceBuilding = DistanceAir(u->getPosition(), buildingPos);
+			Position buildingPos    = building.getPosition();
+			double distanceBuilding = DistanceAir(u->getPosition(), buildingPos);
 			if (distanceBuilding < distanceEnemyBuildingAccessible) {
 				distanceEnemyBuildingAccessible = distanceBuilding;
 				buildingAccessiblePos           = buildingPos;
@@ -177,7 +176,7 @@ void ArmyManager::ZerglingAttackKnownBuildings(Unit u)
 	}
 }
 
-void ArmyManager::ZerglingScoutingBeforeBaseFound(Unit u)
+void ArmyManager::ZerglingScoutingBeforeBaseFound(const Unit& u)
 {
 	auto scoutingOptions    = InformationManager::Instance().scoutingOptions;
 	auto scoutedPositions   = InformationManager::Instance().scoutedPositions;
@@ -216,7 +215,7 @@ void ArmyManager::ZerglingScoutingBeforeBaseFound(Unit u)
 	}
 }
 
-void ArmyManager::ZerglingScoutSpreadOut(Unit u)
+void ArmyManager::ZerglingScoutSpreadOut(const Unit& u)
 {
 	auto enemyBuildings     = InformationManager::Instance().enemyBuildings;
 	auto unscoutedPositions = InformationManager::Instance().unscoutedPositions;

@@ -57,22 +57,20 @@ class InformationManager {
 
 public:
 	static InformationManager& Instance();
-	void onUnitShow(BWAPI::Unit unit);
-	void onUnitDestroy(BWAPI::Unit unit);
-	void onUnitMorph(BWAPI::Unit unit);
+	void onUnitShow(const BWAPI::Unit& unit);
+	void onUnitDestroy(const BWAPI::Unit& unit);
+	void onUnitMorph(const BWAPI::Unit& unit);
 
 	void Setup();
 	void SetupScouting();
 	void Update();
 	void UpdateScouting();
-	void OverlordScouting(BWAPI::Unit overlord);
-	void OverlordScoutingAtGameStart(BWAPI::Unit overlord);
-	void OverlordScoutingAfterBaseFound(BWAPI::Unit overlord);
-	void OverlordRetreatToHome(BWAPI::Unit overlord);
+	void OverlordScouting(const BWAPI::Unit& overlord);
+	void OverlordScoutingAtGameStart(const BWAPI::Unit& overlord);
+	void OverlordScoutingAfterBaseFound(const BWAPI::Unit& overlord);
+	void OverlordRetreatToHome(const BWAPI::Unit& overlord);
 
-	BWAPI::Position enemyBase = { 0, 0 };
 	bool isEnemyBaseDeduced   = false;
-	bool isEnemyBaseFound     = false;
 	bool isEnemyBaseReached   = false;
 	bool isEnemyBaseDestroyed = false;
 	BWAPI::Race enemyRace     = BWAPI::Races::Unknown;
@@ -87,17 +85,18 @@ public:
 	std::set<ScoutingOptionFor4, sortByMeanTime> scoutingOptions;
 	std::map<std::set<BWAPI::TilePosition, sortByMostTopThenLeft>, distAndTime> zerglingNetwork;
 	std::map<std::set<BWAPI::TilePosition, sortByMostTopThenLeft>, distAndTime> overlordNetwork;
-	bool isEnemyBaseFromOverlordSpotting       = false;
-	BWAPI::TilePosition enemyBaseSpottingGuess = { 0, 0 };
+	bool isEnemyBaseFromOverlordSpotting   = false;
+	BWAPI::Position enemyBaseSpottingGuess = { 0, 0 };
 
 	std::set<UnitInfo> enemyBuildings;
 	std::set<UnitInfo> enemyArmy;
+	std::shared_ptr<UnitInfo> enemyMain = nullptr;
 
 private:
-	void addToEnemyBuildings(BWAPI::Unit unit);
-	void addToEnemyArmy(BWAPI::Unit unit);
+	void addToEnemyBuildings(const BWAPI::Unit& unit);
+	void addToEnemyArmy(const BWAPI::Unit& unit);
 	void validateEnemyUnits();
 
-	float maxBaseToBaseDistance;
+	double maxBaseToBaseDistance;
 	bool isPastSpottingTime = false;
 };
