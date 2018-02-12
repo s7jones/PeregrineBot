@@ -84,7 +84,7 @@ void ArmyManager::ZerglingAttack(const Unit& u)
 					if (enemyBuildings.size() != 0) {
 						ZerglingAttackKnownBuildings(u);
 					} else if (isEnemyBaseFromOverlordSpotting) {
-						OrderManager::Instance().Move(u, *enemyMain);
+						OrderManager::Instance().Move(u, enemyBaseSpottingGuess);
 						DebugMessenger::Instance() << "scout overlord spot" << std::endl;
 					} else {
 						ZerglingScoutingBeforeBaseFound(u);
@@ -103,8 +103,8 @@ void ArmyManager::ZerglingAttack(const Unit& u)
 					// DebugMessenger::Instance() << "recalculate scouting" <<
 					// std::endl;
 				} else if ((!enemyMain) && (isEnemyBaseFromOverlordSpotting)
-				           && (GetBasePos(enemyBaseSpottingGuess) != targetPos)) {
-					OrderManager::Instance().Move(u, GetBasePos(enemyBaseSpottingGuess));
+				           && enemyBaseSpottingGuess != targetPos) {
+					OrderManager::Instance().Move(u, enemyBaseSpottingGuess);
 					GUIManager::Instance().drawTextOnScreen(u, "recalculate scouting (overlord guess)", 480);
 					// DebugMessenger::Instance() << "recalculate scouting
 					// (overlord guess)" << std::endl;

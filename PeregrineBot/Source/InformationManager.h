@@ -85,8 +85,8 @@ public:
 	std::set<ScoutingOptionFor4, sortByMeanTime> scoutingOptions;
 	std::map<std::set<BWAPI::TilePosition, sortByMostTopThenLeft>, distAndTime> zerglingNetwork;
 	std::map<std::set<BWAPI::TilePosition, sortByMostTopThenLeft>, distAndTime> overlordNetwork;
-	bool isEnemyBaseFromOverlordSpotting       = false;
-	BWAPI::TilePosition enemyBaseSpottingGuess = { 0, 0 };
+	bool isEnemyBaseFromOverlordSpotting   = false;
+	BWAPI::Position enemyBaseSpottingGuess = { 0, 0 };
 
 	std::set<UnitInfo> enemyBuildings;
 	std::set<UnitInfo> enemyArmy;

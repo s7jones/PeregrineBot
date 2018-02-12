@@ -311,8 +311,8 @@ void InformationManager::OverlordScoutingAtGameStart(const BWAPI::Unit& overlord
 					if (potentialStartsFromSpotting.size() == 1) {
 						isEnemyBaseFromOverlordSpotting = true;
 						auto base                       = *potentialStartsFromSpotting.begin();
-						enemyBaseSpottingGuess          = base;
-						Broodwar << "Overlord spotted overlord and determined base at: " << base.x << "," << base.y << "TP" << std::endl;
+						enemyBaseSpottingGuess          = GetBasePos(base);
+						Broodwar << "Overlord spotted overlord and determined base at: " << base.x << "," << base.y << "P" << std::endl;
 					}
 				}
 			}
