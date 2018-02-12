@@ -17,7 +17,7 @@ WorkerManager& WorkerManager::Instance()
 	return instance;
 }
 
-void WorkerManager::DoAllWorkerTasks(Unit u)
+void WorkerManager::DoAllWorkerTasks(const Unit& u)
 {
 	// if our worker is idle
 	if (u->isIdle()) {

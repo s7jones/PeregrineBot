@@ -4,11 +4,11 @@
 class WorkerManager {
 public:
 	static WorkerManager& Instance();
-	void DoAllWorkerTasks(BWAPI::Unit u);
+	void DoAllWorkerTasks(const BWAPI::Unit& u);
 
 private:
 	WorkerManager();
 
-	int lastChecked = 0;
+	int lastChecked     = 0;
 	int poolLastChecked = 0;
 };

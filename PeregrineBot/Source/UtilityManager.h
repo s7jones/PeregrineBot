@@ -8,12 +8,12 @@ class Option;
 class UtilityManager {
 public:
 	static UtilityManager& Instance();
-	bool getBestActionForZergling(BWAPI::Unit zergling);
+	bool getBestActionForZergling(const BWAPI::Unit& zergling);
 
 private:
 	UtilityManager();
 	void constructOptions();
-	bool performBestActionForZerglingInEnemyBase(BWAPI::Unit zergling);
+	bool performBestActionForZerglingInEnemyBase(const BWAPI::Unit& zergling);
 
 	std::vector<Option> options;
 

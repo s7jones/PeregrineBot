@@ -3,7 +3,7 @@
 
 class UnitInfo {
 public:
-	UnitInfo(BWAPI::Unit unitToWrap);
+	UnitInfo(const BWAPI::Unit& unitToWrap);
 	void update() const;
 	bool exists() const;
 	BWAPI::Position getPosition() const;

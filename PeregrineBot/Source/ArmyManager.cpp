@@ -17,7 +17,7 @@ ArmyManager& ArmyManager::Instance()
 	return instance;
 }
 
-void ArmyManager::ZerglingAttack(Unit u)
+void ArmyManager::ZerglingAttack(const Unit& u)
 {
 	auto enemyMain                       = InformationManager::Instance().enemyMain;
 	auto enemyRace                       = InformationManager::Instance().enemyRace;
@@ -57,7 +57,7 @@ void ArmyManager::ZerglingAttack(Unit u)
 
 	if (!priorityTarget) {
 		if (u->isIdle()) {
-			Unit closestGroundEnemy = u->getClosestUnit(IsEnemy && !IsFlying);
+			const Unit& closestGroundEnemy = u->getClosestUnit(IsEnemy && !IsFlying);
 			if (closestGroundEnemy) {
 				OrderManager::Instance().Attack(u, closestGroundEnemy);
 			} else {
@@ -114,7 +114,7 @@ void ArmyManager::ZerglingAttack(Unit u)
 	}
 }
 
-std::set<UnitInfo> ArmyManager::GetZerglingAccessibleBuildings(Unit u)
+std::set<UnitInfo> ArmyManager::GetZerglingAccessibleBuildings(const Unit& u)
 {
 	auto enemyBuildings = InformationManager::Instance().enemyBuildings;
 	std::set<UnitInfo> enemyBuildingsAccessible;
@@ -151,7 +151,7 @@ std::set<UnitInfo> ArmyManager::GetZerglingAccessibleBuildings(Unit u)
 	return enemyBuildingsAccessible;
 }
 
-void ArmyManager::ZerglingAttackKnownBuildings(Unit u)
+void ArmyManager::ZerglingAttackKnownBuildings(const Unit& u)
 {
 	auto enemyBuildingsAccessible = GetZerglingAccessibleBuildings(u);
 
@@ -176,7 +176,7 @@ void ArmyManager::ZerglingAttackKnownBuildings(Unit u)
 	}
 }
 
-void ArmyManager::ZerglingScoutingBeforeBaseFound(Unit u)
+void ArmyManager::ZerglingScoutingBeforeBaseFound(const Unit& u)
 {
 	auto scoutingOptions    = InformationManager::Instance().scoutingOptions;
 	auto scoutedPositions   = InformationManager::Instance().scoutedPositions;
@@ -215,7 +215,7 @@ void ArmyManager::ZerglingScoutingBeforeBaseFound(Unit u)
 	}
 }
 
-void ArmyManager::ZerglingScoutSpreadOut(Unit u)
+void ArmyManager::ZerglingScoutSpreadOut(const Unit& u)
 {
 	auto enemyBuildings     = InformationManager::Instance().enemyBuildings;
 	auto unscoutedPositions = InformationManager::Instance().unscoutedPositions;
