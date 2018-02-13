@@ -22,10 +22,6 @@ void UnitInfo::update() const
 			lastFrameSeen = Broodwar->getFrameCount();
 			pos           = u->getPosition();
 			type          = u->getType();
-			shields       = u->getShields();
-			hp            = u->getHitPoints();
-			energy        = u->getEnergy();
-			velocity      = std::make_pair(u->getVelocityX(), u->getVelocityY());
 		}
 	} else {
 		errorMessage("unit null 2");
@@ -40,4 +36,32 @@ bool UnitInfo::exists() const
 		errorMessage("unit null 3");
 		return false;
 	}
+}
+
+void EnemyUnitInfo::update() const
+{
+	UnitInfo::update();
+	if (u) {
+		if (exists()) {
+			shields  = u->getShields();
+			hp       = u->getHitPoints();
+			energy   = u->getEnergy();
+			velocity = std::make_pair(u->getVelocityX(), u->getVelocityY());
+		}
+	}
+}
+
+void ResourceUnitInfo::update() const
+{
+	UnitInfo::update();
+	if (u) {
+		if (exists()) {
+			resources = u->getResources();
+		}
+	}
+}
+
+int ResourceUnitInfo::getResources() const
+{
+	return resources;
 }

@@ -50,7 +50,7 @@ void OrderManager::Attack(BWAPI::Unit attacker, BWAPI::Unit u)
 	attacker->attack(u);
 }
 
-void OrderManager::Attack(BWAPI::Unit attacker, UnitInfo u)
+void OrderManager::Attack(BWAPI::Unit attacker, EnemyUnitInfo u)
 {
 	Attack(attacker, u.getPosition());
 }
@@ -61,7 +61,7 @@ void OrderManager::Move(BWAPI::Unit mover, BWAPI::Position p, bool shiftClick)
 	mover->move(p, shiftClick);
 }
 
-void OrderManager::Move(BWAPI::Unit mover, UnitInfo u, bool shiftClick)
+void OrderManager::Move(BWAPI::Unit mover, EnemyUnitInfo u, bool shiftClick)
 {
 	Move(mover, u.getPosition(), shiftClick);
 }

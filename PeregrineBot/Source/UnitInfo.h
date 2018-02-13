@@ -4,13 +4,13 @@
 class UnitInfo {
 public:
 	UnitInfo(BWAPI::Unit unitToWrap);
-	void update() const;
+	virtual void update() const;
 	bool exists() const;
 	BWAPI::Position getPosition() const { return pos; }
 	int x() { return getPosition().x; }
 	int y() { return getPosition().y; }
 
-	bool operator<(const UnitInfo& other) const
+	virtual bool operator<(const UnitInfo& other) const
 	{
 		return u < other.u;
 	}
@@ -32,8 +32,26 @@ private:
 	mutable int lastFrameSeen;
 	mutable BWAPI::Position pos  = { 0, 0 };
 	mutable BWAPI::UnitType type = BWAPI::UnitTypes::Unknown;
+};
+
+class EnemyUnitInfo : public UnitInfo {
+public:
+	using UnitInfo::UnitInfo;
+	void update() const override;
+
+private:
 	mutable int shields;
 	mutable int hp;
 	mutable int energy;
 	mutable std::pair<double, double> velocity;
+};
+
+class ResourceUnitInfo : public UnitInfo {
+public:
+	using UnitInfo::UnitInfo;
+	void update() const override;
+	int getResources() const;
+
+private:
+	mutable int resources;
 };

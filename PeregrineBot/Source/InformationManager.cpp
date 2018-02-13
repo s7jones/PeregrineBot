@@ -223,7 +223,7 @@ void InformationManager::UpdateScouting()
 				auto unitsOnBaseTile = Broodwar->getUnitsOnTile(TilePosition(p),
 				                                                IsEnemy && IsVisible && Exists && IsResourceDepot && !IsLifted);
 				if (unitsOnBaseTile.size() > 0) {
-					enemyMain          = std::make_shared<UnitInfo>(*unitsOnBaseTile.begin());
+					enemyMain          = std::make_shared<EnemyUnitInfo>(*unitsOnBaseTile.begin());
 					isEnemyBaseDeduced = true;
 					DebugMessenger::Instance() << "Found enemy base at: " << Broodwar->getFrameCount() << "F" << std::endl;
 					if ((enemyMain->x() == 0) && (enemyMain->y() == 0)) {

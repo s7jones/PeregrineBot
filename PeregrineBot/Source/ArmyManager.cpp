@@ -114,10 +114,10 @@ void ArmyManager::ZerglingAttack(BWAPI::Unit u)
 	}
 }
 
-std::set<UnitInfo> ArmyManager::GetZerglingAccessibleBuildings(BWAPI::Unit u)
+std::set<EnemyUnitInfo> ArmyManager::GetZerglingAccessibleBuildings(BWAPI::Unit u)
 {
 	auto enemyBuildings = InformationManager::Instance().enemyBuildings;
-	std::set<UnitInfo> enemyBuildingsAccessible;
+	std::set<EnemyUnitInfo> enemyBuildingsAccessible;
 	for (auto iter = enemyBuildings.begin(); iter != enemyBuildings.end(); iter++) {
 		auto building    = *iter;
 		auto buildingPos = building.getPosition();
