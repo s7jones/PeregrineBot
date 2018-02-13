@@ -2,6 +2,7 @@
 
 #include "BuildOrderManager.h"
 #include "BuildingManager.h"
+#include "InformationManager.h"
 #include "OrderManager.h"
 #include "Utility.h"
 
@@ -36,6 +37,10 @@ void WorkerManager::DoAllWorkerTasks(BWAPI::Unit u)
 				DebugMessenger::Instance() << Broodwar->getLastError() << std::endl;
 				DebugMessenger::Instance() << "Worker couldn't gather mineral or from refinery" << std::endl;
 			} else {
+				auto closestKnownMineral = InformationManager::Instance().getClosestMineral(u);
+				if (closestKnownMineral) {
+					OrderManager::Instance().Move(u, closestKnownMineral->getPosition());
+				}
 			}
 
 		} // closure: has no powerup

@@ -205,6 +205,8 @@ void InformationManager::Update()
 		}
 	}
 
+	validateResources();
+
 	validateEnemyUnits();
 
 	UpdateScouting();
@@ -367,6 +369,20 @@ void InformationManager::OverlordRetreatToHome(BWAPI::Unit overlord)
 	}
 }
 
+ResourceUnitInfo* InformationManager::getClosestMineral(BWAPI::Unit u)
+{
+	double closestDist              = std::numeric_limits<double>::infinity();
+	ResourceUnitInfo* chosenMineral = nullptr;
+	for (auto mineral : minerals) {
+		auto dist = DistanceGround(u->getPosition(), mineral.getPosition());
+		if (closestDist > dist) {
+			closestDist   = dist;
+			chosenMineral = &mineral;
+		}
+	}
+	return chosenMineral;
+}
+
 void InformationManager::onUnitShow(BWAPI::Unit unit)
 {
 	if ((IsEnemy)(unit)) {
@@ -374,6 +390,14 @@ void InformationManager::onUnitShow(BWAPI::Unit unit)
 			addToEnemyBuildings(unit);
 		} else {
 			addToEnemyArmy(unit);
+		}
+	}
+
+	if ((IsResourceContainer)(unit)) {
+		if ((IsMineralField)(unit)) {
+			addToMinerals(unit);
+		} else {
+			addToGeysers(unit);
 		}
 	}
 }
@@ -467,6 +491,48 @@ void InformationManager::validateEnemyUnits()
 			} else {
 				it++;
 			}
+		}
+	}
+}
+
+void InformationManager::addToMinerals(BWAPI::Unit mineral)
+{
+	auto iterAndBool = minerals.emplace(mineral);
+
+	// if unit already exists in enemyBuildings
+	if (!iterAndBool.second) {
+		iterAndBool.first->update();
+	}
+}
+
+void InformationManager::addToGeysers(BWAPI::Unit geyser)
+{
+	auto iterAndBool = geysers.emplace(geyser);
+
+	// if unit already exists in enemyBuildings
+	if (!iterAndBool.second) {
+		iterAndBool.first->update();
+	}
+}
+
+void InformationManager::validateResources()
+{
+	auto it = minerals.begin();
+	while (it != minerals.end()) {
+		bool erase = false;
+		auto tp    = TilePosition(it->getPosition());
+		if (Broodwar->isVisible(tp)) {
+			auto visibleMinerals = Broodwar->getUnitsOnTile(tp, IsMineralField);
+			if (visibleMinerals.size() == 0) {
+				erase = true;
+				DebugMessenger::Instance() << "remove mineral" << std::endl;
+			}
+		}
+
+		if (erase) {
+			it = minerals.erase(it);
+		} else {
+			it++;
 		}
 	}
 }

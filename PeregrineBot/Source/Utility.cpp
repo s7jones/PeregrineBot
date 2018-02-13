@@ -34,6 +34,11 @@ double DistanceGround(const BWAPI::TilePosition start, const BWAPI::TilePosition
 	return dist;
 }
 
+double DistanceGround(const BWAPI::Position start, const BWAPI::Position end)
+{
+	return DistanceGround(TilePosition(start), TilePosition(end));
+}
+
 /*auto TimeGround =
 [](const BWAPI::TilePosition start, const BWAPI::TilePosition end, const UnitType ut, const bool reach)
 {

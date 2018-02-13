@@ -1,9 +1,9 @@
 #include "PeregrineBot.h"
 
 #include "ArmyManager.h"
+#include "BWTAManager.h"
 #include "BaseManager.h"
 #include "BuildOrderManager.h"
-#include "BWTAManager.h"
 #include "FileManager.h"
 #include "GUIManager.h"
 #include "InformationManager.h"
