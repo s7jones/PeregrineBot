@@ -146,7 +146,7 @@ void BaseManager::DoAllWorkerTasks(BWAPI::Unit u)
 				std::pair<bool, invaderAndDefender> foundDefensePair
 				    = { false, { nullptr, nullptr } };
 				for (auto defencePair : targetsAndAssignedDefenders) {
-					if (invader == defencePair.invader) {
+					if (invader == defencePair.first) {
 						foundDefensePair = { true, defencePair };
 						break;
 					}
@@ -164,11 +164,10 @@ void BaseManager::DoAllWorkerTasks(BWAPI::Unit u)
 					return;
 				} else {
 					auto defencePair = foundDefensePair.second;
-					auto defender    = foundDefensePair.second.defender;
 					// assigneddefender is destroyed
-					if (defender->exists()) {
+					if (defencePair.second->exists()) {
+						defenders.erase(defencePair.second);
 						targetsAndAssignedDefenders.erase(defencePair);
-						defenders.erase(defender);
 						if (miners.size() > 1) {
 							targetsAndAssignedDefenders.insert({ invader, u });
 							OrderManager::Instance().Attack(u, invader);
@@ -190,7 +189,7 @@ void BaseManager::DoAllWorkerTasks(BWAPI::Unit u)
 				GUIManager::Instance().drawTextOnScreen(u, "don't chase");
 				defenders.erase(u);
 				for (auto defencePair : targetsAndAssignedDefenders) {
-					if (defencePair.defender == u) {
+					if (defencePair.second == u) {
 						targetsAndAssignedDefenders.erase(defencePair);
 					}
 				}
