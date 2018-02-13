@@ -27,7 +27,19 @@ public:
 	Base(BWAPI::Unit u);
 	BWAPI::Unitset checkForInvaders() const;
 	void calculateBorder() const;
-	bool operator<(const Base& other) const;
+	bool operator<(const Base& other) const
+	{
+		return base < other.base;
+	}
+	friend bool operator<(const Base& lhs, BWAPI::Unit rhs)
+	{
+		return lhs.base < rhs;
+	}
+	friend bool operator<(BWAPI::Unit lhs, const Base& rhs)
+	{
+		return lhs < rhs.base;
+	}
+	using is_transparent = void;
 
 	mutable double borderRadius = 0;
 

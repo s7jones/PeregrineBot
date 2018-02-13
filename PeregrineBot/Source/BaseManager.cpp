@@ -137,7 +137,10 @@ void BaseManager::onUnitCreate(BWAPI::Unit unit)
 void BaseManager::onUnitDestroy(BWAPI::Unit unit)
 {
 	if (unit->getType().isResourceDepot() && unit->getPlayer() == Broodwar->self()) {
-		hatcheries.erase(Base(unit));
+		auto it = hatcheries.find(unit);
+		if (it != hatcheries.end()) {
+			it = hatcheries.erase(it);
+		}
 	}
 
 	if (unit->getType().isWorker() && unit->getPlayer() == Broodwar->self()) {
@@ -201,9 +204,4 @@ void Base::calculateBorder() const
 	}
 
 	borderRadius = maxDist;
-}
-
-bool Base::operator<(const Base& other) const
-{
-	return base < other.base;
 }

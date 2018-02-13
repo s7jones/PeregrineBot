@@ -6,19 +6,22 @@ public:
 	UnitInfo(BWAPI::Unit unitToWrap);
 	void update() const;
 	bool exists() const;
-	BWAPI::Position getPosition() const;
-	int x()
-	{
-		return getPosition().x;
-	}
-	int y()
-	{
-		return getPosition().y;
-	}
+	BWAPI::Position getPosition() const { return pos; }
+	int x() { return getPosition().x; }
+	int y() { return getPosition().y; }
 
-	bool operator<(const UnitInfo& other) const;
-	friend bool operator<(const UnitInfo& lhs, BWAPI::Unit rhs);
-	friend bool operator<(BWAPI::Unit lhs, const UnitInfo& rhs);
+	bool operator<(const UnitInfo& other) const
+	{
+		return u < other.u;
+	}
+	friend bool operator<(const UnitInfo& lhs, BWAPI::Unit rhs)
+	{
+		return lhs.u < rhs;
+	}
+	friend bool operator<(BWAPI::Unit lhs, const UnitInfo& rhs)
+	{
+		return lhs < rhs.u;
+	}
 	// transparent comparators
 	// https://www.youtube.com/watch?v=BBUacofxOP8
 	using is_transparent = void;

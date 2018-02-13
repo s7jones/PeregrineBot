@@ -41,22 +41,3 @@ bool UnitInfo::exists() const
 		return false;
 	}
 }
-
-BWAPI::Position UnitInfo::getPosition() const
-{
-	return pos;
-}
-
-bool UnitInfo::operator<(const UnitInfo& other) const
-{
-	return u < other.u;
-}
-
-bool operator<(const UnitInfo& lhs, BWAPI::Unit rhs)
-{
-	return lhs.u < rhs;
-}
-bool operator<(BWAPI::Unit lhs, const UnitInfo& rhs)
-{
-	return lhs < rhs.u;
-}
