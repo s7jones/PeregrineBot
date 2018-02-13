@@ -20,7 +20,17 @@ public:
 	std::set<BWAPI::Unit> miners;
 	std::set<BWAPI::Unit> defenders;
 
-	std::map<BWAPI::Unit, BWAPI::Unit> targetsAndAssignedDefenders;
+	struct invaderAndDefender {
+		BWAPI::Unit invader;
+		BWAPI::Unit defender;
+		bool operator<(const invaderAndDefender& rhs) const
+		{
+			return (invader < rhs.invader
+			        || (!(rhs.invader < invader) && defender < rhs.invader));
+		}
+	};
+
+	std::set<invaderAndDefender> targetsAndAssignedDefenders;
 
 private:
 	BaseManager();

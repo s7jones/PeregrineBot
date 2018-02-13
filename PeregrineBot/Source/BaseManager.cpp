@@ -143,39 +143,40 @@ void BaseManager::DoAllWorkerTasks(BWAPI::Unit u)
 		if (main) {
 			auto invaders = main->checkForInvaders();
 			for (auto invader : invaders) {
-				auto it = targetsAndAssignedDefenders.find(invader);
+				std::pair<bool, invaderAndDefender> foundDefensePair
+				    = { false, { nullptr, nullptr } };
+				for (auto defencePair : targetsAndAssignedDefenders) {
+					if (invader == defencePair.invader) {
+						foundDefensePair = { true, defencePair };
+						break;
+					}
+				}
 				// invader not been assigned a defender
-				if (it == targetsAndAssignedDefenders.end()) {
+				if (!foundDefensePair.first) {
 					// always keep 1 mining
 					if (miners.size() > 1) {
 						targetsAndAssignedDefenders.insert({ invader, u });
 						OrderManager::Instance().Attack(u, invader);
 						GUIManager::Instance().drawTextOnScreen(u, "this is SPARTA!");
 						defenders.insert(u);
-						return;
+						miners.erase(u);
 					}
+					return;
 				} else {
-					if (it->second) {
-						// assigneddefender is destroyed
-						if (!it->second->exists()) {
-							defenders.erase(it->second);
-							if (miners.size() > 1) {
-								it->second = u;
-								OrderManager::Instance().Attack(u, invader);
-								GUIManager::Instance().drawTextOnScreen(u, "prepare for glory (reinforce)");
-								defenders.insert(u);
-								return;
-							}
-						}
-					} else {
-						defenders.erase(it->second);
+					auto defencePair = foundDefensePair.second;
+					auto defender    = foundDefensePair.second.defender;
+					// assigneddefender is destroyed
+					if (defender->exists()) {
+						targetsAndAssignedDefenders.erase(defencePair);
+						defenders.erase(defender);
 						if (miners.size() > 1) {
-							it->second = u;
+							targetsAndAssignedDefenders.insert({ invader, u });
 							OrderManager::Instance().Attack(u, invader);
 							GUIManager::Instance().drawTextOnScreen(u, "prepare for glory (reinforce)");
 							defenders.insert(u);
-							return;
+							miners.erase(u);
 						}
+						return;
 					}
 				}
 			}
@@ -188,9 +189,9 @@ void BaseManager::DoAllWorkerTasks(BWAPI::Unit u)
 				OrderManager::Instance().Stop(u);
 				GUIManager::Instance().drawTextOnScreen(u, "don't chase");
 				defenders.erase(u);
-				for (auto targetDefender : targetsAndAssignedDefenders) {
-					if (targetDefender.second == u) {
-						targetDefender.second = nullptr;
+				for (auto defencePair : targetsAndAssignedDefenders) {
+					if (defencePair.defender == u) {
+						targetsAndAssignedDefenders.erase(defencePair);
 					}
 				}
 			}
