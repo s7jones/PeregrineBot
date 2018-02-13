@@ -53,7 +53,7 @@ void UtilityManager::constructOptions()
 				double bestScore = 0;
 				int bestHits     = std::numeric_limits<int>::infinity();
 				int worstHits    = 0;
-				Unit bestChoice  = NULL;
+				Unit bestChoice  = nullptr;
 				for (const auto enemy : enemies) {
 					int effectiveDamage = weapon.damageAmount() - enemy->getType().armor();
 					int hp              = enemy->getHitPoints();
@@ -134,7 +134,7 @@ void UtilityManager::constructOptions()
 				double bestScore = 0;
 				int bestHits     = std::numeric_limits<int>::infinity();
 				int worstHits    = 0;
-				Unit bestChoice  = NULL;
+				Unit bestChoice  = nullptr;
 				for (const auto enemy : enemies) {
 					int effectiveDamage = weapon.damageAmount() - enemy->getType().armor();
 					int hp              = enemy->getHitPoints();
@@ -281,7 +281,7 @@ bool UtilityManager::performBestActionForZerglingInEnemyBase(
     BWAPI::Unit zergling)
 {
 	std::string bestOptionDescription;
-	UtilResult bestOptionResult = { 0, NULL };
+	UtilResult bestOptionResult = { 0, nullptr };
 	for (auto option : options) {
 		auto result = option.util(zergling);
 		if (result.first > bestOptionResult.first) {
@@ -290,7 +290,7 @@ bool UtilityManager::performBestActionForZerglingInEnemyBase(
 		}
 	}
 
-	if (bestOptionResult.first == 0 || bestOptionResult.second == NULL) {
+	if (bestOptionResult.first == 0 || bestOptionResult.second == nullptr) {
 		return false;
 	} else {
 		OrderManager::Instance().Attack(zergling, bestOptionResult.second);

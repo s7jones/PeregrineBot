@@ -26,7 +26,7 @@ public:
 	// https://www.youtube.com/watch?v=BBUacofxOP8
 	using is_transparent = void;
 
-	BWAPI::Unit u = NULL;
+	BWAPI::Unit u = nullptr;
 
 private:
 	mutable int lastFrameSeen;
