@@ -9,7 +9,7 @@ struct MessageAndFrames {
 class GUIManager {
 public:
 	static GUIManager& Instance();
-	void drawTextOnScreen(BWAPI::Unit u, std::string format, int frames);
+	void drawTextOnScreen(BWAPI::Unit u, std::string format, int frames = 480);
 	void draw();
 
 private:

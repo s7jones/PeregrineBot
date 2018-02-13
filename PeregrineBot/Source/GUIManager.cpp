@@ -4,7 +4,6 @@
 #include "BaseManager.h"
 #include "BuildOrderManager.h"
 #include "InformationManager.h"
-#include "WorkerManager.h"
 
 using namespace BWAPI;
 using namespace Filter;
@@ -51,6 +50,13 @@ void GUIManager::draw()
 
 	drawTopLeftOverlay();
 
+	for (auto hatch : BaseManager::Instance().hatcheries) {
+		std::stringstream ss;
+		ss << "border " << hatch.borderRadius;
+		GUIManager::Instance().drawTextOnScreen(hatch.base, ss.str());
+		Broodwar->drawCircleMap(hatch.base->getPosition(), hatch.borderRadius, Colors::White);
+	}
+
 	drawOnScreenMessages();
 
 	drawExtendedInterface();
@@ -94,8 +100,9 @@ void GUIManager::drawTopLeftOverlay()
 	Broodwar->drawTextScreen(1, 60, "Frame Time: %.1fms", duration);
 	Broodwar->drawTextScreen(1, 70, "APM: %i", Broodwar->getAPM());
 
-	int invaders = (BaseManager::Instance().hatcheries.size()) ? BaseManager::Instance().hatcheries.begin()->checkForInvaders().size() : 0;
+	int invaders = (BaseManager::Instance().main) ? BaseManager::Instance().main->checkForInvaders().size() : 0;
 	Broodwar->drawTextScreen(1, 80, "Invaders: %i", invaders);
+	Broodwar->drawTextScreen(1, 90, "Mnrs/Dfndrs: %i/%i", BaseManager::Instance().miners.size(), BaseManager::Instance().defenders.size());
 
 	Broodwar->drawTextScreen(100, 0, "BO index: %i", std::distance(BuildOrderManager::Instance().bo.cbegin(), BuildOrderManager::Instance().boIndex));
 	Broodwar->drawTextScreen(100, 10, "Pool: %i", BuildOrderManager::Instance().pool);

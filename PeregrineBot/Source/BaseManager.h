@@ -7,14 +7,20 @@ class BaseManager {
 public:
 	static BaseManager& Instance();
 	void ManageBases(BWAPI::Unit u);
+	void DoAllWorkerTasks(BWAPI::Unit u);
 	void onUnitShow(BWAPI::Unit unit);
 	void onUnitCreate(BWAPI::Unit unit);
 	void onUnitDestroy(BWAPI::Unit unit);
 	void onUnitMorph(BWAPI::Unit unit);
 	void onUnitRenegade(BWAPI::Unit unit);
 
+	const Base* main = nullptr;
 	std::set<Base> hatcheries;
 	std::set<BWAPI::Unit> workers;
+	std::set<BWAPI::Unit> miners;
+	std::set<BWAPI::Unit> defenders;
+
+	std::map<BWAPI::Unit, BWAPI::Unit> targetsAndAssignedDefenders;
 
 private:
 	BaseManager();
@@ -41,8 +47,8 @@ public:
 	}
 	using is_transparent = void;
 
-	mutable double borderRadius = 0;
+	mutable double borderRadius = 256;
+	BWAPI::Unit base;
 
 private:
-	BWAPI::Unit base;
 };

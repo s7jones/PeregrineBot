@@ -8,7 +8,6 @@
 #include "GUIManager.h"
 #include "InformationManager.h"
 #include "OrderManager.h"
-#include "WorkerManager.h"
 
 /**
 Bot: PeregrineBot
@@ -146,7 +145,7 @@ void PeregrineBot::onFrame()
 		// Finally make the unit do some stuff!
 		// If the unit is a worker unit
 		if (u->getType().isWorker()) {
-			WorkerManager::Instance().DoAllWorkerTasks(u);
+			BaseManager::Instance().DoAllWorkerTasks(u);
 			continue;
 		}
 

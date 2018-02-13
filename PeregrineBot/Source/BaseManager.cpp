@@ -1,8 +1,11 @@
 #include "BaseManager.h"
 
 #include "BuildOrderManager.h"
+#include "BuildingManager.h"
+#include "GUIManager.h"
+#include "InformationManager.h"
+#include "OrderManager.h"
 #include "Utility.h"
-#include "WorkerManager.h"
 
 using namespace BWAPI;
 using namespace Filter;
@@ -21,8 +24,12 @@ void BaseManager::ManageBases(BWAPI::Unit base)
 {
 	auto result = hatcheries.emplace(base);
 
-	if ((*result.first).borderRadius == 0) {
-		(*result.first).calculateBorder();
+	if (result.second) {
+		if (hatcheries.size() == 1) {
+			main = &(*result.first);
+		}
+		// use default of 256 for now
+		//(*result.first).calculateBorder();
 	}
 
 	//auto invaders = (*result.first).checkForInvaders();
@@ -118,6 +125,117 @@ void BaseManager::ManageBases(BWAPI::Unit base)
 	}
 }
 
+// Details for mineral lock
+//s7jones: @PurpleWaveJadien In plain english, is mineral locking : -spam worker on mineral until it has gathered - return with minerals once it has gathered - each worker assigned to one mineral always
+//jaj22 : spam every other frame at most
+//s7jones : @PurpleWaveJadien - also have no more than 2 / 2.5 workers to a mineral patch ? -choose minerals based on closest then least amount of workers ?
+//Moderator Subscriber Twitch Prime PurpleWaveJadien : spam until it starts gathering, then stop spamming
+//bftjoe : you check which mineral its trying to target and only issue command if its wrong
+//Moderator Subscriber Twitch Prime PurpleWaveJadien : 2 workers basically saturates a mineral with mineral locking.you get extremely marginal return past that; you'd likely be better off long distance mining
+//Moderator Subscriber Twitch Prime PurpleWaveJadien : ^ right, what bftjoe said.spam whenever getTarget is a different mineralwant
+
+void BaseManager::DoAllWorkerTasks(BWAPI::Unit u)
+{
+	workers.insert(u);
+
+	// if a miner
+	if (miners.find(u) != miners.end()) {
+		if (main) {
+			auto invaders = main->checkForInvaders();
+			for (auto invader : invaders) {
+				auto it = targetsAndAssignedDefenders.find(invader);
+				// invader not been assigned a defender
+				if (it == targetsAndAssignedDefenders.end()) {
+					// always keep 1 mining
+					if (miners.size() > 1) {
+						targetsAndAssignedDefenders.insert({ invader, u });
+						OrderManager::Instance().Attack(u, invader);
+						GUIManager::Instance().drawTextOnScreen(u, "this is SPARTA!");
+						defenders.insert(u);
+						return;
+					}
+				} else {
+					if (it->second) {
+						// assigneddefender is destroyed
+						if (!it->second->exists()) {
+							defenders.erase(it->second);
+							if (miners.size() > 1) {
+								it->second = u;
+								OrderManager::Instance().Attack(u, invader);
+								GUIManager::Instance().drawTextOnScreen(u, "prepare for glory (reinforce)");
+								defenders.insert(u);
+								return;
+							}
+						}
+					} else {
+						defenders.erase(it->second);
+						if (miners.size() > 1) {
+							it->second = u;
+							OrderManager::Instance().Attack(u, invader);
+							GUIManager::Instance().drawTextOnScreen(u, "prepare for glory (reinforce)");
+							defenders.insert(u);
+							return;
+						}
+					}
+				}
+			}
+		}
+	}
+
+	if (defenders.find(u) != defenders.end()) {
+		if (main) {
+			if (DistanceAir(u->getPosition(), main->base->getPosition()) > main->borderRadius) {
+				OrderManager::Instance().Stop(u);
+				GUIManager::Instance().drawTextOnScreen(u, "don't chase");
+				defenders.erase(u);
+				for (auto targetDefender : targetsAndAssignedDefenders) {
+					if (targetDefender.second == u) {
+						targetDefender.second = nullptr;
+					}
+				}
+			}
+		}
+	}
+
+	// if our worker is idle
+	if (u->isIdle()) {
+		defenders.erase(u);
+
+		// Order workers carrying a resource to return them to the center,
+		// otherwise find a mineral patch to harvest.
+		if (u->isCarryingGas() || u->isCarryingMinerals()) {
+			u->returnCargo();
+			miners.insert(u);
+		}
+		// The worker cannot harvest anything if it
+		// is carrying a powerup such as a flag
+		else if (!u->getPowerUp()) {
+			// Harvest from the nearest mineral patch or gas refinery
+			auto success = u->gather(u->getClosestUnit(IsMineralField || IsRefinery));
+			if (!success) {
+				// If the call fails, then print the last error message
+				DebugMessenger::Instance() << Broodwar->getLastError() << std::endl;
+				DebugMessenger::Instance() << "Worker couldn't gather mineral or from refinery" << std::endl;
+				auto closestKnownMineral = InformationManager::Instance().getClosestMineral(u);
+				if (closestKnownMineral) {
+					OrderManager::Instance().Move(u, closestKnownMineral->getPosition());
+				}
+			} else {
+				miners.insert(u);
+			}
+
+		} // closure: has no powerup
+		else {
+			DebugMessenger::Instance() << "is idle and has power up?" << std::endl;
+		}
+	}
+
+	// if it isn't a defender
+	if (defenders.find(u) == defenders.end()) {
+		BuildingManager::Instance().isAnythingToBuild(u);
+	}
+}
+
 void BaseManager::onUnitShow(BWAPI::Unit unit)
 {
 	// if something morphs into a worker, add it
@@ -145,6 +263,8 @@ void BaseManager::onUnitDestroy(BWAPI::Unit unit)
 
 	if (unit->getType().isWorker() && unit->getPlayer() == Broodwar->self()) {
 		workers.erase(unit);
+		miners.erase(unit);
+		defenders.erase(unit);
 	}
 }
 
@@ -158,6 +278,8 @@ void BaseManager::onUnitMorph(BWAPI::Unit unit)
 	// if something morphs into a building, it was a worker?
 	if (unit->getType().isBuilding() && unit->getPlayer() == Broodwar->self() && unit->getPlayer()->getRace() == Races::Zerg) {
 		workers.erase(unit);
+		miners.erase(unit);
+		defenders.erase(unit);
 	}
 }
 
@@ -165,6 +287,8 @@ void BaseManager::onUnitRenegade(BWAPI::Unit unit)
 {
 	if (unit->getType().isWorker() && unit->getPlayer() == Broodwar->self()) {
 		workers.erase(unit);
+		miners.erase(unit);
+		defenders.erase(unit);
 	}
 }
 
