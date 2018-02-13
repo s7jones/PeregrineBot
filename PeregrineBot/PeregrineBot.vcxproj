@@ -102,6 +102,7 @@
   <ItemGroup>
     <ClCompile Include="Source\ArmyManager.cpp" />
     <ClCompile Include="Source\BaseManager.cpp" />
+    <ClCompile Include="Source\BuildingManager.cpp" />
     <ClCompile Include="Source\BuildOrderManager.cpp" />
     <ClCompile Include="Source\BWTAManager.cpp" />
     <ClCompile Include="Source\DebugMessenger.cpp" />
@@ -120,6 +121,7 @@
   <ItemGroup>
     <ClInclude Include="Source\ArmyManager.h" />
     <ClInclude Include="Source\BaseManager.h" />
+    <ClInclude Include="Source\BuildingManager.h" />
     <ClInclude Include="Source\BuildOrderManager.h" />
     <ClInclude Include="Source\BWTAManager.h" />
     <ClInclude Include="Source\Common.h" />

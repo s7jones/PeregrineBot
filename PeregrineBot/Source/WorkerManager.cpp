@@ -1,6 +1,7 @@
 #include "WorkerManager.h"
 
 #include "BuildOrderManager.h"
+#include "BuildingManager.h"
 #include "OrderManager.h"
 #include "Utility.h"
 
@@ -34,6 +35,7 @@ void WorkerManager::DoAllWorkerTasks(BWAPI::Unit u)
 				// If the call fails, then print the last error message
 				DebugMessenger::Instance() << Broodwar->getLastError() << std::endl;
 				DebugMessenger::Instance() << "Worker couldn't gather mineral or from refinery" << std::endl;
+			} else {
 			}
 
 		} // closure: has no powerup
@@ -41,28 +43,8 @@ void WorkerManager::DoAllWorkerTasks(BWAPI::Unit u)
 			DebugMessenger::Instance() << "is idle and has power up?" << std::endl;
 		}
 	}
-	if (!BuildOrderManager::Instance().buildOrderComplete) {
-		if (*BuildOrderManager::Instance().boIndex == UnitTypes::Zerg_Spawning_Pool) {
-			if ((!BuildOrderManager::Instance().pool) && (Broodwar->self()->minerals() >= UnitTypes::Zerg_Spawning_Pool.mineralPrice())) {
-				if ((poolLastChecked + 115) < Broodwar->getFrameCount()) {
-					//find a location for spawning pool and construct it
-					TilePosition buildPosition = Broodwar->getBuildLocation(UnitTypes::Zerg_Spawning_Pool, u->getTilePosition());
-					OrderManager::Instance().Build(u, UnitTypes::Zerg_Spawning_Pool, buildPosition);
-					poolLastChecked = Broodwar->getFrameCount();
-					return;
-				}
-			}
-		}
-	} else {
-		if (Broodwar->self()->minerals() >= UnitTypes::Zerg_Hatchery.mineralPrice()) {
-			if ((lastChecked + 400) < Broodwar->getFrameCount()) {
-				TilePosition buildPosition = Broodwar->getBuildLocation(UnitTypes::Zerg_Hatchery, u->getTilePosition());
-				OrderManager::Instance().Build(u, UnitTypes::Zerg_Hatchery, buildPosition);
-				lastChecked = Broodwar->getFrameCount();
-				return;
-			}
-		}
-	}
+
+	BuildingManager::Instance().isAnythingToBuild(u);
 }
 
 //s7jones: @PurpleWaveJadien In plain english, is mineral locking : -spam worker on mineral until it has gathered - return with minerals once it has gathered - each worker assigned to one mineral always

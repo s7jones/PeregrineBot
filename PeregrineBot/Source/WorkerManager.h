@@ -8,7 +8,4 @@ public:
 
 private:
 	WorkerManager();
-
-	int lastChecked     = 0;
-	int poolLastChecked = 0;
 };
