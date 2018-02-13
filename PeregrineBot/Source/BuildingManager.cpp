@@ -17,25 +17,13 @@ bool BuildingManager::isAnythingToBuild(BWAPI::Unit builder)
 
 	if (!BuildOrderManager::Instance().buildOrderComplete) {
 		if (*BuildOrderManager::Instance().boIndex == UnitTypes::Zerg_Spawning_Pool) {
-			//if ((!BuildOrderManager::Instance().pool) && (Broodwar->self()->minerals() >= UnitTypes::Zerg_Spawning_Pool.mineralPrice())) {
-			//	if ((poolLastChecked + 115) < Broodwar->getFrameCount()) {
-			//		TilePosition buildPosition = Broodwar->getBuildLocation(UnitTypes::Zerg_Spawning_Pool, builder->getTilePosition());
-			//		OrderManager::Instance().Build(builder, UnitTypes::Zerg_Spawning_Pool, buildPosition);
-			//		poolLastChecked = Broodwar->getFrameCount();
-			//		return true;
-			//	}
-			//}
 			return tryToBuild(builder, UnitTypes::Zerg_Spawning_Pool);
 		}
 	} else {
-		//if (Broodwar->self()->minerals() >= UnitTypes::Zerg_Hatchery.mineralPrice()) {
-		//	if ((lastChecked + 400) < Broodwar->getFrameCount()) {
-		//		TilePosition buildPosition = Broodwar->getBuildLocation(UnitTypes::Zerg_Hatchery, builder->getTilePosition());
-		//		OrderManager::Instance().Build(builder, UnitTypes::Zerg_Hatchery, buildPosition);
-		//		lastChecked = Broodwar->getFrameCount();
-		//		return true;
-		//	}
-		//}
+		auto ut = BuildOrderManager::Instance().rebuildBuilding();
+		if (ut != UnitTypes::Unknown) {
+			return tryToBuild(builder, ut);
+		}
 		return tryToBuild(builder, UnitTypes::Zerg_Hatchery);
 	}
 	return false;

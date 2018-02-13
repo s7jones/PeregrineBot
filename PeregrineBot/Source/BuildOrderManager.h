@@ -4,6 +4,7 @@
 class BuildOrderManager {
 public:
 	static BuildOrderManager& Instance();
+	BWAPI::UnitType rebuildBuilding();
 	void incrementBuildOrder();
 
 	// To workaround Compiler Error C2797 in VS2013 had to do this
@@ -31,4 +32,5 @@ public:
 
 private:
 	BuildOrderManager();
+	std::map<BWAPI::UnitType, int> boMap;
 };
