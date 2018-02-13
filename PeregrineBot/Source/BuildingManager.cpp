@@ -14,18 +14,19 @@ BuildingManager& BuildingManager::Instance()
 bool BuildingManager::isAnythingToBuild(BWAPI::Unit builder)
 {
 	bool flag = false;
-
-	if (!BuildOrderManager::Instance().buildOrderComplete) {
-		if (*BuildOrderManager::Instance().boIndex == UnitTypes::Zerg_Spawning_Pool) {
-			return tryToBuild(builder, UnitTypes::Zerg_Spawning_Pool);
-		}
+	auto ut   = BuildOrderManager::Instance().rebuildBuilding();
+	if (ut != UnitTypes::Unknown) {
+		return tryToBuild(builder, ut);
 	} else {
-		auto ut = BuildOrderManager::Instance().rebuildBuilding();
-		if (ut != UnitTypes::Unknown) {
-			return tryToBuild(builder, ut);
+		if (!BuildOrderManager::Instance().buildOrderComplete) {
+			if (*BuildOrderManager::Instance().boIndex == UnitTypes::Zerg_Spawning_Pool) {
+				return tryToBuild(builder, UnitTypes::Zerg_Spawning_Pool);
+			}
+		} else {
+			return tryToBuild(builder, UnitTypes::Zerg_Hatchery);
 		}
-		return tryToBuild(builder, UnitTypes::Zerg_Hatchery);
 	}
+
 	return false;
 }
 
