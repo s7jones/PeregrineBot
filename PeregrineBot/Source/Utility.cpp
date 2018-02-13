@@ -83,6 +83,15 @@ double TimeAir(const BWAPI::TilePosition start, const BWAPI::TilePosition end)
 	return time;
 }
 
+bool isReachable(BWTA::Region* region1, BWTA::Region* region2)
+{
+	if (region1 == nullptr || region2 == nullptr) {
+		return false;
+	} else {
+		return region1->isReachable(region2);
+	}
+}
+
 void errorMessage(std::string message)
 {
 	Broodwar << "err: " << message << std::endl;

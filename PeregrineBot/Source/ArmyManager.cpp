@@ -126,18 +126,8 @@ std::set<UnitInfo> ArmyManager::GetZerglingAccessibleBuildings(BWAPI::Unit u)
 		auto zerglingRegion = BWTA::getRegion(zerglingPos);
 		auto buildingRegion = BWTA::getRegion(buildingPos);
 
-		if (!zerglingRegion) {
-			errorMessage("zerglingRegion null");
-			continue;
-		}
-
-		if (!buildingRegion) {
-			errorMessage("buildingRegion null");
-			continue;
-		}
-
 		// if building isn't reachable then skip
-		if (!zerglingRegion->isReachable(buildingRegion)) {
+		if (!isReachable(zerglingRegion, buildingRegion)) {
 			DebugMessenger::Instance() << "unaccessible building" << std::endl;
 			if (!building.exists()) {
 				errorMessage("building doesn't exist");
@@ -231,18 +221,18 @@ void ArmyManager::ZerglingScoutSpreadOut(BWAPI::Unit u)
 			scoutLocationsZergling.push_back(unscoutedLocation);
 		}
 
+		auto zerglingRegion = BWTA::getRegion(u->getPosition());
 		// TODO: don't add duplicate cases
 		for (const auto& base : BWTA::getBaseLocations()) {
 			auto region = base->getRegion();
-			if (!BWTA::getRegion(u->getPosition())->isReachable(region)) {
+			if (!isReachable(zerglingRegion, region)) {
 				continue;
 			}
 			scoutLocationsZergling.push_back(base->getPosition());
 		}
 
 		for (const auto& region : BWTA::getRegions()) {
-			// if region isn't reachable then skip
-			if (!BWTA::getRegion(u->getPosition())->isReachable(region)) {
+			if (!isReachable(zerglingRegion, region)) {
 				continue;
 			}
 			auto& poly = region->getPolygon();
