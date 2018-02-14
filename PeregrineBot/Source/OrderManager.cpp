@@ -14,7 +14,7 @@ OrderManager& OrderManager::Instance()
 	return instance;
 }
 
-void OrderManager::Update()
+void OrderManager::update()
 {
 	UpdateUnitsWaitingSinceLastOrder();
 }

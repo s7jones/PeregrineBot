@@ -8,7 +8,7 @@ class OrderManager {
 
 public:
 	static OrderManager& Instance();
-	void Update();
+	void update();
 	void UpdateUnitsWaitingSinceLastOrder();
 	bool DoesUnitHasOrder(BWAPI::Unit unit);
 	void Attack(BWAPI::Unit attacker, BWAPI::Position p);

@@ -16,7 +16,7 @@ DebugMessenger::~DebugMessenger()
 {
 }
 
-void DebugMessenger::Setup(bool debug_flag_define)
+void DebugMessenger::setup(bool debug_flag_define)
 {
 	bool debug_flag_json = FileManager::Instance().readJsonConfig();
 

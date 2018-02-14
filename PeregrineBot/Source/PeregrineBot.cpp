@@ -48,7 +48,7 @@ using namespace Filter;
 
 void PeregrineBot::onStart()
 {
-	DebugMessenger::Instance().Setup(debug_flag);
+	DebugMessenger::Instance().setup(debug_flag);
 	DebugMessenger::Instance() << "TESTTESTTESTTEST" << std::endl;
 
 	// Print the map name.
@@ -85,7 +85,7 @@ void PeregrineBot::onStart()
 
 		BWTAManager::Instance().analyze();
 
-		InformationManager::Instance().Setup();
+		InformationManager::Instance().setup();
 	}
 }
 
@@ -114,9 +114,9 @@ void PeregrineBot::onFrame()
 	if (Broodwar->getFrameCount() % Broodwar->getLatencyFrames() != 0)
 		return;
 
-	// Update waiting units
-	OrderManager::Instance().Update();
-	InformationManager::Instance().Update();
+	// update waiting units
+	OrderManager::Instance().update();
+	InformationManager::Instance().update();
 
 	// Iterate through all the units that we own
 	for (auto& u : Broodwar->self()->getUnits()) {
@@ -170,7 +170,7 @@ void PeregrineBot::onFrame()
 		}
 
 		if (u->getType() == UnitTypes::Zerg_Overlord) {
-			InformationManager::Instance().OverlordScouting(u);
+			InformationManager::Instance().overlordScouting(u);
 			continue;
 		}
 

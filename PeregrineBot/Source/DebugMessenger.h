@@ -12,7 +12,7 @@ private:
 public:
 	static DebugMessenger& Instance();
 	~DebugMessenger();
-	void Setup(bool debug_flag_define);
+	void setup(bool debug_flag_define);
 
 	template <class T>
 	inline DebugMessenger& operator<<(const T& in)

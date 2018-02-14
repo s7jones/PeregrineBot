@@ -17,11 +17,7 @@ struct ScoutingOptionFor4 {
 struct sortByMeanTime {
 	bool operator()(const ScoutingOptionFor4& lhs, const ScoutingOptionFor4& rhs)
 	{
-		if (lhs.meanTime <= rhs.meanTime) {
-			return true; // lhs meantTime is less
-		} else {
-			return false;
-		}
+		return (lhs.meanTime < rhs.meanTime);
 	}
 };
 
@@ -31,22 +27,15 @@ struct distAndTime {
 };
 
 class InformationManager {
-	InformationManager();
-
 public:
 	static InformationManager& Instance();
 	void onUnitShow(BWAPI::Unit unit);
 	void onUnitDestroy(BWAPI::Unit unit);
 	void onUnitMorph(BWAPI::Unit unit);
 
-	void Setup();
-	void SetupScouting();
-	void Update();
-	void UpdateScouting();
-	void OverlordScouting(BWAPI::Unit overlord);
-	void OverlordScoutingAtGameStart(BWAPI::Unit overlord);
-	void OverlordScoutingAfterBaseFound(BWAPI::Unit overlord);
-	void OverlordRetreatToHome(BWAPI::Unit overlord);
+	void setup();
+	void update();
+	void overlordScouting(BWAPI::Unit overlord);
 
 	ResourceUnitInfo* getClosestMineral(BWAPI::Unit u);
 
@@ -57,7 +46,6 @@ public:
 	bool isEnemyRaceRandom    = false;
 	bool isIslandsOnMap       = false;
 
-	std::map<BWAPI::TilePosition, std::array<double, 6>> scoutingInfo;
 	std::set<BWAPI::TilePosition> allStarts;
 	std::set<BWAPI::TilePosition> otherStarts; // would be a good idea to make this const
 	std::set<BWAPI::Position> unscoutedPositions;
@@ -76,6 +64,13 @@ public:
 	std::set<ResourceUnitInfo> geysers;
 
 private:
+	InformationManager();
+
+	void setupScouting();
+	void updateScouting();
+	void overlordScoutingAtGameStart(BWAPI::Unit overlord);
+	void overlordScoutingAfterBaseFound(BWAPI::Unit overlord);
+	void overlordRetreatToHome(BWAPI::Unit overlord);
 	void addToEnemyBuildings(BWAPI::Unit unit);
 	void addToEnemyArmy(BWAPI::Unit unit);
 	void validateEnemyUnits();

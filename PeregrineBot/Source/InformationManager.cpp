@@ -15,7 +15,7 @@ InformationManager& InformationManager::Instance()
 	return instance;
 }
 
-void InformationManager::Setup()
+void InformationManager::setup()
 {
 	auto enemy = Broodwar->enemy();
 	if (enemy) {
@@ -40,7 +40,7 @@ void InformationManager::Setup()
 		}
 	}
 
-	SetupScouting();
+	setupScouting();
 
 	for (auto iter1 = Broodwar->getStartLocations().begin(); iter1 != (Broodwar->getStartLocations().end() - 1); ++iter1) {
 		for (auto iter2 = iter1 + 1; iter2 != Broodwar->getStartLocations().end(); ++iter2) {
@@ -57,7 +57,7 @@ void InformationManager::Setup()
 	DebugMessenger::Instance() << "max base to base is: " << maxBaseToBaseDistance << "P" << std::endl;
 }
 
-void InformationManager::SetupScouting()
+void InformationManager::setupScouting()
 {
 	std::set<Unit> overlords;
 	for (Unit u : Broodwar->self()->getUnits()) {
@@ -71,21 +71,6 @@ void InformationManager::SetupScouting()
 	} else {
 		airOrigin = Broodwar->self()->getStartLocation();
 		DebugMessenger::Instance() << "Not exactly 1 Overlord at start?!" << std::endl;
-	}
-
-	for (TilePosition p : Broodwar->getStartLocations()) {
-		if (p == Broodwar->self()->getStartLocation())
-			continue;
-		auto dist_ground = distanceGround(Broodwar->self()->getStartLocation(), p);
-		auto dist_air    = distanceAir(airOrigin, p);
-		auto time_ground = timeGround(Broodwar->self()->getStartLocation(), p);
-		auto time_air    = timeAir(airOrigin, p);
-		auto metric_dist = dist_ground - dist_air;
-		auto metric_time = time_ground - time_air;
-
-		std::array<double, 6> arr = { dist_ground, dist_air, metric_dist, time_ground, time_air, metric_time };
-
-		scoutingInfo.insert(std::pair<TilePosition, std::array<double, 6>>(p, arr));
 	}
 
 	for (auto iter1 = Broodwar->getStartLocations().begin(); iter1 != (Broodwar->getStartLocations().end() - 1); ++iter1) {
@@ -192,7 +177,7 @@ void InformationManager::SetupScouting()
 	}
 }
 
-void InformationManager::Update()
+void InformationManager::update()
 {
 	if (enemyRace == Races::Unknown) {
 		auto enemy = Broodwar->enemy();
@@ -209,10 +194,10 @@ void InformationManager::Update()
 
 	validateEnemyUnits();
 
-	UpdateScouting();
+	updateScouting();
 }
 
-void InformationManager::UpdateScouting()
+void InformationManager::updateScouting()
 {
 	auto it = unscoutedPositions.begin();
 	while (it != unscoutedPositions.end()) {
@@ -248,21 +233,21 @@ void InformationManager::UpdateScouting()
 	}
 }
 
-void InformationManager::OverlordScouting(BWAPI::Unit overlord)
+void InformationManager::overlordScouting(BWAPI::Unit overlord)
 {
 	if (overlord->isUnderAttack()) { // if overlord is under attack run back to own base
-		OverlordRetreatToHome(overlord);
+		overlordRetreatToHome(overlord);
 		return;
 	}
 
 	if (!enemyMain) {
-		OverlordScoutingAtGameStart(overlord);
+		overlordScoutingAtGameStart(overlord);
 	} else {
-		OverlordScoutingAfterBaseFound(overlord);
+		overlordScoutingAfterBaseFound(overlord);
 	}
 }
 
-void InformationManager::OverlordScoutingAtGameStart(BWAPI::Unit overlord)
+void InformationManager::overlordScoutingAtGameStart(BWAPI::Unit overlord)
 {
 	if (overlord->isIdle()) {
 		if (Broodwar->getStartLocations().size() == 4) { // map size is 4, use new scouting
@@ -322,7 +307,7 @@ void InformationManager::OverlordScoutingAtGameStart(BWAPI::Unit overlord)
 	}
 }
 
-void InformationManager::OverlordScoutingAfterBaseFound(BWAPI::Unit overlord)
+void InformationManager::overlordScoutingAfterBaseFound(BWAPI::Unit overlord)
 {
 	if (overlord->isIdle()) {
 		if (enemyRace != Races::Terran) {
@@ -351,12 +336,12 @@ void InformationManager::OverlordScoutingAfterBaseFound(BWAPI::Unit overlord)
 				scoutLocations.erase(it);
 			}
 		} else { // enemy race is terran, move back to our own base
-			OverlordRetreatToHome(overlord);
+			overlordRetreatToHome(overlord);
 		}
 	}
 }
 
-void InformationManager::OverlordRetreatToHome(BWAPI::Unit overlord)
+void InformationManager::overlordRetreatToHome(BWAPI::Unit overlord)
 {
 	auto ownBasePos          = getBasePos(Broodwar->self()->getStartLocation());
 	auto distanceFromOwnBase = overlord->getDistance(ownBasePos);
