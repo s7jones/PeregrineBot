@@ -65,3 +65,15 @@ int ResourceUnitInfo::getResources() const
 {
 	return resources;
 }
+
+void FriendlyUnitInfo::update() const
+{
+	UnitInfo::update();
+	if (u) {
+		if (exists()) {
+			if (u->isAttackFrame()) {
+				lastFrameAttacking = Broodwar->getFrameCount();
+			}
+		}
+	}
+}

@@ -34,6 +34,14 @@ private:
 	mutable BWAPI::UnitType type = BWAPI::UnitTypes::Unknown;
 };
 
+class FriendlyUnitInfo : public UnitInfo {
+	using UnitInfo::UnitInfo;
+	void update() const override;
+
+private:
+	mutable int lastFrameAttacking;
+};
+
 class EnemyUnitInfo : public UnitInfo {
 public:
 	using UnitInfo::UnitInfo;
