@@ -5,7 +5,7 @@
 using namespace BWAPI;
 using namespace Filter;
 
-UnitInfo::UnitInfo(const Unit& unitToWrap)
+UnitInfo::UnitInfo(BWAPI::Unit unitToWrap)
 {
 	if (unitToWrap) {
 		u = unitToWrap;
@@ -22,10 +22,6 @@ void UnitInfo::update() const
 			lastFrameSeen = Broodwar->getFrameCount();
 			pos           = u->getPosition();
 			type          = u->getType();
-			shields       = u->getShields();
-			hp            = u->getHitPoints();
-			energy        = u->getEnergy();
-			velocity      = std::make_pair(u->getVelocityX(), u->getVelocityY());
 		}
 	} else {
 		errorMessage("unit null 2");
@@ -42,21 +38,30 @@ bool UnitInfo::exists() const
 	}
 }
 
-BWAPI::Position UnitInfo::getPosition() const
+void EnemyUnitInfo::update() const
 {
-	return pos;
+	UnitInfo::update();
+	if (u) {
+		if (exists()) {
+			shields  = u->getShields();
+			hp       = u->getHitPoints();
+			energy   = u->getEnergy();
+			velocity = std::make_pair(u->getVelocityX(), u->getVelocityY());
+		}
+	}
 }
 
-bool UnitInfo::operator<(const UnitInfo& other) const
+void ResourceUnitInfo::update() const
 {
-	return u < other.u;
+	UnitInfo::update();
+	if (u) {
+		if (exists()) {
+			resources = u->getResources();
+		}
+	}
 }
 
-bool operator<(const UnitInfo& lhs, const BWAPI::Unit& rhs)
+int ResourceUnitInfo::getResources() const
 {
-	return lhs.u < rhs;
-}
-bool operator<(const BWAPI::Unit& lhs, const UnitInfo& rhs)
-{
-	return lhs < rhs.u;
+	return resources;
 }

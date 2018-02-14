@@ -60,7 +60,7 @@ void InformationManager::Setup()
 void InformationManager::SetupScouting()
 {
 	std::set<Unit> overlords;
-	for (const Unit& u : Broodwar->self()->getUnits()) {
+	for (Unit u : Broodwar->self()->getUnits()) {
 		if (u->getType() == UnitTypes::Zerg_Overlord)
 			overlords.insert(u);
 	}
@@ -205,6 +205,8 @@ void InformationManager::Update()
 		}
 	}
 
+	validateResources();
+
 	validateEnemyUnits();
 
 	UpdateScouting();
@@ -223,7 +225,7 @@ void InformationManager::UpdateScouting()
 				auto unitsOnBaseTile = Broodwar->getUnitsOnTile(TilePosition(p),
 				                                                IsEnemy && IsVisible && Exists && IsResourceDepot && !IsLifted);
 				if (unitsOnBaseTile.size() > 0) {
-					enemyMain          = std::make_shared<UnitInfo>(*unitsOnBaseTile.begin());
+					enemyMain          = std::make_shared<EnemyUnitInfo>(*unitsOnBaseTile.begin());
 					isEnemyBaseDeduced = true;
 					DebugMessenger::Instance() << "Found enemy base at: " << Broodwar->getFrameCount() << "F" << std::endl;
 					if ((enemyMain->x() == 0) && (enemyMain->y() == 0)) {
@@ -246,7 +248,7 @@ void InformationManager::UpdateScouting()
 	}
 }
 
-void InformationManager::OverlordScouting(const BWAPI::Unit& overlord)
+void InformationManager::OverlordScouting(BWAPI::Unit overlord)
 {
 	if (overlord->isUnderAttack()) { // if overlord is under attack run back to own base
 		OverlordRetreatToHome(overlord);
@@ -260,7 +262,7 @@ void InformationManager::OverlordScouting(const BWAPI::Unit& overlord)
 	}
 }
 
-void InformationManager::OverlordScoutingAtGameStart(const BWAPI::Unit& overlord)
+void InformationManager::OverlordScoutingAtGameStart(BWAPI::Unit overlord)
 {
 	if (overlord->isIdle()) {
 		if (Broodwar->getStartLocations().size() == 4) { // map size is 4, use new scouting
@@ -320,7 +322,7 @@ void InformationManager::OverlordScoutingAtGameStart(const BWAPI::Unit& overlord
 	}
 }
 
-void InformationManager::OverlordScoutingAfterBaseFound(const BWAPI::Unit& overlord)
+void InformationManager::OverlordScoutingAfterBaseFound(BWAPI::Unit overlord)
 {
 	if (overlord->isIdle()) {
 		if (enemyRace != Races::Terran) {
@@ -354,7 +356,7 @@ void InformationManager::OverlordScoutingAfterBaseFound(const BWAPI::Unit& overl
 	}
 }
 
-void InformationManager::OverlordRetreatToHome(const BWAPI::Unit& overlord)
+void InformationManager::OverlordRetreatToHome(BWAPI::Unit overlord)
 {
 	auto ownBasePos          = GetBasePos(Broodwar->self()->getStartLocation());
 	auto distanceFromOwnBase = overlord->getDistance(ownBasePos);
@@ -367,7 +369,21 @@ void InformationManager::OverlordRetreatToHome(const BWAPI::Unit& overlord)
 	}
 }
 
-void InformationManager::onUnitShow(const BWAPI::Unit& unit)
+ResourceUnitInfo* InformationManager::getClosestMineral(BWAPI::Unit u)
+{
+	double closestDist              = std::numeric_limits<double>::infinity();
+	ResourceUnitInfo* chosenMineral = nullptr;
+	for (auto mineral : minerals) {
+		auto dist = DistanceGround(u->getPosition(), mineral.getPosition());
+		if (closestDist > dist) {
+			closestDist   = dist;
+			chosenMineral = &mineral;
+		}
+	}
+	return chosenMineral;
+}
+
+void InformationManager::onUnitShow(BWAPI::Unit unit)
 {
 	if ((IsEnemy)(unit)) {
 		if ((IsBuilding)(unit)) {
@@ -376,9 +392,17 @@ void InformationManager::onUnitShow(const BWAPI::Unit& unit)
 			addToEnemyArmy(unit);
 		}
 	}
+
+	if ((IsResourceContainer)(unit)) {
+		if ((IsMineralField)(unit)) {
+			addToMinerals(unit);
+		} else {
+			addToGeysers(unit);
+		}
+	}
 }
 
-void InformationManager::onUnitDestroy(const BWAPI::Unit& unit)
+void InformationManager::onUnitDestroy(BWAPI::Unit unit)
 {
 	if ((IsEnemy)(unit)) {
 		if ((IsBuilding)(unit)) {
@@ -395,7 +419,7 @@ void InformationManager::onUnitDestroy(const BWAPI::Unit& unit)
 	}
 }
 
-void InformationManager::onUnitMorph(const BWAPI::Unit& unit)
+void InformationManager::onUnitMorph(BWAPI::Unit unit)
 {
 	if ((IsEnemy)(unit)) {
 		if ((IsBuilding)(unit)) {
@@ -408,7 +432,7 @@ void InformationManager::onUnitMorph(const BWAPI::Unit& unit)
 	}
 }
 
-void InformationManager::addToEnemyBuildings(const BWAPI::Unit& unit)
+void InformationManager::addToEnemyBuildings(BWAPI::Unit unit)
 {
 	auto iterAndBool = enemyBuildings.emplace(unit);
 
@@ -418,7 +442,7 @@ void InformationManager::addToEnemyBuildings(const BWAPI::Unit& unit)
 	}
 }
 
-void InformationManager::addToEnemyArmy(const BWAPI::Unit& unit)
+void InformationManager::addToEnemyArmy(BWAPI::Unit unit)
 {
 	auto iterAndBool = enemyArmy.emplace(unit);
 
@@ -467,6 +491,48 @@ void InformationManager::validateEnemyUnits()
 			} else {
 				it++;
 			}
+		}
+	}
+}
+
+void InformationManager::addToMinerals(BWAPI::Unit mineral)
+{
+	auto iterAndBool = minerals.emplace(mineral);
+
+	// if unit already exists in enemyBuildings
+	if (!iterAndBool.second) {
+		iterAndBool.first->update();
+	}
+}
+
+void InformationManager::addToGeysers(BWAPI::Unit geyser)
+{
+	auto iterAndBool = geysers.emplace(geyser);
+
+	// if unit already exists in enemyBuildings
+	if (!iterAndBool.second) {
+		iterAndBool.first->update();
+	}
+}
+
+void InformationManager::validateResources()
+{
+	auto it = minerals.begin();
+	while (it != minerals.end()) {
+		bool erase = false;
+		auto tp    = TilePosition(it->getPosition());
+		if (Broodwar->isVisible(tp)) {
+			auto visibleMinerals = Broodwar->getUnitsOnTile(tp, IsMineralField);
+			if (visibleMinerals.size() == 0) {
+				erase = true;
+				DebugMessenger::Instance() << "remove mineral" << std::endl;
+			}
+		}
+
+		if (erase) {
+			it = minerals.erase(it);
+		} else {
+			it++;
 		}
 	}
 }

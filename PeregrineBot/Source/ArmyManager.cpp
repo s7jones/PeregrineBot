@@ -17,7 +17,7 @@ ArmyManager& ArmyManager::Instance()
 	return instance;
 }
 
-void ArmyManager::ZerglingAttack(const Unit& u)
+void ArmyManager::ZerglingAttack(BWAPI::Unit u)
 {
 	auto enemyMain                       = InformationManager::Instance().enemyMain;
 	auto enemyRace                       = InformationManager::Instance().enemyRace;
@@ -57,7 +57,7 @@ void ArmyManager::ZerglingAttack(const Unit& u)
 
 	if (!priorityTarget) {
 		if (u->isIdle()) {
-			const Unit& closestGroundEnemy = u->getClosestUnit(IsEnemy && !IsFlying);
+			Unit closestGroundEnemy = u->getClosestUnit(IsEnemy && !IsFlying);
 			if (closestGroundEnemy) {
 				OrderManager::Instance().Attack(u, closestGroundEnemy);
 			} else {
@@ -114,10 +114,10 @@ void ArmyManager::ZerglingAttack(const Unit& u)
 	}
 }
 
-std::set<UnitInfo> ArmyManager::GetZerglingAccessibleBuildings(const Unit& u)
+std::set<EnemyUnitInfo> ArmyManager::GetZerglingAccessibleBuildings(BWAPI::Unit u)
 {
 	auto enemyBuildings = InformationManager::Instance().enemyBuildings;
-	std::set<UnitInfo> enemyBuildingsAccessible;
+	std::set<EnemyUnitInfo> enemyBuildingsAccessible;
 	for (auto iter = enemyBuildings.begin(); iter != enemyBuildings.end(); iter++) {
 		auto building    = *iter;
 		auto buildingPos = building.getPosition();
@@ -126,18 +126,8 @@ std::set<UnitInfo> ArmyManager::GetZerglingAccessibleBuildings(const Unit& u)
 		auto zerglingRegion = BWTA::getRegion(zerglingPos);
 		auto buildingRegion = BWTA::getRegion(buildingPos);
 
-		if (!zerglingRegion) {
-			errorMessage("zerglingRegion null");
-			continue;
-		}
-
-		if (!buildingRegion) {
-			errorMessage("buildingRegion null");
-			continue;
-		}
-
 		// if building isn't reachable then skip
-		if (!zerglingRegion->isReachable(buildingRegion)) {
+		if (!isReachable(zerglingRegion, buildingRegion)) {
 			DebugMessenger::Instance() << "unaccessible building" << std::endl;
 			if (!building.exists()) {
 				errorMessage("building doesn't exist");
@@ -151,7 +141,7 @@ std::set<UnitInfo> ArmyManager::GetZerglingAccessibleBuildings(const Unit& u)
 	return enemyBuildingsAccessible;
 }
 
-void ArmyManager::ZerglingAttackKnownBuildings(const Unit& u)
+void ArmyManager::ZerglingAttackKnownBuildings(BWAPI::Unit u)
 {
 	auto enemyBuildingsAccessible = GetZerglingAccessibleBuildings(u);
 
@@ -176,7 +166,7 @@ void ArmyManager::ZerglingAttackKnownBuildings(const Unit& u)
 	}
 }
 
-void ArmyManager::ZerglingScoutingBeforeBaseFound(const Unit& u)
+void ArmyManager::ZerglingScoutingBeforeBaseFound(BWAPI::Unit u)
 {
 	auto scoutingOptions    = InformationManager::Instance().scoutingOptions;
 	auto scoutedPositions   = InformationManager::Instance().scoutedPositions;
@@ -215,7 +205,7 @@ void ArmyManager::ZerglingScoutingBeforeBaseFound(const Unit& u)
 	}
 }
 
-void ArmyManager::ZerglingScoutSpreadOut(const Unit& u)
+void ArmyManager::ZerglingScoutSpreadOut(BWAPI::Unit u)
 {
 	auto enemyBuildings     = InformationManager::Instance().enemyBuildings;
 	auto unscoutedPositions = InformationManager::Instance().unscoutedPositions;
@@ -231,18 +221,18 @@ void ArmyManager::ZerglingScoutSpreadOut(const Unit& u)
 			scoutLocationsZergling.push_back(unscoutedLocation);
 		}
 
+		auto zerglingRegion = BWTA::getRegion(u->getPosition());
 		// TODO: don't add duplicate cases
 		for (const auto& base : BWTA::getBaseLocations()) {
 			auto region = base->getRegion();
-			if (!BWTA::getRegion(u->getPosition())->isReachable(region)) {
+			if (!isReachable(zerglingRegion, region)) {
 				continue;
 			}
 			scoutLocationsZergling.push_back(base->getPosition());
 		}
 
 		for (const auto& region : BWTA::getRegions()) {
-			// if region isn't reachable then skip
-			if (!BWTA::getRegion(u->getPosition())->isReachable(region)) {
+			if (!isReachable(zerglingRegion, region)) {
 				continue;
 			}
 			auto& poly = region->getPolygon();

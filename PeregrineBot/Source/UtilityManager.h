@@ -8,17 +8,18 @@ class Option;
 class UtilityManager {
 public:
 	static UtilityManager& Instance();
-	bool getBestActionForZergling(const BWAPI::Unit& zergling);
+	bool getBestActionForZergling(BWAPI::Unit zergling);
 
 private:
 	UtilityManager();
 	void constructOptions();
-	bool performBestActionForZerglingInEnemyBase(const BWAPI::Unit& zergling);
+	bool performBestActionForZerglingInEnemyBase(BWAPI::Unit zergling);
 
 	std::vector<Option> options;
 
 	struct utilities {
 		struct putilities {
+			double injrZeal        = 2;
 			double closestZealCann = 1;
 			double closestPyln     = 0.9;
 			double closestWork     = 0.8;

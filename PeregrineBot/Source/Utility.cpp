@@ -34,6 +34,11 @@ double DistanceGround(const BWAPI::TilePosition start, const BWAPI::TilePosition
 	return dist;
 }
 
+double DistanceGround(const BWAPI::Position start, const BWAPI::Position end)
+{
+	return DistanceGround(TilePosition(start), TilePosition(end));
+}
+
 /*auto TimeGround =
 [](const BWAPI::TilePosition start, const BWAPI::TilePosition end, const UnitType ut, const bool reach)
 {
@@ -81,6 +86,15 @@ double TimeAir(const BWAPI::TilePosition start, const BWAPI::TilePosition end)
 	double travelTime = adist / BWAPI::UnitTypes::Zerg_Overlord.topSpeed();
 	double time       = travelTime;
 	return time;
+}
+
+bool isReachable(BWTA::Region* region1, BWTA::Region* region2)
+{
+	if (region1 == nullptr || region2 == nullptr) {
+		return false;
+	} else {
+		return region1->isReachable(region2);
+	}
 }
 
 void errorMessage(std::string message)

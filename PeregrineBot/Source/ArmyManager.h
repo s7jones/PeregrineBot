@@ -7,11 +7,11 @@ class ArmyManager {
 
 public:
 	static ArmyManager& Instance();
-	void ZerglingAttack(const BWAPI::Unit& u);
-	std::set<UnitInfo> GetZerglingAccessibleBuildings(const BWAPI::Unit& u);
-	void ZerglingAttackKnownBuildings(const BWAPI::Unit& u);
-	void ZerglingScoutingBeforeBaseFound(const BWAPI::Unit& u);
-	void ZerglingScoutSpreadOut(const BWAPI::Unit& u);
+	void ZerglingAttack(BWAPI::Unit u);
+	std::set<EnemyUnitInfo> GetZerglingAccessibleBuildings(BWAPI::Unit u);
+	void ZerglingAttackKnownBuildings(BWAPI::Unit u);
+	void ZerglingScoutingBeforeBaseFound(BWAPI::Unit u);
+	void ZerglingScoutSpreadOut(BWAPI::Unit u);
 
 private:
 	std::deque<BWAPI::Position> scoutLocationsZergling;
