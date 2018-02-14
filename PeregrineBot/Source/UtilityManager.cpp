@@ -276,7 +276,7 @@ void UtilityManager::constructOptions()
 				UtilResult p;
 				if (!enemyMain) {
 					score = 0;
-					p     = std::make_pair(score, enemyMain->u);
+					p     = std::make_pair(score, nullptr);
 				} else {
 					auto pos = enemyMain->getPosition();
 					if (Broodwar->isVisible(TilePosition(pos))) {
