@@ -299,14 +299,17 @@ Base::Base(BWAPI::Unit u)
 
 BWAPI::Unitset Base::checkForInvaders() const
 {
-	auto units = base->getUnitsInRadius((int)floor(borderRadius), IsEnemy && !IsFlying);
-	auto it    = units.begin();
-	while (it != units.end()) {
-		auto unit = *it;
-		if (BWTA::getRegion(unit->getPosition()) != BWTA::getRegion(base->getPosition())) {
-			it = units.erase(it);
-		} else {
-			it++;
+	auto units = Unitset::none;
+	if (base) {
+		units   = base->getUnitsInRadius((int)floor(borderRadius), IsEnemy && !IsFlying);
+		auto it = units.begin();
+		while (it != units.end()) {
+			auto unit = *it;
+			if (BWTA::getRegion(unit->getPosition()) != BWTA::getRegion(base->getPosition())) {
+				it = units.erase(it);
+			} else {
+				it++;
+			}
 		}
 	}
 	return units;
