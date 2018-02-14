@@ -35,8 +35,12 @@ private:
 };
 
 class FriendlyUnitInfo : public UnitInfo {
+public:
 	using UnitInfo::UnitInfo;
 	void update() const override;
+	int lastAttackFrame() const { return lastFrameAttacking; }
+	mutable bool busting  = false;
+	mutable int bustFrame = 0;
 
 private:
 	mutable int lastFrameAttacking;
