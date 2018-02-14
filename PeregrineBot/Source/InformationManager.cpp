@@ -90,9 +90,9 @@ void InformationManager::SetupScouting()
 
 	for (auto iter1 = Broodwar->getStartLocations().begin(); iter1 != (Broodwar->getStartLocations().end() - 1); ++iter1) {
 		for (auto iter2 = iter1 + 1; iter2 != Broodwar->getStartLocations().end(); ++iter2) {
-			std::set<TilePosition, sortByMostTopThenLeft> zerglingLink = { *iter1, *iter2 };
-			double zerglingDist                                        = DistanceGround(*iter1, *iter2);
-			double zerglingTime                                        = TimeGround(*iter1, *iter2);
+			std::set<TilePosition> zerglingLink = { *iter1, *iter2 };
+			double zerglingDist                 = DistanceGround(*iter1, *iter2);
+			double zerglingTime                 = TimeGround(*iter1, *iter2);
 
 			// calculate DistanceAir from firstOverlordPosition
 			TilePosition tp1, tp2;
@@ -108,9 +108,9 @@ void InformationManager::SetupScouting()
 				tp2 = *iter2;
 			}
 
-			std::set<TilePosition, sortByMostTopThenLeft> overlordLink = { *iter1, *iter2 };
-			double overlordDist                                        = DistanceAir(tp1, tp2);
-			double overlordTime                                        = TimeAir(tp1, tp2);
+			std::set<TilePosition> overlordLink = { *iter1, *iter2 };
+			double overlordDist                 = DistanceAir(tp1, tp2);
+			double overlordTime                 = TimeAir(tp1, tp2);
 
 			distAndTime zerglingDnT = { zerglingDist, zerglingTime };
 			distAndTime overlordDnT = { overlordDist, overlordTime };
@@ -146,7 +146,7 @@ void InformationManager::SetupScouting()
 		DebugMessenger::Instance() << "less than 4 start positions" << std::endl;
 
 	for (TilePosition p1 : otherStarts) {
-		std::set<TilePosition, sortByMostTopThenLeft> startToP1 = { Broodwar->self()->getStartLocation(), p1 };
+		std::set<TilePosition> startToP1 = { Broodwar->self()->getStartLocation(), p1 };
 		DebugMessenger::Instance() << "ad" << overlordNetwork.find(startToP1)->second.distance << "P,   at" << overlordNetwork.find(startToP1)->second.time << "F" << std::endl;
 
 		if (Broodwar->getStartLocations().size() == 4) {
@@ -165,9 +165,9 @@ void InformationManager::SetupScouting()
 					continue;
 				}
 
-				std::set<TilePosition, sortByMostTopThenLeft> startToOther = { Broodwar->self()->getStartLocation(), *remainingPlaces.begin() };
-				std::set<TilePosition, sortByMostTopThenLeft> p1ToP2       = { p1, p2 };
-				std::array<TilePosition, 3> startToP1ToP2                  = { Broodwar->self()->getStartLocation(), p1, p2 };
+				std::set<TilePosition> startToOther       = { Broodwar->self()->getStartLocation(), *remainingPlaces.begin() };
+				std::set<TilePosition> p1ToP2             = { p1, p2 };
+				std::array<TilePosition, 3> startToP1ToP2 = { Broodwar->self()->getStartLocation(), p1, p2 };
 
 				double poolDone            = 2437;
 				double zerglingTimeStartP1 = zerglingNetwork.find(startToP1)->second.time

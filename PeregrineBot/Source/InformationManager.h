@@ -3,6 +3,33 @@
 #include "UnitInfo.h"
 #include "Utility.h"
 
+// I couldn't put forward declarations of these above InformationManager
+struct ScoutingOptionFor4 {
+	std::array<BWAPI::TilePosition, 3> startToP1ToP2;
+	BWAPI::TilePosition POther;
+	std::array<double, 2> groundTimeFromStartToP1ToP2;
+	double airTimeFromStartToOther;
+	double maxTime;
+	double meanTime;
+	double stdDev;
+};
+
+struct sortByMeanTime {
+	bool operator()(const ScoutingOptionFor4& lhs, const ScoutingOptionFor4& rhs)
+	{
+		if (lhs.meanTime <= rhs.meanTime) {
+			return true; // lhs meantTime is less
+		} else {
+			return false;
+		}
+	}
+};
+
+struct distAndTime {
+	double distance;
+	double time;
+};
+
 class InformationManager {
 	InformationManager();
 
@@ -36,8 +63,8 @@ public:
 	std::set<BWAPI::Position> unscoutedPositions;
 	std::set<BWAPI::Position> scoutedPositions;
 	std::set<ScoutingOptionFor4, sortByMeanTime> scoutingOptions;
-	std::map<std::set<BWAPI::TilePosition, sortByMostTopThenLeft>, distAndTime> zerglingNetwork;
-	std::map<std::set<BWAPI::TilePosition, sortByMostTopThenLeft>, distAndTime> overlordNetwork;
+	std::map<std::set<BWAPI::TilePosition>, distAndTime> zerglingNetwork;
+	std::map<std::set<BWAPI::TilePosition>, distAndTime> overlordNetwork;
 	bool isEnemyBaseFromOverlordSpotting   = false;
 	BWAPI::Position enemyBaseSpottingGuess = { 0, 0 };
 
