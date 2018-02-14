@@ -56,6 +56,8 @@ public:
 	bool isEnemyBaseFromOverlordSpotting   = false;
 	BWAPI::Position enemyBaseSpottingGuess = { 0, 0 };
 
+	std::set<FriendlyUnitInfo> friendlyUnits;
+
 	std::set<EnemyUnitInfo> enemyBuildings;
 	std::set<EnemyUnitInfo> enemyArmy;
 	std::shared_ptr<EnemyUnitInfo> enemyMain = nullptr;

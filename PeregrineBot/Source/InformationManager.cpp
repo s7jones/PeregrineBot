@@ -190,6 +190,15 @@ void InformationManager::update()
 		}
 	}
 
+	for (auto friendly : Broodwar->self()->getUnits()) {
+		auto iterAndBool = friendlyUnits.emplace(friendly);
+
+		// if unit already exists in friendlies
+		if (!iterAndBool.second) {
+			iterAndBool.first->update();
+		}
+	}
+
 	validateResources();
 
 	validateEnemyUnits();
