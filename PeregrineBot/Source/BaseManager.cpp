@@ -165,7 +165,7 @@ void BaseManager::DoAllWorkerTasks(BWAPI::Unit u)
 				} else {
 					auto defencePair = foundDefensePair.second;
 					// assigneddefender is destroyed
-					if (defencePair.second->exists()) {
+					if (!defencePair.second->exists()) {
 						defenders.erase(defencePair.second);
 						targetsAndAssignedDefenders.erase(defencePair);
 						if (miners.size() > 1) {
