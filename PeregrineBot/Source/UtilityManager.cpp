@@ -240,28 +240,35 @@ void UtilityManager::constructOptions()
 			options.push_back(enemySupply);
 
 			auto utilityAtAll = [& scores = scores](Unit u) -> UtilResult {
-				double bustOffset  = 0;
-				auto friendlyUnits = InformationManager::Instance().friendlyUnits;
-				auto it            = friendlyUnits.find(u);
-				if (it != friendlyUnits.end()) {
-					if (Broodwar->getFrameCount() - it->lastAttackFrame() > 240) {
-						bustOffset = 10;
-						if (!it->busting) {
-							Broodwar << "busting!" << std::endl;
-							it->busting   = true;
-							it->bustFrame = Broodwar->getFrameCount();
-						}
-					}
-				}
 				Unit any     = u->getClosestUnit(IsEnemy && !IsFlying);
-				double score = any ? scores.t.closestAll + bustOffset : 0;
+				double score = any ? scores.t.closestAll : 0;
 				auto p       = std::make_pair(score, any);
 				return p;
 			};
 			Option enemyAtAll = Option(utilityAtAll, "attack closest ground enemy");
 			options.push_back(enemyAtAll);
 
-			break;
+			auto utilityBusting = [& scores = scores](Unit u) -> UtilResult {
+				auto friendlyUnits = InformationManager::Instance().friendlyUnits;
+				auto it            = friendlyUnits.find(u);
+				if (it != friendlyUnits.end()) {
+					if (Broodwar->getFrameCount() - it->lastAttackFrame() > 240) {
+						if (!it->busting) {
+							Broodwar << "busting!" << std::endl;
+							it->busting   = true;
+							it->bustFrame = Broodwar->getFrameCount();
+							it->enemyBuildingsWhenFirstBust
+							    = InformationManager::Instance().enemyBuildings.size();
+						}
+					}
+				}
+				Unit any     = u->getClosestUnit(IsEnemy && !IsFlying);
+				double score = any ? scores.t.bust : 0;
+				auto p       = std::make_pair(score, any);
+				return p;
+			};
+			Option bust = Option(utilityBusting, "bust enemy");
+			options.push_back(bust);
 
 			auto utilityEnemyBase = [& scores = scores](Unit u) -> UtilResult {
 				auto enemyMain = InformationManager::Instance().enemyMain;
@@ -285,6 +292,8 @@ void UtilityManager::constructOptions()
 			};
 			Option enemyBase = Option(utilityEnemyBase, "attack known main base");
 			options.push_back(enemyBase);
+
+			break;
 		}
 		}
 	}

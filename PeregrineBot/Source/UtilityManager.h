@@ -26,6 +26,7 @@ private:
 			double closestAll      = 0.7;
 		} p;
 		struct tutilities {
+			double bust                    = 3;
 			double closestMrneFireBunkWork = 1;
 			double closestWork             = 0.9;
 			double closestSdpt             = 0.8;

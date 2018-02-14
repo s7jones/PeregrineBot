@@ -75,7 +75,7 @@ void FriendlyUnitInfo::update() const
 				lastFrameAttacking = Broodwar->getFrameCount();
 			}
 
-			if (Broodwar->getFrameCount() - bustFrame > 240) {
+			if (busting && (Broodwar->getFrameCount() - bustFrame > 1440)) {
 				busting = false;
 				DebugMessenger::Instance() << "not busting anymore" << std::endl;
 			}

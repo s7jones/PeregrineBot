@@ -39,8 +39,9 @@ public:
 	using UnitInfo::UnitInfo;
 	void update() const override;
 	int lastAttackFrame() const { return lastFrameAttacking; }
-	mutable bool busting  = false;
-	mutable int bustFrame = 0;
+	mutable bool busting                    = false;
+	mutable int bustFrame                   = 0;
+	mutable int enemyBuildingsWhenFirstBust = 0;
 
 private:
 	mutable int lastFrameAttacking;
