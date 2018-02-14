@@ -35,6 +35,7 @@ private:
 };
 
 class FriendlyUnitInfo : public UnitInfo {
+public:
 	using UnitInfo::UnitInfo;
 	void update() const override;
 
