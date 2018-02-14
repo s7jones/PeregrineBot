@@ -184,7 +184,7 @@ void BaseManager::DoAllWorkerTasks(BWAPI::Unit u)
 
 	if (defenders.find(u) != defenders.end()) {
 		if (main) {
-			if (DistanceAir(u->getPosition(), main->base->getPosition()) > main->borderRadius) {
+			if (distanceAir(u->getPosition(), main->base->getPosition()) > main->borderRadius) {
 				OrderManager::Instance().Stop(u);
 				GUIManager::Instance().drawTextOnScreen(u, "don't chase");
 				defenders.erase(u);
@@ -321,7 +321,7 @@ void Base::calculateBorder() const
 
 	double maxDist = 0;
 	for (auto p : poly) {
-		auto dist = DistanceAir(base->getPosition(), p);
+		auto dist = distanceAir(base->getPosition(), p);
 		if (maxDist < dist) {
 			maxDist = dist;
 		}

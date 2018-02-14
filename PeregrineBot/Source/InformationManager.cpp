@@ -46,9 +46,9 @@ void InformationManager::Setup()
 		for (auto iter2 = iter1 + 1; iter2 != Broodwar->getStartLocations().end(); ++iter2) {
 			auto base1tp = *iter1;
 			auto base2tp = *iter2;
-			auto base1   = GetBasePos(base1tp);
-			auto base2   = GetBasePos(base2tp);
-			auto dist    = DistanceAir(base1, base2);
+			auto base1   = getBasePos(base1tp);
+			auto base2   = getBasePos(base2tp);
+			auto dist    = distanceAir(base1, base2);
 			if (dist > maxBaseToBaseDistance) {
 				maxBaseToBaseDistance = dist;
 			}
@@ -76,10 +76,10 @@ void InformationManager::SetupScouting()
 	for (TilePosition p : Broodwar->getStartLocations()) {
 		if (p == Broodwar->self()->getStartLocation())
 			continue;
-		auto dist_ground = DistanceGround(Broodwar->self()->getStartLocation(), p);
-		auto dist_air    = DistanceAir(airOrigin, p);
-		auto time_ground = TimeGround(Broodwar->self()->getStartLocation(), p);
-		auto time_air    = TimeAir(airOrigin, p);
+		auto dist_ground = distanceGround(Broodwar->self()->getStartLocation(), p);
+		auto dist_air    = distanceAir(airOrigin, p);
+		auto time_ground = timeGround(Broodwar->self()->getStartLocation(), p);
+		auto time_air    = timeAir(airOrigin, p);
 		auto metric_dist = dist_ground - dist_air;
 		auto metric_time = time_ground - time_air;
 
@@ -91,10 +91,10 @@ void InformationManager::SetupScouting()
 	for (auto iter1 = Broodwar->getStartLocations().begin(); iter1 != (Broodwar->getStartLocations().end() - 1); ++iter1) {
 		for (auto iter2 = iter1 + 1; iter2 != Broodwar->getStartLocations().end(); ++iter2) {
 			std::set<TilePosition> zerglingLink = { *iter1, *iter2 };
-			double zerglingDist                 = DistanceGround(*iter1, *iter2);
-			double zerglingTime                 = TimeGround(*iter1, *iter2);
+			double zerglingDist                 = distanceGround(*iter1, *iter2);
+			double zerglingTime                 = timeGround(*iter1, *iter2);
 
-			// calculate DistanceAir from firstOverlordPosition
+			// calculate distanceAir from firstOverlordPosition
 			TilePosition tp1, tp2;
 			if (*iter1 == Broodwar->self()->getStartLocation()) {
 				tp1 = airOrigin;
@@ -109,8 +109,8 @@ void InformationManager::SetupScouting()
 			}
 
 			std::set<TilePosition> overlordLink = { *iter1, *iter2 };
-			double overlordDist                 = DistanceAir(tp1, tp2);
-			double overlordTime                 = TimeAir(tp1, tp2);
+			double overlordDist                 = distanceAir(tp1, tp2);
+			double overlordTime                 = timeAir(tp1, tp2);
 
 			distAndTime zerglingDnT = { zerglingDist, zerglingTime };
 			distAndTime overlordDnT = { overlordDist, overlordTime };
@@ -138,27 +138,27 @@ void InformationManager::SetupScouting()
 	//unscoutedPositions(otherStarts);
 	//std::copy(otherStarts.begin(), otherStarts.end(), std::inserter(unscoutedPositions, unscoutedPositions.end()));
 	for (auto otherStart : otherStarts) {
-		unscoutedPositions.insert(GetBasePos(otherStart));
+		unscoutedPositions.insert(getBasePos(otherStart));
 	}
 
 	DebugMessenger::Instance() << allStarts.size() << " starts / " << otherStarts.size() << " otherstarts" << std::endl;
 	if (Broodwar->getStartLocations().size() < 4)
 		DebugMessenger::Instance() << "less than 4 start positions" << std::endl;
 
-	for (TilePosition p1 : otherStarts) {
-		std::set<TilePosition> startToP1 = { Broodwar->self()->getStartLocation(), p1 };
+	for (TilePosition tp1 : otherStarts) {
+		std::set<TilePosition> startToP1 = { Broodwar->self()->getStartLocation(), tp1 };
 		DebugMessenger::Instance() << "ad" << overlordNetwork.find(startToP1)->second.distance << "P,   at" << overlordNetwork.find(startToP1)->second.time << "F" << std::endl;
 
 		if (Broodwar->getStartLocations().size() == 4) {
-			for (TilePosition p2 : otherStarts) {
-				if (p2 == p1)
+			for (TilePosition tp2 : otherStarts) {
+				if (tp2 == tp1)
 					continue;
 				// tp1 is any position that is not my start position,
 				// tp2 is any position that is not start position or tp1
 
 				std::set<TilePosition> remainingPlaces(otherStarts);
-				remainingPlaces.erase(p1);
-				remainingPlaces.erase(p2);
+				remainingPlaces.erase(tp1);
+				remainingPlaces.erase(tp2);
 				if (remainingPlaces.size() != 1) {
 					DebugMessenger::Instance() << "remaining places not equal to 1" << std::endl;
 
@@ -166,8 +166,8 @@ void InformationManager::SetupScouting()
 				}
 
 				std::set<TilePosition> startToOther       = { Broodwar->self()->getStartLocation(), *remainingPlaces.begin() };
-				std::set<TilePosition> p1ToP2             = { p1, p2 };
-				std::array<TilePosition, 3> startToP1ToP2 = { Broodwar->self()->getStartLocation(), p1, p2 };
+				std::set<TilePosition> p1ToP2             = { tp1, tp2 };
+				std::array<TilePosition, 3> startToP1ToP2 = { Broodwar->self()->getStartLocation(), tp1, tp2 };
 
 				double poolDone            = 2437;
 				double zerglingTimeStartP1 = zerglingNetwork.find(startToP1)->second.time
@@ -267,7 +267,7 @@ void InformationManager::OverlordScoutingAtGameStart(BWAPI::Unit overlord)
 	if (overlord->isIdle()) {
 		if (Broodwar->getStartLocations().size() == 4) { // map size is 4, use new scouting
 			auto tp                       = scoutingOptions.begin()->POther;
-			auto p                        = GetBasePos(tp);
+			auto p                        = getBasePos(tp);
 			const bool firstOptionScouted = scoutedPositions.find(p) != scoutedPositions.end();
 			if (!firstOptionScouted) {
 				OrderManager::Instance().Move(overlord, p, true);
@@ -303,8 +303,8 @@ void InformationManager::OverlordScoutingAtGameStart(BWAPI::Unit overlord)
 						searchRadius += 128 * 1.5; // add a bit to account for overlord spawning in a different place
 
 						for (auto tp : otherStarts) {
-							auto pB          = GetBasePos(tp);
-							auto distToStart = DistanceAir(pB, pO);
+							auto pB          = getBasePos(tp);
+							auto distToStart = distanceAir(pB, pO);
 							if (distToStart < searchRadius) {
 								potentialStartsFromSpotting.insert(tp);
 							}
@@ -313,7 +313,7 @@ void InformationManager::OverlordScoutingAtGameStart(BWAPI::Unit overlord)
 					if (potentialStartsFromSpotting.size() == 1) {
 						isEnemyBaseFromOverlordSpotting = true;
 						auto base                       = *potentialStartsFromSpotting.begin();
-						enemyBaseSpottingGuess          = GetBasePos(base);
+						enemyBaseSpottingGuess          = getBasePos(base);
 						Broodwar << "Overlord spotted overlord and determined base at: " << base.x << "," << base.y << "P" << std::endl;
 					}
 				}
@@ -358,7 +358,7 @@ void InformationManager::OverlordScoutingAfterBaseFound(BWAPI::Unit overlord)
 
 void InformationManager::OverlordRetreatToHome(BWAPI::Unit overlord)
 {
-	auto ownBasePos          = GetBasePos(Broodwar->self()->getStartLocation());
+	auto ownBasePos          = getBasePos(Broodwar->self()->getStartLocation());
 	auto distanceFromOwnBase = overlord->getDistance(ownBasePos);
 	if (distanceFromOwnBase > 128) {
 		DebugMessenger::Instance() << "Retreat overlord." << std::endl;
@@ -374,7 +374,7 @@ ResourceUnitInfo* InformationManager::getClosestMineral(BWAPI::Unit u)
 	double closestDist              = std::numeric_limits<double>::infinity();
 	ResourceUnitInfo* chosenMineral = nullptr;
 	for (auto mineral : minerals) {
-		auto dist = DistanceGround(u->getPosition(), mineral.getPosition());
+		auto dist = distanceGround(u->getPosition(), mineral.getPosition());
 		if (closestDist > dist) {
 			closestDist   = dist;
 			chosenMineral = &mineral;

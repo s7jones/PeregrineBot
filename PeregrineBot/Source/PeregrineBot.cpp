@@ -18,7 +18,7 @@ Beats the vanilla AI consistently on the SSCAI maps.
 
 With thanks to Chris Coxe's ZZZKbot
 @ https://github.com/chriscoxe/ZZZKBot
-for his GetPos function and some useful UnitFilters.
+for his getPos function and some useful UnitFilters.
 
 With thanks to Dave Churchill's UAlbertaBot
 @ https://github.com/davechurchill/ualbertabot
