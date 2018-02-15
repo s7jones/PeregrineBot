@@ -55,6 +55,8 @@ public:
 	std::map<std::set<BWAPI::TilePosition>, distAndTime> overlordNetwork;
 	bool isEnemyBaseFromOverlordSpotting   = false;
 	BWAPI::Position enemyBaseSpottingGuess = { 0, 0 };
+	std::map<BWAPI::UnitType, double> spottingMap;
+	double spottingTime = 0;
 
 	std::set<FriendlyUnitInfo> friendlyUnits;
 
@@ -71,6 +73,7 @@ private:
 	void setupScouting();
 	void updateScouting();
 	void overlordScoutingAtGameStart(BWAPI::Unit overlord);
+	void overlordSpotting(BWAPI::Unit overlord);
 	void overlordScoutingAfterBaseFound(BWAPI::Unit overlord);
 	void overlordRetreatToHome(BWAPI::Unit overlord);
 	void addToEnemyBuildings(BWAPI::Unit unit);

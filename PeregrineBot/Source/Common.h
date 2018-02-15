@@ -2,6 +2,8 @@
 
 #include <BWAPI.h>
 #include <BWTA.h>
+
+#include <algorithm>
 #include <array>
 #include <boost/filesystem.hpp>
 #include <boost/filesystem/fstream.hpp>
