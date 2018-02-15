@@ -46,7 +46,6 @@ public:
 	BWAPI::Race enemyRace     = BWAPI::Races::Unknown;
 	bool isEnemyRaceRandom    = false;
 	bool isIslandsOnMap       = false;
-	bool isPastSpottingTime   = false;
 
 	std::set<BWAPI::TilePosition> allStarts;
 	std::set<BWAPI::TilePosition> otherStarts; // would be a good idea to make this const
@@ -81,12 +80,16 @@ private:
 	void addToMinerals(BWAPI::Unit mineral);
 	void addToGeysers(BWAPI::Unit geyser);
 	void validateResources();
+	void spotUnits(BWAPI::Unit spotter);
+	void spotCreep(BWAPI::Unit spotter);
 
 	struct {
 		double ground;
 		double air;
 	} maxBaseToBaseDistance;
 	std::map<BWAPI::UnitType, double> spottingTimes;
-	double spottingTime = 0;
+	double spottingTime      = 0;
+	bool isSpottingCreepTime = true;
+	bool isSpottingUnitsTime = true;
 	std::set<std::set<BWAPI::Position>> spottedPotentialBaseSets;
 };

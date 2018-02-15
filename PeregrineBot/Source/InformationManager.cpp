@@ -225,8 +225,9 @@ void InformationManager::update()
 		}
 	}
 
-	if (((enemyMain) || (isEnemyBaseFromSpotting)) && (!isPastSpottingTime)) {
-		isPastSpottingTime = true;
+	if (enemyMain || isEnemyBaseFromSpotting) {
+		if (isSpottingUnitsTime) isSpottingUnitsTime = false;
+		if (isSpottingCreepTime) isSpottingCreepTime = false;
 	}
 
 	validateResources();
@@ -312,12 +313,24 @@ void InformationManager::overlordScoutingAtGameStart(BWAPI::Unit overlord)
 
 void InformationManager::spotting(BWAPI::Unit spotter)
 {
+
+	// creep spotting
+	if (isSpottingCreepTime) {
+		spotCreep(spotter);
+	}
+
+	if (isSpottingUnitsTime) {
+		spotUnits(spotter);
+	}
+}
+
+void InformationManager::spotUnits(BWAPI::Unit spotter)
+{
 	if (Broodwar->getFrameCount() > spottingTime) {
-		isPastSpottingTime = true;
+		isSpottingUnitsTime = false;
 		DebugMessenger::Instance() << "Past spotting time" << std::endl;
 	} else {
 		if (!isEnemyBaseFromSpotting) {
-
 			for (auto spottedPotentialBaseSet : spottedPotentialBaseSets) {
 				for (auto scoutedPosition : scoutedPositions) {
 					spottedPotentialBaseSet.erase(scoutedPosition);
@@ -328,41 +341,6 @@ void InformationManager::spotting(BWAPI::Unit spotter)
 					auto enemyBaseSpottingGuess = *spottedPotentialBaseSet.begin();
 					Broodwar << "Spotted guess by removal and determined base at: " << enemyBaseSpottingGuess << "P" << std::endl;
 					return;
-				}
-			}
-
-			// creep spotting
-			if ((enemyRace == Races::Zerg) || (enemyRace == Races::Unknown)) {
-				auto regionUnit  = BWTA::getRegion(spotter->getPosition());
-				auto regionStart = BWTA::getRegion(Broodwar->self()->getStartLocation());
-				if ((regionUnit != regionStart) && (regionUnit != nullptr)) {
-					const int radiusTPSpotter = (spotter->getType().sightRange() + 32)
-					    / BWAPI::TILEPOSITION_SCALE;
-					auto tp = spotter->getTilePosition();
-					for (auto i = -radiusTPSpotter; i < radiusTPSpotter + 1; i++) {
-						auto x = tp.x + i;
-						if (x < 0 || x >= Broodwar->mapWidth()) continue;
-						for (auto j = -radiusTPSpotter; j < radiusTPSpotter + 1; j++) {
-							auto y = tp.y + j;
-							if (y < 0 || y >= Broodwar->mapHeight()) continue;
-							TilePosition tpRelative = { x, y };
-							auto creep              = Broodwar->hasCreep(tpRelative);
-
-							if (creep) {
-								auto regionRelative = BWTA::getRegion(tpRelative);
-								if (regionRelative) {
-									for (auto start : otherStarts) {
-										auto regionStart = BWTA::getRegion(start);
-										if (regionStart == regionRelative) {
-											isEnemyBaseFromSpotting = true;
-											Broodwar << "Spotted creep and determined base at: " << getBasePos(start) << "P" << std::endl;
-											return;
-										}
-									}
-								}
-							}
-						}
-					}
 				}
 			}
 
@@ -395,6 +373,44 @@ void InformationManager::spotting(BWAPI::Unit spotter)
 					auto enemyBaseSpottingGuess = *potentialStartsFromSpotting.begin();
 					Broodwar << spotter->getType() << " spotted " << ut << " and determined base at: " << enemyBaseSpottingGuess << "P" << std::endl;
 					return;
+				}
+			}
+		}
+	}
+}
+
+void InformationManager::spotCreep(BWAPI::Unit spotter)
+{
+	if ((enemyRace == Races::Zerg) || (enemyRace == Races::Unknown)) {
+		auto regionUnit  = BWTA::getRegion(spotter->getPosition());
+		auto regionStart = BWTA::getRegion(Broodwar->self()->getStartLocation());
+		if ((regionUnit != regionStart) && (regionUnit != nullptr)) {
+			const int radiusTPSpotter = (spotter->getType().sightRange() + 32)
+			    / BWAPI::TILEPOSITION_SCALE;
+			auto tp = spotter->getTilePosition();
+			for (auto i = -radiusTPSpotter; i < radiusTPSpotter + 1; i++) {
+				auto x = tp.x + i;
+				if (x < 0 || x >= Broodwar->mapWidth()) continue;
+				for (auto j = -radiusTPSpotter; j < radiusTPSpotter + 1; j++) {
+					auto y = tp.y + j;
+					if (y < 0 || y >= Broodwar->mapHeight()) continue;
+					TilePosition tpRelative = { x, y };
+					auto creep              = Broodwar->hasCreep(tpRelative);
+
+					if (creep) {
+						auto regionRelative = BWTA::getRegion(tpRelative);
+						if (regionRelative) {
+							for (auto start : otherStarts) {
+								auto regionStart = BWTA::getRegion(start);
+								if (regionStart == regionRelative) {
+									isEnemyBaseFromSpotting = true;
+									isSpottingCreepTime     = false;
+									Broodwar << "Spotted creep and determined base at: " << getBasePos(start) << "P" << std::endl;
+									return;
+								}
+							}
+						}
+					}
 				}
 			}
 		}
