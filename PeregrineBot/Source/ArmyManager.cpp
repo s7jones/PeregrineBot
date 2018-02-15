@@ -104,9 +104,10 @@ void ArmyManager::ZerglingAttack(BWAPI::Unit u)
 					else if ((std::find(scoutLocationsZergling.begin(), scoutLocationsZergling.end(), targetPos)
 					          == scoutLocationsZergling.end())
 					         && !scoutLocationsZergling.empty()) {
-						auto p = *scoutLocationsZergling.begin();
+						auto p = *scoutLocationIndex;
 						OrderManager::Instance().Move(u, p);
 						GUIManager::Instance().drawTextOnScreen(u, "recalculate scouting 2", 480);
+						incrementScoutLocationZerglingIndex();
 					}
 				}
 			}
@@ -247,11 +248,16 @@ void ArmyManager::ZerglingScoutSpreadOut(BWAPI::Unit u)
 		}
 	} else {
 		GUIManager::Instance().drawTextOnScreen(u, "Zergling Scouting!", 48);
-		// DebugMessenger::Instance() << "Zergling Scouting!" << std::endl;
-
-		auto it    = scoutLocationsZergling.begin();
-		Position p = (*it);
+		Position p = *scoutLocationIndex;
 		OrderManager::Instance().Move(u, p);
-		scoutLocationsZergling.erase(it);
+		incrementScoutLocationZerglingIndex();
+	}
+}
+
+void ArmyManager::incrementScoutLocationZerglingIndex()
+{
+	scoutLocationIndex++;
+	if (scoutLocationIndex == scoutLocationsZergling.end()) {
+		scoutLocationIndex == scoutLocationsZergling.begin();
 	}
 }
