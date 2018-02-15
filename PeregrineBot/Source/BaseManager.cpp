@@ -14,14 +14,6 @@ void BaseManager::ManageBases(BWAPI::Unit base)
 {
 	auto result = hatcheries.emplace(base);
 
-	if (result.second) {
-		if (hatcheries.size() == 1) {
-			main = &(*result.first);
-		}
-		// use default of 256 for now
-		//(*result.first).calculateBorder();
-	}
-
 	//auto invaders = (*result.first).checkForInvaders();
 
 	auto it = workersTraining.begin();
@@ -130,58 +122,54 @@ void BaseManager::DoAllWorkerTasks(BWAPI::Unit u)
 
 	// if a miner
 	if (miners.find(u) != miners.end()) {
-		if (main) {
-			auto invaders = main->checkForInvaders();
-			for (auto invader : invaders) {
-				std::pair<bool, invaderAndDefender> foundDefensePair
-				    = { false, { nullptr, nullptr } };
-				for (auto defencePair : targetsAndAssignedDefenders) {
-					if (invader == defencePair.first) {
-						foundDefensePair = { true, defencePair };
-						break;
-					}
+		auto invaders = hatcheries.begin()->checkForInvaders();
+		for (auto invader : invaders) {
+			std::pair<bool, invaderAndDefender> foundDefensePair
+			    = { false, { nullptr, nullptr } };
+			for (auto defencePair : targetsAndAssignedDefenders) {
+				if (invader == defencePair.first) {
+					foundDefensePair = { true, defencePair };
+					break;
 				}
-				// invader not been assigned a defender
-				if (!foundDefensePair.first) {
-					// always keep 1 mining
+			}
+			// invader not been assigned a defender
+			if (!foundDefensePair.first) {
+				// always keep 1 mining
+				if (miners.size() > 1) {
+					targetsAndAssignedDefenders.insert({ invader, u });
+					OrderManager::Instance().Attack(u, invader);
+					GUIManager::Instance().drawTextOnScreen(u, "this is SPARTA!");
+					defenders.insert(u);
+					miners.erase(u);
+				}
+				return;
+			} else {
+				auto defencePair = foundDefensePair.second;
+				// assigneddefender is destroyed
+				if (!defencePair.second->exists()) {
+					defenders.erase(defencePair.second);
+					targetsAndAssignedDefenders.erase(defencePair);
 					if (miners.size() > 1) {
 						targetsAndAssignedDefenders.insert({ invader, u });
 						OrderManager::Instance().Attack(u, invader);
-						GUIManager::Instance().drawTextOnScreen(u, "this is SPARTA!");
+						GUIManager::Instance().drawTextOnScreen(u, "prepare for glory (reinforce)");
 						defenders.insert(u);
 						miners.erase(u);
 					}
 					return;
-				} else {
-					auto defencePair = foundDefensePair.second;
-					// assigneddefender is destroyed
-					if (!defencePair.second->exists()) {
-						defenders.erase(defencePair.second);
-						targetsAndAssignedDefenders.erase(defencePair);
-						if (miners.size() > 1) {
-							targetsAndAssignedDefenders.insert({ invader, u });
-							OrderManager::Instance().Attack(u, invader);
-							GUIManager::Instance().drawTextOnScreen(u, "prepare for glory (reinforce)");
-							defenders.insert(u);
-							miners.erase(u);
-						}
-						return;
-					}
 				}
 			}
 		}
 	}
 
 	if (defenders.find(u) != defenders.end()) {
-		if (main) {
-			if (distanceAir(u->getPosition(), main->base->getPosition()) > main->borderRadius) {
-				OrderManager::Instance().Stop(u);
-				GUIManager::Instance().drawTextOnScreen(u, "don't chase");
-				defenders.erase(u);
-				for (auto defencePair : targetsAndAssignedDefenders) {
-					if (defencePair.second == u) {
-						targetsAndAssignedDefenders.erase(defencePair);
-					}
+		if (distanceAir(u->getPosition(), hatcheries.begin()->base->getPosition()) > hatcheries.begin()->borderRadius) {
+			OrderManager::Instance().Stop(u);
+			GUIManager::Instance().drawTextOnScreen(u, "don't chase");
+			defenders.erase(u);
+			for (auto defencePair : targetsAndAssignedDefenders) {
+				if (defencePair.second == u) {
+					targetsAndAssignedDefenders.erase(defencePair);
 				}
 			}
 		}

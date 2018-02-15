@@ -21,7 +21,6 @@ public:
 	void onUnitMorph(BWAPI::Unit unit);
 	void onUnitRenegade(BWAPI::Unit unit);
 
-	const Base* main = nullptr;
 	std::set<Base> hatcheries;
 	std::set<BWAPI::Unit> workers;
 	std::set<BWAPI::Unit> miners;
