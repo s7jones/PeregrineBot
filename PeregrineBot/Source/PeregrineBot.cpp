@@ -137,7 +137,10 @@ void PeregrineBot::onFrame()
 		/* if ( !u->isCompleted() || u->isConstructing() )
 		continue;*/
 
-		if (!InformationManager::Instance().isPastSpottingTime) {
+		if ((!InformationManager::Instance().isPastSpottingTime)
+		    && (u->getType() == UnitTypes::Zerg_Overlord
+		        || u->getType() == UnitTypes::Zerg_Zergling
+		        || u->getType().isBuilding())) {
 			InformationManager::Instance().spotting(u);
 		}
 
