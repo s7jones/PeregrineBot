@@ -55,8 +55,9 @@ public:
 	std::map<std::set<BWAPI::TilePosition>, distAndTime> overlordNetwork;
 	bool isEnemyBaseFromOverlordSpotting   = false;
 	BWAPI::Position enemyBaseSpottingGuess = { 0, 0 };
-	std::map<BWAPI::UnitType, double> spottingMap;
+	std::map<BWAPI::UnitType, double> spottingTimes;
 	double spottingTime = 0;
+	std::map<BWAPI::Unit, std::set<BWAPI::TilePosition>> spottedPotentialBases;
 
 	std::set<FriendlyUnitInfo> friendlyUnits;
 
@@ -83,6 +84,9 @@ private:
 	void addToGeysers(BWAPI::Unit geyser);
 	void validateResources();
 
-	double maxBaseToBaseDistance;
+	struct {
+		double ground;
+		double air;
+	} maxBaseToBaseDistance;
 	bool isPastSpottingTime = false;
 };

@@ -44,22 +44,28 @@ void InformationManager::setup()
 
 	for (auto iter1 = Broodwar->getStartLocations().begin(); iter1 != (Broodwar->getStartLocations().end() - 1); ++iter1) {
 		for (auto iter2 = iter1 + 1; iter2 != Broodwar->getStartLocations().end(); ++iter2) {
-			auto base1tp = *iter1;
-			auto base2tp = *iter2;
-			auto base1   = getBasePos(base1tp);
-			auto base2   = getBasePos(base2tp);
-			auto dist    = distanceAir(base1, base2);
-			if (dist > maxBaseToBaseDistance) {
-				maxBaseToBaseDistance = dist;
+			auto base1tp    = *iter1;
+			auto base2tp    = *iter2;
+			auto base1      = getBasePos(base1tp);
+			auto base2      = getBasePos(base2tp);
+			auto distGround = distanceGround(base1, base2);
+			if (distGround > maxBaseToBaseDistance.ground) {
+				maxBaseToBaseDistance.ground = distGround;
+			}
+			auto distAir = distanceAir(base1, base2);
+			if (distAir > maxBaseToBaseDistance.air) {
+				maxBaseToBaseDistance.air = distAir;
 			}
 		}
 	}
-	DebugMessenger::Instance() << "max base to base is: " << maxBaseToBaseDistance << "P" << std::endl;
+	DebugMessenger::Instance() << "max base to base ground is: " << maxBaseToBaseDistance.ground << "P" << std::endl;
+	DebugMessenger::Instance() << "max base to base air is: " << maxBaseToBaseDistance.air << "P" << std::endl;
 
 	// maybe make 128 * 1.5 a const "smudge factor" variable
 	auto addToSpottingMap = [this](UnitType ut, double smudgeFactor) {
-		spottingMap.insert({ ut,
-		                     (maxBaseToBaseDistance + smudgeFactor) / ut.topSpeed() });
+		auto maxDist = ut.isFlyer() ? maxBaseToBaseDistance.air : maxBaseToBaseDistance.ground;
+		spottingTimes.insert({ ut,
+		                       (maxDist + smudgeFactor) / ut.topSpeed() });
 	};
 
 	addToSpottingMap(UnitTypes::Zerg_Overlord, 128 * 1.5);
@@ -67,9 +73,9 @@ void InformationManager::setup()
 		addToSpottingMap(ut, 128 * 0.5);
 	}
 
-	using pair_type = decltype(spottingMap)::value_type;
+	using pair_type = decltype(spottingTimes)::value_type;
 	auto ptr        = std::max_element(
-        std::begin(spottingMap), std::end(spottingMap),
+        std::begin(spottingTimes), std::end(spottingTimes),
         [](const pair_type& p1, const pair_type& p2) {
             return p1.second < p2.second;
         });
@@ -272,6 +278,7 @@ void InformationManager::overlordScouting(BWAPI::Unit overlord)
 	if (!enemyMain) {
 		overlordScoutingAtGameStart(overlord);
 	} else {
+		if (!isPastSpottingTime) isPastSpottingTime = true;
 		overlordScoutingAfterBaseFound(overlord);
 	}
 }
@@ -317,17 +324,18 @@ void InformationManager::overlordSpotting(BWAPI::Unit overlord)
 			auto unitsSpotted = overlord->getUnitsInRadius(range, IsEnemy && IsVisible);
 			std::set<TilePosition> potentialStartsFromSpotting;
 			for (auto u : unitsSpotted) {
-				auto it = spottingMap.find(u->getType());
-				if (it == spottingMap.end()) continue;
+				auto ut = u->getType();
+				auto it = spottingTimes.find(ut);
+				if (it == spottingTimes.end()) continue;
 
-				auto pO           = u->getPosition();
-				auto searchRadius = it->first.topSpeed() * Broodwar->getFrameCount();
-				searchRadius += 128 * 1.5; // add a bit to account for overlord spawning in a different place
+				auto pO             = u->getPosition();
+				auto searchDistance = it->first.topSpeed() * Broodwar->getFrameCount();
+				searchDistance += 128 * 1.5; // add a bit to account for overlord/workers spawning in a different place from base
 
 				for (auto tp : otherStarts) {
 					auto pB          = getBasePos(tp);
-					auto distToStart = distanceAir(pB, pO);
-					if (distToStart < searchRadius) {
+					auto distToStart = ut.isFlyer() ? distanceAir(pB, pO) : distanceGround(pB, pO);
+					if (distToStart < searchDistance) {
 						potentialStartsFromSpotting.insert(tp);
 					}
 				}
@@ -335,7 +343,7 @@ void InformationManager::overlordSpotting(BWAPI::Unit overlord)
 					isEnemyBaseFromOverlordSpotting = true;
 					auto base                       = *potentialStartsFromSpotting.begin();
 					enemyBaseSpottingGuess          = getBasePos(base);
-					Broodwar << "Overlord spotted " << u->getType() << " and determined base at: " << enemyBaseSpottingGuess << "TP" << std::endl;
+					Broodwar << "Overlord spotted " << ut << " and determined base at: " << enemyBaseSpottingGuess << "TP" << std::endl;
 					return;
 				}
 			}
