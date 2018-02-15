@@ -337,8 +337,8 @@ void InformationManager::spotUnits(BWAPI::Unit spotter)
 				}
 
 				if (spottedPotentialBaseSet.size() == 1) {
-					isEnemyBaseFromSpotting     = true;
-					auto enemyBaseSpottingGuess = *spottedPotentialBaseSet.begin();
+					isEnemyBaseFromSpotting = true;
+					enemyBaseSpottingGuess  = *spottedPotentialBaseSet.begin();
 					Broodwar << "Spotted guess by removal and determined base at: " << enemyBaseSpottingGuess << "P" << std::endl;
 					return;
 				}
@@ -369,8 +369,8 @@ void InformationManager::spotUnits(BWAPI::Unit spotter)
 				}
 				spottedPotentialBaseSets.insert(potentialStartsFromSpotting);
 				if (potentialStartsFromSpotting.size() == 1) {
-					isEnemyBaseFromSpotting     = true;
-					auto enemyBaseSpottingGuess = *potentialStartsFromSpotting.begin();
+					isEnemyBaseFromSpotting = true;
+					enemyBaseSpottingGuess  = *potentialStartsFromSpotting.begin();
 					Broodwar << spotter->getType() << " spotted " << ut << " and determined base at: " << enemyBaseSpottingGuess << "P" << std::endl;
 					return;
 				}
@@ -405,7 +405,8 @@ void InformationManager::spotCreep(BWAPI::Unit spotter)
 								if (regionStart == regionRelative) {
 									isEnemyBaseFromSpotting = true;
 									isSpottingCreepTime     = false;
-									Broodwar << "Spotted creep and determined base at: " << getBasePos(start) << "P" << std::endl;
+									enemyBaseSpottingGuess  = getBasePos(start);
+									Broodwar << "Spotted creep and determined base at: " << enemyBaseSpottingGuess << "P" << std::endl;
 									return;
 								}
 							}
