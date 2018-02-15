@@ -331,11 +331,46 @@ void InformationManager::spotting(BWAPI::Unit spotter)
 				}
 			}
 
+			// creep spotting
+			if ((enemyRace == Races::Zerg) || (enemyRace == Races::Unknown)) {
+				auto regionUnit  = BWTA::getRegion(spotter->getPosition());
+				auto regionStart = BWTA::getRegion(Broodwar->self()->getStartLocation());
+				if ((regionUnit != regionStart) && (regionUnit != nullptr)) {
+					const int radiusTPSpotter = (spotter->getType().sightRange() + 32)
+					    / BWAPI::TILEPOSITION_SCALE;
+					auto tp = spotter->getTilePosition();
+					for (auto i = -radiusTPSpotter; i < radiusTPSpotter + 1; i++) {
+						auto x = tp.x + i;
+						if (x < 0 || x >= Broodwar->mapWidth()) continue;
+						for (auto j = -radiusTPSpotter; j < radiusTPSpotter + 1; j++) {
+							auto y = tp.y + j;
+							if (y < 0 || y >= Broodwar->mapHeight()) continue;
+							TilePosition tpRelative = { x, y };
+							auto creep              = Broodwar->hasCreep(tpRelative);
+
+							if (creep) {
+								auto regionRelative = BWTA::getRegion(tpRelative);
+								if (regionRelative) {
+									for (auto start : otherStarts) {
+										auto regionStart = BWTA::getRegion(start);
+										if (regionStart == regionRelative) {
+											isEnemyBaseFromSpotting = true;
+											Broodwar << "Spotted creep and determined base at: " << getBasePos(start) << "P" << std::endl;
+											return;
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+
 			// overlord spotting of other units, very naive.
 			// only allow "certain" spotting, therefore based on half max base to base distance.
-			auto largestZergSightRange = UnitTypes::Zerg_Hive.sightRange();
+			const auto largestZergSightRange = UnitTypes::Zerg_Hive.sightRange();
 			// ADDING 32 incase there is funkiness with getUnitsInRange
-			auto range        = largestZergSightRange + 32;
+			const auto range  = largestZergSightRange + 32;
 			auto unitsSpotted = spotter->getUnitsInRadius(range, IsEnemy && IsVisible);
 			std::set<Position> potentialStartsFromSpotting;
 			for (auto u : unitsSpotted) {
