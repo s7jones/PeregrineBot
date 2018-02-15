@@ -246,6 +246,9 @@ void ArmyManager::ZerglingScoutSpreadOut(BWAPI::Unit u)
 				}
 			}
 		}
+
+		// deque iterators NOT valid after insertion
+		scoutLocationIndex = scoutLocationsZergling.begin();
 	} else {
 		GUIManager::Instance().drawTextOnScreen(u, "Zergling Scouting!", 48);
 		Position p = *scoutLocationIndex;
@@ -258,6 +261,6 @@ void ArmyManager::incrementScoutLocationZerglingIndex()
 {
 	scoutLocationIndex++;
 	if (scoutLocationIndex == scoutLocationsZergling.end()) {
-		scoutLocationIndex == scoutLocationsZergling.begin();
+		scoutLocationIndex = scoutLocationsZergling.begin();
 	}
 }
