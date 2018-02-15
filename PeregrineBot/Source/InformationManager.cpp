@@ -318,11 +318,25 @@ void InformationManager::overlordSpotting(BWAPI::Unit overlord)
 		DebugMessenger::Instance() << "Past Overlord spotting time" << std::endl;
 	} else {
 		if (!isEnemyBaseFromOverlordSpotting) {
+
+			for (auto spottedPotentialBaseSet : spottedPotentialBaseSets) {
+				for (auto scoutedPosition : scoutedPositions) {
+					spottedPotentialBaseSet.erase(scoutedPosition);
+				}
+
+				if (spottedPotentialBaseSet.size() == 1) {
+					isEnemyBaseFromOverlordSpotting = true;
+					auto enemyBaseSpottingGuess     = *spottedPotentialBaseSet.begin();
+					Broodwar << "Overlord spotted by removal and determined base at: " << enemyBaseSpottingGuess << "P" << std::endl;
+					return;
+				}
+			}
+
 			// overlord spotting of other units, very naive.
 			// only allow "certain" spotting, therefore based on half max base to base distance.
 			auto range        = overlord->getType().sightRange() + 32; // ADDING 32 incase the overlord needs more range
 			auto unitsSpotted = overlord->getUnitsInRadius(range, IsEnemy && IsVisible);
-			std::set<TilePosition> potentialStartsFromSpotting;
+			std::set<Position> potentialStartsFromSpotting;
 			for (auto u : unitsSpotted) {
 				auto ut = u->getType();
 				auto it = spottingTimes.find(ut);
@@ -336,14 +350,14 @@ void InformationManager::overlordSpotting(BWAPI::Unit overlord)
 					auto pB          = getBasePos(tp);
 					auto distToStart = ut.isFlyer() ? distanceAir(pB, pO) : distanceGround(pB, pO);
 					if (distToStart < searchDistance) {
-						potentialStartsFromSpotting.insert(tp);
+						potentialStartsFromSpotting.insert(pB);
 					}
 				}
+				spottedPotentialBaseSets.insert(potentialStartsFromSpotting);
 				if (potentialStartsFromSpotting.size() == 1) {
 					isEnemyBaseFromOverlordSpotting = true;
-					auto base                       = *potentialStartsFromSpotting.begin();
-					enemyBaseSpottingGuess          = getBasePos(base);
-					Broodwar << "Overlord spotted " << ut << " and determined base at: " << enemyBaseSpottingGuess << "TP" << std::endl;
+					auto enemyBaseSpottingGuess     = *potentialStartsFromSpotting.begin();
+					Broodwar << "Overlord spotted " << ut << " and determined base at: " << enemyBaseSpottingGuess << "P" << std::endl;
 					return;
 				}
 			}

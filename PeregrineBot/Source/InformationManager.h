@@ -55,9 +55,6 @@ public:
 	std::map<std::set<BWAPI::TilePosition>, distAndTime> overlordNetwork;
 	bool isEnemyBaseFromOverlordSpotting   = false;
 	BWAPI::Position enemyBaseSpottingGuess = { 0, 0 };
-	std::map<BWAPI::UnitType, double> spottingTimes;
-	double spottingTime = 0;
-	std::map<BWAPI::Unit, std::set<BWAPI::TilePosition>> spottedPotentialBases;
 
 	std::set<FriendlyUnitInfo> friendlyUnits;
 
@@ -89,4 +86,7 @@ private:
 		double air;
 	} maxBaseToBaseDistance;
 	bool isPastSpottingTime = false;
+	std::map<BWAPI::UnitType, double> spottingTimes;
+	double spottingTime = 0;
+	std::set<std::set<BWAPI::Position>> spottedPotentialBaseSets;
 };
