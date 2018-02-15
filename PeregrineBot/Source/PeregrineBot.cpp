@@ -137,6 +137,10 @@ void PeregrineBot::onFrame()
 		/* if ( !u->isCompleted() || u->isConstructing() )
 		continue;*/
 
+		if (!InformationManager::Instance().isPastSpottingTime) {
+			InformationManager::Instance().spotting(u);
+		}
+
 		bool unitNeedsToWait = OrderManager::Instance().DoesUnitHasOrder(u);
 		if (unitNeedsToWait) {
 			continue;

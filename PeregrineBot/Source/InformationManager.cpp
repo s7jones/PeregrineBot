@@ -225,6 +225,10 @@ void InformationManager::update()
 		}
 	}
 
+	if (((enemyMain) || (isEnemyBaseFromSpotting)) && (!isPastSpottingTime)) {
+		isPastSpottingTime = true;
+	}
+
 	validateResources();
 
 	validateEnemyUnits();
@@ -278,17 +282,12 @@ void InformationManager::overlordScouting(BWAPI::Unit overlord)
 	if (!enemyMain) {
 		overlordScoutingAtGameStart(overlord);
 	} else {
-		if (!isPastSpottingTime) isPastSpottingTime = true;
 		overlordScoutingAfterBaseFound(overlord);
 	}
 }
 
 void InformationManager::overlordScoutingAtGameStart(BWAPI::Unit overlord)
 {
-	if (!isPastSpottingTime) {
-		spotting(overlord);
-	}
-
 	if (overlord->isIdle()) {
 		if (Broodwar->getStartLocations().size() == 4) { // map size is 4, use new scouting
 			auto tp                       = scoutingOptions.begin()->POther;

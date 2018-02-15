@@ -22,7 +22,6 @@ void ArmyManager::ZerglingAttack(BWAPI::Unit u)
 	auto enemyMain               = InformationManager::Instance().enemyMain;
 	auto enemyRace               = InformationManager::Instance().enemyRace;
 	auto unscoutedPositions      = InformationManager::Instance().unscoutedPositions;
-	auto isPastSpottingTime      = InformationManager::Instance().isPastSpottingTime;
 	auto isEnemyBaseFromSpotting = InformationManager::Instance().isEnemyBaseFromSpotting;
 	auto isEnemyBaseDeduced      = InformationManager::Instance().isEnemyBaseDeduced;
 	auto isEnemyBaseReached      = InformationManager::Instance().isEnemyBaseReached;
@@ -36,10 +35,6 @@ void ArmyManager::ZerglingAttack(BWAPI::Unit u)
 			DebugMessenger::Instance()
 			    << "reach enemy base: " << Broodwar->getFrameCount() << "F"
 			    << std::endl;
-		}
-	} else {
-		if (!isPastSpottingTime) {
-			InformationManager::Instance().spotting(u);
 		}
 	}
 
