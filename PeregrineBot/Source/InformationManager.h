@@ -93,8 +93,9 @@ private:
 		double air;
 	} maxBaseToBaseDistance;
 	std::map<BWAPI::UnitType, double> spottingTimes;
-	double spottingTime      = 0;
-	bool isSpottingCreepTime = true;
-	bool isSpottingUnitsTime = true;
-	std::set<std::set<BWAPI::Position>> spottedPotentialBaseSets;
+	double spottingTime         = 0;
+	bool isSpottingCreepTime    = true;
+	bool isSpottingUnitsTime    = true;
+	using unitAndPotentialBases = std::pair<BWAPI::Unit, std::set<BWAPI::Position>>;
+	std::set<unitAndPotentialBases> spottedUnitsAndPotentialBases;
 };
