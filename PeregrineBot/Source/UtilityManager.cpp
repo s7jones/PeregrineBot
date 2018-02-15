@@ -8,12 +8,6 @@
 using namespace BWAPI;
 using namespace Filter;
 
-UtilityManager& UtilityManager::Instance()
-{
-	static UtilityManager instance;
-	return instance;
-}
-
 bool UtilityManager::getBestActionForZergling(BWAPI::Unit zergling)
 {
 	if (options.size() == 0) {
@@ -298,8 +292,6 @@ bool UtilityManager::performBestActionForZerglingInEnemyBase(
 		return true;
 	}
 }
-
-UtilityManager::UtilityManager() {}
 
 Option::Option(funcUtil util, std::string description)
     : util(util)

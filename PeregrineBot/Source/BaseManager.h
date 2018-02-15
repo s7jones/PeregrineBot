@@ -4,8 +4,15 @@
 class Base;
 
 class BaseManager {
+private:
+	BaseManager() {}
+
 public:
-	static BaseManager& Instance();
+	static BaseManager& BaseManager::Instance()
+	{
+		static BaseManager instance;
+		return instance;
+	}
 	void ManageBases(BWAPI::Unit u);
 	void DoAllWorkerTasks(BWAPI::Unit u);
 	void onUnitShow(BWAPI::Unit unit);
@@ -24,8 +31,6 @@ public:
 	std::set<invaderAndDefender> targetsAndAssignedDefenders;
 
 private:
-	BaseManager();
-
 	std::set<BWAPI::Unit> workersTraining;
 };
 

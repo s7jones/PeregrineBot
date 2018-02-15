@@ -2,8 +2,16 @@
 #include "Common.h"
 
 class BuildOrderManager {
+private:
+	BuildOrderManager() {}
+
 public:
-	static BuildOrderManager& Instance();
+	static BuildOrderManager& BuildOrderManager::Instance()
+	{
+		static BuildOrderManager instance;
+		return instance;
+	}
+	void setup();
 	BWAPI::UnitType rebuildBuilding();
 	void incrementBuildOrder();
 
@@ -31,6 +39,5 @@ public:
 	bool buildOrderComplete        = false;
 
 private:
-	BuildOrderManager();
 	std::map<BWAPI::UnitType, int> boMap;
 };

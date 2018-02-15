@@ -12,12 +12,6 @@ using namespace BWAPI;
 using namespace Filter;
 using namespace rapidjson;
 
-FileManager& FileManager::Instance()
-{
-	static FileManager instance;
-	return instance;
-}
-
 bool FileManager::readJsonConfig()
 {
 	// TOML snippet for later?
@@ -126,8 +120,4 @@ void FileManager::writeStatisticsToFile(std::string botVersion, bool isWinner)
 	}
 
 	output.close();
-}
-
-FileManager::FileManager()
-{
 }

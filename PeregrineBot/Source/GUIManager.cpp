@@ -8,16 +8,6 @@
 using namespace BWAPI;
 using namespace Filter;
 
-GUIManager& GUIManager::Instance()
-{
-	static GUIManager instance;
-	return instance;
-}
-
-GUIManager::GUIManager()
-{
-}
-
 void GUIManager::drawTextOnScreen(BWAPI::Unit u, std::string format, int frames)
 {
 	MessageAndFrames mnf = { format, frames };

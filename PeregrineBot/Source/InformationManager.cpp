@@ -5,16 +5,6 @@
 using namespace BWAPI;
 using namespace Filter;
 
-InformationManager::InformationManager()
-{
-}
-
-InformationManager& InformationManager::Instance()
-{
-	static InformationManager instance;
-	return instance;
-}
-
 void InformationManager::setup()
 {
 	auto enemy = Broodwar->enemy();

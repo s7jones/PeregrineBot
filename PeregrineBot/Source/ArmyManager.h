@@ -3,10 +3,15 @@
 #include "UnitInfo.h"
 
 class ArmyManager {
-	ArmyManager();
+private:
+	ArmyManager() {}
 
 public:
-	static ArmyManager& Instance();
+	static ArmyManager& Instance()
+	{
+		static ArmyManager instance;
+		return instance;
+	}
 	void ZerglingAttack(BWAPI::Unit u);
 	std::set<EnemyUnitInfo> GetZerglingAccessibleBuildings(BWAPI::Unit u);
 	void ZerglingAttackKnownBuildings(BWAPI::Unit u);

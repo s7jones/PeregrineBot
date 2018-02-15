@@ -5,12 +5,6 @@
 
 using namespace BWAPI;
 
-BuildingManager& BuildingManager::Instance()
-{
-	static BuildingManager instance;
-	return instance;
-}
-
 bool BuildingManager::isAnythingToBuild(BWAPI::Unit builder)
 {
 	bool flag = false;
@@ -47,8 +41,4 @@ bool BuildingManager::tryToBuild(BWAPI::Unit builder, BWAPI::UnitType ut)
 		}
 	}
 	return false;
-}
-
-BuildingManager::BuildingManager()
-{
 }

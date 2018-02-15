@@ -2,8 +2,13 @@
 #include "Common.h"
 
 class ProductionManager {
-	ProductionManager();
+private:
+	ProductionManager() {}
 
 public:
-	static ProductionManager& Instance();
+	static ProductionManager& ProductionManager::Instance()
+	{
+		static ProductionManager instance;
+		return instance;
+	}
 };

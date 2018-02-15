@@ -4,14 +4,16 @@
 #include <boost/filesystem.hpp>
 
 class DebugMessenger {
+	//https://stackoverflow.com/a/1008289/5791272
 private:
-	DebugMessenger();
-	bool debug_enabled;
-	std::ostringstream ss;
+	DebugMessenger() {}
 
 public:
-	static DebugMessenger& Instance();
-	~DebugMessenger();
+	static DebugMessenger& Instance()
+	{
+		static DebugMessenger instance;
+		return instance;
+	}
 	void setup(bool debug_flag_define);
 
 	template <class T>
@@ -24,4 +26,8 @@ public:
 
 	DebugMessenger& operator<<(BWAPI::GameWrapper::ostream_manipulator fn);
 	void flush(BWAPI::GameWrapper::ostream_manipulator fn);
+
+private:
+	bool debug_enabled;
+	std::ostringstream ss;
 };

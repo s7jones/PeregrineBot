@@ -4,10 +4,15 @@
 #include "UnitInfo.h"
 
 class OrderManager {
-	OrderManager();
+private:
+	OrderManager() {}
 
 public:
-	static OrderManager& Instance();
+	static OrderManager& OrderManager::Instance()
+	{
+		static OrderManager instance;
+		return instance;
+	}
 	void update();
 	void UpdateUnitsWaitingSinceLastOrder();
 	bool DoesUnitHasOrder(BWAPI::Unit unit);

@@ -9,14 +9,6 @@
 using namespace BWAPI;
 using namespace Filter;
 
-ArmyManager::ArmyManager() {}
-
-ArmyManager& ArmyManager::Instance()
-{
-	static ArmyManager instance;
-	return instance;
-}
-
 void ArmyManager::ZerglingAttack(BWAPI::Unit u)
 {
 	auto enemyMain               = InformationManager::Instance().enemyMain;

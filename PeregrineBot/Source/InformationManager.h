@@ -27,8 +27,15 @@ struct distAndTime {
 };
 
 class InformationManager {
+private:
+	InformationManager() {}
+
 public:
-	static InformationManager& Instance();
+	static InformationManager& Instance()
+	{
+		static InformationManager instance;
+		return instance;
+	}
 	void onUnitShow(BWAPI::Unit unit);
 	void onUnitDestroy(BWAPI::Unit unit);
 	void onUnitMorph(BWAPI::Unit unit);
@@ -67,8 +74,6 @@ public:
 	std::set<ResourceUnitInfo> geysers;
 
 private:
-	InformationManager();
-
 	void setupScouting();
 	void updateScouting();
 	void overlordScoutingAtGameStart(BWAPI::Unit overlord);

@@ -4,16 +4,6 @@
 
 using namespace BWAPI;
 
-OrderManager::OrderManager()
-{
-}
-
-OrderManager& OrderManager::Instance()
-{
-	static OrderManager instance;
-	return instance;
-}
-
 void OrderManager::update()
 {
 	UpdateUnitsWaitingSinceLastOrder();

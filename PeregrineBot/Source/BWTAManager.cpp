@@ -3,12 +3,6 @@
 using namespace BWAPI;
 using namespace Filter;
 
-BWTAManager& BWTAManager::Instance()
-{
-	static BWTAManager instance;
-	return instance;
-}
-
 void BWTAManager::analyze()
 {
 	if (analysis) {
@@ -19,8 +13,4 @@ void BWTAManager::analyze()
 		analyzed               = true;
 		analysis_just_finished = true;
 	}
-}
-
-BWTAManager::BWTAManager()
-{
 }

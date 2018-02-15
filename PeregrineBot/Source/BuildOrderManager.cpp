@@ -5,7 +5,7 @@
 using namespace BWAPI;
 using namespace Filter;
 
-BuildOrderManager::BuildOrderManager()
+void BuildOrderManager::setup()
 {
 	for (auto ut : bo) {
 		auto result = boMap.insert({ ut, 1 });
@@ -13,12 +13,6 @@ BuildOrderManager::BuildOrderManager()
 			result.first->second++;
 		}
 	}
-}
-
-BuildOrderManager& BuildOrderManager::Instance()
-{
-	static BuildOrderManager instance;
-	return instance;
 }
 
 BWAPI::UnitType BuildOrderManager::rebuildBuilding()

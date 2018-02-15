@@ -7,13 +7,19 @@ struct MessageAndFrames {
 };
 
 class GUIManager {
+private:
+	GUIManager() {}
+
 public:
-	static GUIManager& Instance();
+	static GUIManager& GUIManager::Instance()
+	{
+		static GUIManager instance;
+		return instance;
+	}
 	void drawTextOnScreen(BWAPI::Unit u, std::string format, int frames = 480);
 	void draw();
 
 private:
-	GUIManager();
 	void drawTextOnUnit(BWAPI::Unit u, std::string format);
 	void drawOnScreenMessages();
 	void drawTopLeftOverlay();

@@ -6,12 +6,18 @@ using UtilResult = std::pair<double, BWAPI::Unit>;
 class Option;
 
 class UtilityManager {
+private:
+	UtilityManager() {}
+
 public:
-	static UtilityManager& Instance();
+	static UtilityManager& UtilityManager::Instance()
+	{
+		static UtilityManager instance;
+		return instance;
+	}
 	bool getBestActionForZergling(BWAPI::Unit zergling);
 
 private:
-	UtilityManager();
 	void constructOptions();
 	bool performBestActionForZerglingInEnemyBase(BWAPI::Unit zergling);
 

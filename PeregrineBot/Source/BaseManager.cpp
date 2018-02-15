@@ -10,16 +10,6 @@
 using namespace BWAPI;
 using namespace Filter;
 
-BaseManager::BaseManager()
-{
-}
-
-BaseManager& BaseManager::Instance()
-{
-	static BaseManager instance;
-	return instance;
-}
-
 void BaseManager::ManageBases(BWAPI::Unit base)
 {
 	auto result = hatcheries.emplace(base);
