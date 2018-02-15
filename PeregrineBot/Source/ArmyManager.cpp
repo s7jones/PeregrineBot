@@ -95,19 +95,27 @@ void ArmyManager::ZerglingAttack(BWAPI::Unit u)
 			UnitCommand lastCmd = u->getLastCommand();
 			if (lastCmd.getType() == UnitCommandTypes::Move) {
 				Position targetPos = lastCmd.getTargetPosition();
-				if ((unscoutedPositions.count(targetPos) == 0) && (!unscoutedPositions.empty())
-				    && (std::find(scoutLocationsZergling.begin(), scoutLocationsZergling.end(), targetPos) == scoutLocationsZergling.end())) {
-					auto p = *unscoutedPositions.begin();
-					OrderManager::Instance().Move(u, p);
-					GUIManager::Instance().drawTextOnScreen(u, "recalculate scouting", 480);
-					// DebugMessenger::Instance() << "recalculate scouting" <<
-					// std::endl;
-				} else if ((!enemyMain) && (isEnemyBaseFromSpotting)
-				           && enemyBaseSpottingGuess != targetPos) {
+
+				if ((!enemyMain) && (isEnemyBaseFromSpotting)
+				    && enemyBaseSpottingGuess != targetPos) {
 					OrderManager::Instance().Move(u, enemyBaseSpottingGuess);
 					GUIManager::Instance().drawTextOnScreen(u, "recalculate scouting (overlord guess)", 480);
-					// DebugMessenger::Instance() << "recalculate scouting
-					// (overlord guess)" << std::endl;
+				}
+				// if moving to somewhere already scouted
+				else if (unscoutedPositions.count(targetPos) == 0) {
+					if (!unscoutedPositions.empty()) {
+						auto p = *unscoutedPositions.begin();
+						OrderManager::Instance().Move(u, p);
+						GUIManager::Instance().drawTextOnScreen(u, "recalculate scouting 1", 480);
+					}
+					// if moving to somewhere not in zergScoutLocations and there are places to go
+					else if ((std::find(scoutLocationsZergling.begin(), scoutLocationsZergling.end(), targetPos)
+					          == scoutLocationsZergling.end())
+					         && !scoutLocationsZergling.empty()) {
+						auto p = *scoutLocationsZergling.begin();
+						OrderManager::Instance().Move(u, p);
+						GUIManager::Instance().drawTextOnScreen(u, "recalculate scouting 2", 480);
+					}
 				}
 			}
 		}
