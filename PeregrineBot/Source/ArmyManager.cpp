@@ -19,15 +19,16 @@ ArmyManager& ArmyManager::Instance()
 
 void ArmyManager::ZerglingAttack(BWAPI::Unit u)
 {
-	auto enemyMain                       = InformationManager::Instance().enemyMain;
-	auto enemyRace                       = InformationManager::Instance().enemyRace;
-	auto unscoutedPositions              = InformationManager::Instance().unscoutedPositions;
-	auto isEnemyBaseFromOverlordSpotting = InformationManager::Instance().isEnemyBaseFromOverlordSpotting;
-	auto isEnemyBaseDeduced              = InformationManager::Instance().isEnemyBaseDeduced;
-	auto isEnemyBaseReached              = InformationManager::Instance().isEnemyBaseReached;
-	auto isEnemyBaseDestroyed            = InformationManager::Instance().isEnemyBaseDestroyed;
-	auto enemyBaseSpottingGuess          = InformationManager::Instance().enemyBaseSpottingGuess;
-	auto enemyBuildings                  = InformationManager::Instance().enemyBuildings;
+	auto enemyMain               = InformationManager::Instance().enemyMain;
+	auto enemyRace               = InformationManager::Instance().enemyRace;
+	auto unscoutedPositions      = InformationManager::Instance().unscoutedPositions;
+	auto isPastSpottingTime      = InformationManager::Instance().isPastSpottingTime;
+	auto isEnemyBaseFromSpotting = InformationManager::Instance().isEnemyBaseFromSpotting;
+	auto isEnemyBaseDeduced      = InformationManager::Instance().isEnemyBaseDeduced;
+	auto isEnemyBaseReached      = InformationManager::Instance().isEnemyBaseReached;
+	auto isEnemyBaseDestroyed    = InformationManager::Instance().isEnemyBaseDestroyed;
+	auto enemyBaseSpottingGuess  = InformationManager::Instance().enemyBaseSpottingGuess;
+	auto enemyBuildings          = InformationManager::Instance().enemyBuildings;
 
 	if (enemyMain) {
 		if ((!isEnemyBaseReached) && (BWTA::getRegion(u->getPosition()) == BWTA::getRegion(enemyMain->getPosition()))) {
@@ -35,6 +36,10 @@ void ArmyManager::ZerglingAttack(BWAPI::Unit u)
 			DebugMessenger::Instance()
 			    << "reach enemy base: " << Broodwar->getFrameCount() << "F"
 			    << std::endl;
+		}
+	} else {
+		if (!isPastSpottingTime) {
+			InformationManager::Instance().spotting(u);
 		}
 	}
 
@@ -83,9 +88,9 @@ void ArmyManager::ZerglingAttack(BWAPI::Unit u)
 				} else {
 					if (enemyBuildings.size() != 0) {
 						ZerglingAttackKnownBuildings(u);
-					} else if (isEnemyBaseFromOverlordSpotting) {
+					} else if (isEnemyBaseFromSpotting) {
 						OrderManager::Instance().Move(u, enemyBaseSpottingGuess);
-						DebugMessenger::Instance() << "scout overlord spot" << std::endl;
+						GUIManager::Instance().drawTextOnScreen(u, "scout overlord spot", 480);
 					} else {
 						ZerglingScoutingBeforeBaseFound(u);
 					}
@@ -102,7 +107,7 @@ void ArmyManager::ZerglingAttack(BWAPI::Unit u)
 					GUIManager::Instance().drawTextOnScreen(u, "recalculate scouting", 480);
 					// DebugMessenger::Instance() << "recalculate scouting" <<
 					// std::endl;
-				} else if ((!enemyMain) && (isEnemyBaseFromOverlordSpotting)
+				} else if ((!enemyMain) && (isEnemyBaseFromSpotting)
 				           && enemyBaseSpottingGuess != targetPos) {
 					OrderManager::Instance().Move(u, enemyBaseSpottingGuess);
 					GUIManager::Instance().drawTextOnScreen(u, "recalculate scouting (overlord guess)", 480);

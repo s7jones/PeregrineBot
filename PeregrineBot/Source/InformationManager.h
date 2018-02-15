@@ -36,6 +36,7 @@ public:
 	void setup();
 	void update();
 	void overlordScouting(BWAPI::Unit overlord);
+	void spotting(BWAPI::Unit spotter);
 
 	ResourceUnitInfo* getClosestMineral(BWAPI::Unit u);
 
@@ -45,6 +46,7 @@ public:
 	BWAPI::Race enemyRace     = BWAPI::Races::Unknown;
 	bool isEnemyRaceRandom    = false;
 	bool isIslandsOnMap       = false;
+	bool isPastSpottingTime   = false;
 
 	std::set<BWAPI::TilePosition> allStarts;
 	std::set<BWAPI::TilePosition> otherStarts; // would be a good idea to make this const
@@ -53,7 +55,7 @@ public:
 	std::set<ScoutingOptionFor4, sortByMeanTime> scoutingOptions;
 	std::map<std::set<BWAPI::TilePosition>, distAndTime> zerglingNetwork;
 	std::map<std::set<BWAPI::TilePosition>, distAndTime> overlordNetwork;
-	bool isEnemyBaseFromOverlordSpotting   = false;
+	bool isEnemyBaseFromSpotting           = false;
 	BWAPI::Position enemyBaseSpottingGuess = { 0, 0 };
 
 	std::set<FriendlyUnitInfo> friendlyUnits;
@@ -71,7 +73,6 @@ private:
 	void setupScouting();
 	void updateScouting();
 	void overlordScoutingAtGameStart(BWAPI::Unit overlord);
-	void overlordSpotting(BWAPI::Unit overlord);
 	void overlordScoutingAfterBaseFound(BWAPI::Unit overlord);
 	void overlordRetreatToHome(BWAPI::Unit overlord);
 	void addToEnemyBuildings(BWAPI::Unit unit);
@@ -85,7 +86,6 @@ private:
 		double ground;
 		double air;
 	} maxBaseToBaseDistance;
-	bool isPastSpottingTime = false;
 	std::map<BWAPI::UnitType, double> spottingTimes;
 	double spottingTime = 0;
 	std::set<std::set<BWAPI::Position>> spottedPotentialBaseSets;

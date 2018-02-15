@@ -285,6 +285,10 @@ void InformationManager::overlordScouting(BWAPI::Unit overlord)
 
 void InformationManager::overlordScoutingAtGameStart(BWAPI::Unit overlord)
 {
+	if (!isPastSpottingTime) {
+		spotting(overlord);
+	}
+
 	if (overlord->isIdle()) {
 		if (Broodwar->getStartLocations().size() == 4) { // map size is 4, use new scouting
 			auto tp                       = scoutingOptions.begin()->POther;
@@ -304,20 +308,16 @@ void InformationManager::overlordScoutingAtGameStart(BWAPI::Unit overlord)
 				OrderManager::Instance().Move(overlord, p, true);
 			}
 		}
-	} else {
-		if (!isPastSpottingTime) {
-			overlordSpotting(overlord);
-		}
 	}
 }
 
-void InformationManager::overlordSpotting(BWAPI::Unit overlord)
+void InformationManager::spotting(BWAPI::Unit spotter)
 {
 	if (Broodwar->getFrameCount() > spottingTime) {
 		isPastSpottingTime = true;
-		DebugMessenger::Instance() << "Past Overlord spotting time" << std::endl;
+		DebugMessenger::Instance() << "Past spotting time" << std::endl;
 	} else {
-		if (!isEnemyBaseFromOverlordSpotting) {
+		if (!isEnemyBaseFromSpotting) {
 
 			for (auto spottedPotentialBaseSet : spottedPotentialBaseSets) {
 				for (auto scoutedPosition : scoutedPositions) {
@@ -325,17 +325,19 @@ void InformationManager::overlordSpotting(BWAPI::Unit overlord)
 				}
 
 				if (spottedPotentialBaseSet.size() == 1) {
-					isEnemyBaseFromOverlordSpotting = true;
-					auto enemyBaseSpottingGuess     = *spottedPotentialBaseSet.begin();
-					Broodwar << "Overlord spotted by removal and determined base at: " << enemyBaseSpottingGuess << "P" << std::endl;
+					isEnemyBaseFromSpotting     = true;
+					auto enemyBaseSpottingGuess = *spottedPotentialBaseSet.begin();
+					Broodwar << "Spotted guess by removal and determined base at: " << enemyBaseSpottingGuess << "P" << std::endl;
 					return;
 				}
 			}
 
 			// overlord spotting of other units, very naive.
 			// only allow "certain" spotting, therefore based on half max base to base distance.
-			auto range        = overlord->getType().sightRange() + 32; // ADDING 32 incase the overlord needs more range
-			auto unitsSpotted = overlord->getUnitsInRadius(range, IsEnemy && IsVisible);
+			auto largestZergSightRange = UnitTypes::Zerg_Hive.sightRange();
+			// ADDING 32 incase there is funkiness with getUnitsInRange
+			auto range        = largestZergSightRange + 32;
+			auto unitsSpotted = spotter->getUnitsInRadius(range, IsEnemy && IsVisible);
 			std::set<Position> potentialStartsFromSpotting;
 			for (auto u : unitsSpotted) {
 				auto ut = u->getType();
@@ -355,9 +357,9 @@ void InformationManager::overlordSpotting(BWAPI::Unit overlord)
 				}
 				spottedPotentialBaseSets.insert(potentialStartsFromSpotting);
 				if (potentialStartsFromSpotting.size() == 1) {
-					isEnemyBaseFromOverlordSpotting = true;
-					auto enemyBaseSpottingGuess     = *potentialStartsFromSpotting.begin();
-					Broodwar << "Overlord spotted " << ut << " and determined base at: " << enemyBaseSpottingGuess << "P" << std::endl;
+					isEnemyBaseFromSpotting     = true;
+					auto enemyBaseSpottingGuess = *potentialStartsFromSpotting.begin();
+					Broodwar << spotter->getType() << " spotted " << ut << " and determined base at: " << enemyBaseSpottingGuess << "P" << std::endl;
 					return;
 				}
 			}
