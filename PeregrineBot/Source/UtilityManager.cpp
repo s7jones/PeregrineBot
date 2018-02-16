@@ -357,6 +357,7 @@ bool UtilityManager::performBestActionForZerglingInEnemyBase(
 	} else {
 		OrderManager::Instance().Attack(zergling, bestOptionResult.second);
 		GUIManager::Instance().drawTextOnScreen(zergling, bestOptionDescription, 48);
+		GUIManager::Instance().drawLineOnScreen(zergling, bestOptionResult.second, 48);
 		return true;
 	}
 }

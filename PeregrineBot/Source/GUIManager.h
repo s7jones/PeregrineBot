@@ -1,10 +1,7 @@
 #pragma once
 #include "Common.h"
 
-struct MessageAndFrames {
-	std::string format;
-	int frames;
-};
+#include "UnitInfo.h"
 
 class GUIManager {
 private:
@@ -17,10 +14,12 @@ public:
 		return instance;
 	}
 	void drawTextOnScreen(BWAPI::Unit u, std::string format, int frames = 480);
+	void drawLineOnScreen(BWAPI::Unit u, EnemyUnitInfo enemy, int frames = 480);
 	void draw();
 
 private:
 	void drawTextOnUnit(BWAPI::Unit u, std::string format);
+	void drawOnScreenLines();
 	void drawOnScreenMessages();
 	void drawTopLeftOverlay();
 	void calculateAverageFrameTime();
@@ -31,5 +30,17 @@ private:
 	double duration = 0;
 	std::chrono::steady_clock::time_point start;
 	int frameCount = 0;
+
+	struct MessageAndFrames {
+		std::string format;
+		int frames;
+	};
+
+	struct TargetAndFrames {
+		EnemyUnitInfo target;
+		int frames;
+	};
+
 	std::map<BWAPI::Unit, MessageAndFrames> messageBuffer;
+	std::map<BWAPI::Unit, TargetAndFrames> lineBuffer;
 };

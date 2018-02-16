@@ -11,8 +11,13 @@ using namespace Filter;
 void GUIManager::drawTextOnScreen(BWAPI::Unit u, std::string format, int frames)
 {
 	MessageAndFrames mnf = { format, frames };
-
 	messageBuffer.insert_or_assign(u, mnf);
+}
+
+void GUIManager::drawLineOnScreen(BWAPI::Unit u, EnemyUnitInfo enemy, int frames)
+{
+	TargetAndFrames tnf = { enemy, frames };
+	lineBuffer.insert_or_assign(u, tnf);
 }
 
 void GUIManager::drawTextOnUnit(BWAPI::Unit u, std::string format)
@@ -49,12 +54,33 @@ void GUIManager::draw()
 
 	drawOnScreenMessages();
 
+	drawOnScreenLines();
+
 	drawExtendedInterface();
 
 	// this seems redundant at the moment but is useful if threading is wanted later
 	if (BWTAManager::Instance().analysis_just_finished) {
 		DebugMessenger::Instance() << "Finished analyzing map." << std::endl;
 		BWTAManager::Instance().analysis_just_finished = false;
+	}
+}
+
+void GUIManager::drawOnScreenLines()
+{
+	auto it = lineBuffer.begin();
+	while (it != lineBuffer.end()) {
+		if (it->second.frames > 0) {
+			Broodwar->drawLineMap(it->first->getPosition(),
+			                      it->second.target.getPosition(), Colors::Orange);
+		}
+
+		it->second.frames--;
+
+		if (it->second.frames <= 0) {
+			it = lineBuffer.erase(it);
+		} else {
+			it++;
+		}
 	}
 }
 
