@@ -10,8 +10,6 @@ UnitInfo::UnitInfo(BWAPI::Unit unitToWrap)
 	if (unitToWrap) {
 		u = unitToWrap;
 		update();
-	} else {
-		errorMessage("unit null 1");
 	}
 }
 

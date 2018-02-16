@@ -21,8 +21,8 @@ void ArmyManager::ZerglingAttack(BWAPI::Unit u)
 	auto enemyBaseSpottingGuess  = InformationManager::Instance().enemyBaseSpottingGuess;
 	auto enemyBuildings          = InformationManager::Instance().enemyBuildings;
 
-	if (enemyMain) {
-		if ((!isEnemyBaseReached) && (BWTA::getRegion(u->getPosition()) == BWTA::getRegion(enemyMain->getPosition()))) {
+	if (enemyMain.u) {
+		if ((!isEnemyBaseReached) && (BWTA::getRegion(u->getPosition()) == BWTA::getRegion(enemyMain.getPosition()))) {
 			InformationManager::Instance().isEnemyBaseReached = true;
 			DebugMessenger::Instance()
 			    << "reach enemy base: " << Broodwar->getFrameCount() << "F"
@@ -53,15 +53,15 @@ void ArmyManager::ZerglingAttack(BWAPI::Unit u)
 			if (closestGroundEnemy) {
 				OrderManager::Instance().Attack(u, closestGroundEnemy);
 			} else {
-				if (enemyMain) {
+				if (enemyMain.u) {
 					if (!isEnemyBaseDestroyed) {
-						if (!Broodwar->isVisible(TilePosition(enemyMain->getPosition()))) {
-							OrderManager::Instance().Attack(u, *enemyMain);
+						if (!Broodwar->isVisible(TilePosition(enemyMain.getPosition()))) {
+							OrderManager::Instance().Attack(u, enemyMain);
 						} else if (!Broodwar->getUnitsOnTile(
-						                        TilePosition(enemyMain->getPosition()),
+						                        TilePosition(enemyMain.getPosition()),
 						                        IsEnemy && IsVisible && Exists && IsBuilding && !IsLifted)
 						                .empty()) {
-							OrderManager::Instance().Attack(u, *enemyMain);
+							OrderManager::Instance().Attack(u, enemyMain);
 						} else if (enemyBuildings.size() != 0) {
 							ZerglingAttackKnownBuildings(u);
 						} else {
@@ -88,7 +88,7 @@ void ArmyManager::ZerglingAttack(BWAPI::Unit u)
 			if (lastCmd.getType() == UnitCommandTypes::Move) {
 				Position targetPos = lastCmd.getTargetPosition();
 
-				if ((!enemyMain) && (isEnemyBaseFromSpotting)
+				if ((!enemyMain.u) && (isEnemyBaseFromSpotting)
 				    && enemyBaseSpottingGuess != targetPos) {
 					OrderManager::Instance().Move(u, enemyBaseSpottingGuess);
 					GUIManager::Instance().drawTextOnScreen(u, "recalculate scouting (overlord guess)", 480);

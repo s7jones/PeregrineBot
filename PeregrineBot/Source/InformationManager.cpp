@@ -230,15 +230,15 @@ void InformationManager::updateScouting()
 		if (Broodwar->isVisible(TilePosition(p))) {
 			scoutedPositions.insert(p);
 			it = unscoutedPositions.erase(it);
-			if (!enemyMain) {
+			if (!enemyMain.u) {
 				// replace IsBuilding by IsResourceDepot?
 				auto unitsOnBaseTile = Broodwar->getUnitsOnTile(TilePosition(p),
 				                                                IsEnemy && IsVisible && Exists && IsResourceDepot && !IsLifted);
 				if (unitsOnBaseTile.size() > 0) {
-					enemyMain          = std::make_shared<EnemyUnitInfo>(*unitsOnBaseTile.begin());
+					enemyMain          = { *unitsOnBaseTile.begin() };
 					isEnemyBaseDeduced = true;
 					DebugMessenger::Instance() << "Found enemy base at: " << Broodwar->getFrameCount() << "F" << std::endl;
-					if ((enemyMain->x() == 0) && (enemyMain->y() == 0)) {
+					if ((enemyMain.x() == 0) && (enemyMain.y() == 0)) {
 						errorMessage("Found enemy base at 0,0P");
 					}
 				}
@@ -251,7 +251,7 @@ void InformationManager::updateScouting()
 	// add logic here for "not" finding base even after scouting everything
 	// probably only applicable to Terran weird lifting stuff
 
-	if (!(isEnemyBaseDeduced || enemyMain) && unscoutedPositions.size() == 1) {
+	if (!(isEnemyBaseDeduced || enemyMain.u) && unscoutedPositions.size() == 1) {
 		isEnemyBaseDeduced   = true;
 		BWAPI::Position base = (*unscoutedPositions.begin());
 		DebugMessenger::Instance() << "Enemy base deduced to be at: " << base.x << ", " << base.y << "P" << std::endl;
@@ -270,7 +270,7 @@ void InformationManager::updateScouting()
 		}
 	}
 
-	if (enemyMain || isEnemyBaseFromSpotting) {
+	if (enemyMain.u || isEnemyBaseFromSpotting) {
 		if (isSpottingUnitsTime) isSpottingUnitsTime = false;
 		if (isSpottingCreepTime) isSpottingCreepTime = false;
 	}
@@ -283,7 +283,7 @@ void InformationManager::overlordScouting(BWAPI::Unit overlord)
 		return;
 	}
 
-	if (!enemyMain) {
+	if (!enemyMain.u) {
 		overlordScoutingAtGameStart(overlord);
 	} else {
 		overlordScoutingAfterBaseFound(overlord);
@@ -423,7 +423,7 @@ void InformationManager::overlordScoutingAfterBaseFound(BWAPI::Unit overlord)
 			//DebugMessenger::Instance() << "Overlord Scouting!" << std::endl;
 			static std::deque<Position> scoutLocations;
 			if (scoutLocations.empty()) {
-				auto enemyRegion = BWTA::getRegion(enemyMain->getPosition());
+				auto enemyRegion = BWTA::getRegion(enemyMain.getPosition());
 				auto& poly       = enemyRegion->getPolygon();
 				for (size_t j = 0; j < poly.size(); ++j) {
 					// The points in Polygon appear to be all along the perimeter.
@@ -499,8 +499,8 @@ void InformationManager::onUnitDestroy(BWAPI::Unit unit)
 	if ((IsEnemy)(unit)) {
 		if ((IsBuilding)(unit)) {
 			enemyBuildings.erase(unit);
-			if (enemyMain) {
-				if (((IsResourceDepot)(unit) == true) && (unit->getPosition() == enemyMain->getPosition())) {
+			if (enemyMain.u) {
+				if (((IsResourceDepot)(unit) == true) && (unit->getPosition() == enemyMain.getPosition())) {
 					isEnemyBaseDestroyed = true;
 					DebugMessenger::Instance() << "destroyed enemy base: " << Broodwar->getFrameCount() << std::endl;
 				}

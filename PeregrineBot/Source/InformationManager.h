@@ -68,7 +68,7 @@ public:
 
 	std::set<EnemyUnitInfo> enemyBuildings;
 	std::set<EnemyUnitInfo> enemyArmy;
-	std::shared_ptr<EnemyUnitInfo> enemyMain = nullptr;
+	EnemyUnitInfo enemyMain = { nullptr };
 
 	std::set<ResourceUnitInfo> minerals;
 	std::set<ResourceUnitInfo> geysers;

@@ -97,6 +97,27 @@ bool isReachable(BWTA::Region* region1, BWTA::Region* region2)
 	}
 }
 
+// jaj22 linked this on discord: https://pastebin.com/k6esbYUj
+// tscmoo said he used the below code in OpenBW
+static const bool psi_field_mask[5][8] = {
+	{ 1, 1, 1, 1, 1, 1, 1, 1 },
+	{ 1, 1, 1, 1, 1, 1, 1, 1 },
+	{ 1, 1, 1, 1, 1, 1, 1, 0 },
+	{ 1, 1, 1, 1, 1, 1, 0, 0 },
+	{ 1, 1, 1, 0, 0, 0, 0, 0 }
+};
+
+bool isInPylonRange(int relx, int rely)
+{
+	unsigned x = std::abs(relx);
+	unsigned y = std::abs(rely);
+	if (x >= 256) return false;
+	if (y >= 160) return false;
+	if (relx < 0) --x;
+	if (rely < 0) --y;
+	return psi_field_mask[y / 32u][x / 32u];
+}
+
 void errorMessage(std::string message)
 {
 	Broodwar << "err: " << message << std::endl;

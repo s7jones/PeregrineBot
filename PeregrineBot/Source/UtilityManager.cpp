@@ -15,8 +15,8 @@ bool UtilityManager::getBestActionForZergling(BWAPI::Unit zergling)
 	}
 	bool flag      = false;
 	auto enemyMain = InformationManager::Instance().enemyMain;
-	if (enemyMain) {
-		if (BWTA::getRegion(enemyMain->getPosition()) == BWTA::getRegion(zergling->getPosition())) {
+	if (enemyMain.u) {
+		if (BWTA::getRegion(enemyMain.getPosition()) == BWTA::getRegion(zergling->getPosition())) {
 			flag = performBestActionForZerglingInEnemyBase(zergling);
 			if (flag) return true;
 		}
@@ -38,12 +38,13 @@ void UtilityManager::constructOptions()
 	if (enemyRace != Races::Unknown) {
 		switch (enemyRace) {
 		case Races::Enum::Protoss: {
-			auto utilityInjrZeal = [& scores = scores](Unit u) -> UtilResult {
-				auto weapon        = u->getType().groundWeapon();
+			auto genericInjr = [& scores = scores](Unit u, UnitType enemyType, double scoreGiven) -> UtilResult {
+				auto weapon = u->getType().groundWeapon();
+				if (weapon.damageAmount() == 0) return std::make_pair(0, nullptr);
 				const auto enemies = u->getUnitsInRadius(
 				    weapon.maxRange() * 2,
 				    IsEnemy
-				        && (GetType == UnitTypes::Protoss_Zealot));
+				        && (GetType == enemyType));
 				double bestScore = 0;
 				int bestHits     = std::numeric_limits<int>::infinity();
 				int worstHits    = 0;
@@ -51,15 +52,17 @@ void UtilityManager::constructOptions()
 				for (const auto enemy : enemies) {
 					int effectiveDamage = weapon.damageAmount() - enemy->getType().armor();
 					int hp              = enemy->getHitPoints();
-					int hits            = ceil(hp / effectiveDamage);
+					int shields         = enemy->getShields();
+					int hits            = ceil(hp / effectiveDamage + shields / weapon.damageAmount());
 					if (hits < bestHits) {
 						bestHits = hits;
 					}
 					if (hits > worstHits) {
 						worstHits = hits;
 					}
-					int maxHits  = ceil(UnitTypes::Protoss_Zealot.maxHitPoints() / effectiveDamage);
-					double score = scores.p.injrZeal
+					int maxHits  = ceil(enemyType.maxHitPoints() / effectiveDamage
+                                       + enemyType.maxShields() / weapon.damageAmount());
+					double score = scoreGiven
 					    + (maxHits - hits) / maxHits;
 					if (bestScore < score) {
 						bestScore  = score;
@@ -69,8 +72,18 @@ void UtilityManager::constructOptions()
 				auto p = std::make_pair(bestScore, bestChoice);
 				return p;
 			};
+
+			auto utilityInjrZeal = [& scores = scores, genericInjr](Unit u) -> UtilResult {
+				return genericInjr(u, UnitTypes::Protoss_Zealot, scores.p.injrZeal);
+			};
 			Option injrZeal = Option(utilityInjrZeal, "attack injured zealot");
 			options.push_back(injrZeal);
+
+			auto utilityInjrWork = [& scores = scores, genericInjr](Unit u) -> UtilResult {
+				return genericInjr(u, UnitTypes::Protoss_Probe, scores.p.injrWork);
+			};
+			Option injrWork = Option(utilityInjrWork, "attack injured worker");
+			options.push_back(injrWork);
 
 			// couldn't take unit filter out of getClosestUnit without a runtime crash
 			auto utilityClosest = [& scores = scores](Unit u) -> UtilResult {
@@ -85,6 +98,62 @@ void UtilityManager::constructOptions()
 			Option enemyClosest = Option(utilityClosest, "attack closest zealot/cannon");
 			options.push_back(enemyClosest);
 
+			auto utilityArtosis = [& scores = scores](Unit u) -> UtilResult {
+				const auto enemyBuildings = InformationManager::Instance().enemyBuildings;
+				std::set<EnemyUnitInfo> pylons;
+				for (const auto enemyBuilding : enemyBuildings) {
+					if (enemyBuilding.getType() == UnitTypes::Protoss_Pylon) {
+						pylons.insert(enemyBuilding);
+					}
+				}
+				std::map<EnemyUnitInfo, std::vector<EnemyUnitInfo>> artosisPylonsAndBuildings;
+				for (auto enemyBuilding : enemyBuildings) {
+					if ((enemyBuilding.getType() == UnitTypes::Protoss_Pylon)
+					    || (enemyBuilding.getType() == UnitTypes::Protoss_Nexus)
+					    || (enemyBuilding.getType() == UnitTypes::Protoss_Assimilator)) {
+						continue;
+					}
+					std::set<EnemyUnitInfo> suppliers;
+					for (const auto pylon : pylons) {
+						auto rel = pylon.getPosition() - enemyBuilding.getPosition();
+						if (isInPylonRange(rel.x, rel.y)) {
+							suppliers.insert(pylon);
+						}
+					}
+					if (suppliers.size() == 1) {
+						auto iterAndBool = artosisPylonsAndBuildings.insert({ *suppliers.begin(), { enemyBuilding } });
+						if (!iterAndBool.second) {
+							iterAndBool.first->second.push_back(enemyBuilding);
+						}
+					}
+				}
+
+				auto unitTypeScoreLambda = [& scores = scores](const BWAPI::UnitType& unitType) -> double {
+					return unitType == UnitTypes::Protoss_Gateway ? scores.p.addArtosisGtwy
+					                                              : unitType == UnitTypes::Protoss_Photon_Cannon ? scores.p.addArtosisCann
+					                                                                                             : scores.p.addArtosisAll;
+				};
+
+				double bestScore    = 0;
+				EnemyUnitInfo pylon = { nullptr };
+				for (auto artosisPylonBuildings : artosisPylonsAndBuildings) {
+					double score = scores.p.artosisPyln;
+					for (auto building : artosisPylonBuildings.second) {
+						score += unitTypeScoreLambda(building.getType());
+					}
+
+					if (bestScore < score) {
+						bestScore = score;
+						pylon     = artosisPylonBuildings.first;
+					}
+				}
+
+				auto p = std::make_pair(bestScore, pylon);
+				return p;
+			};
+			Option enemyArtosisPylon = Option(utilityArtosis, "attack artosis pylon");
+			options.push_back(enemyArtosisPylon);
+
 			auto utilitySupply = [& scores = scores](Unit u) -> UtilResult {
 				Unit supply = u->getClosestUnit(
 				    IsEnemy
@@ -93,7 +162,6 @@ void UtilityManager::constructOptions()
 				auto p       = std::make_pair(score, supply);
 				return p;
 			};
-
 			Option enemySupply = Option(utilitySupply, "attack closest pylon");
 			options.push_back(enemySupply);
 
@@ -242,17 +310,15 @@ void UtilityManager::constructOptions()
 			Option enemyAtAll = Option(utilityAtAll, "attack closest ground enemy");
 			options.push_back(enemyAtAll);
 
-			break;
-
 			auto utilityEnemyBase = [& scores = scores](Unit u) -> UtilResult {
 				auto enemyMain = InformationManager::Instance().enemyMain;
 				double score   = scores.t.enemyBase;
-				UtilResult p;
-				if (!enemyMain) {
+				UtilResult p   = std::make_pair(0, nullptr);
+				if (!enemyMain.u) {
 					score = 0;
-					p     = std::make_pair(score, enemyMain->u);
+					p     = std::make_pair(score, enemyMain.u);
 				} else {
-					auto pos = enemyMain->getPosition();
+					auto pos = enemyMain.getPosition();
 					if (Broodwar->isVisible(TilePosition(pos))) {
 						auto unitsOnBaseTile = Broodwar->getUnitsOnTile(TilePosition(pos),
 						                                                IsEnemy && IsVisible && Exists && IsResourceDepot && !IsLifted);
@@ -260,12 +326,14 @@ void UtilityManager::constructOptions()
 							score = 0;
 						}
 					}
-					p = std::make_pair(score, enemyMain->u);
+					p = std::make_pair(score, enemyMain);
 				}
 				return p;
 			};
 			Option enemyBase = Option(utilityEnemyBase, "attack known main base");
 			options.push_back(enemyBase);
+
+			break;
 		}
 		}
 	}
@@ -284,17 +352,11 @@ bool UtilityManager::performBestActionForZerglingInEnemyBase(
 		}
 	}
 
-	if (bestOptionResult.first == 0 || bestOptionResult.second == nullptr) {
+	if (bestOptionResult.first == 0 || bestOptionResult.second.u == nullptr) {
 		return false;
 	} else {
 		OrderManager::Instance().Attack(zergling, bestOptionResult.second);
 		GUIManager::Instance().drawTextOnScreen(zergling, bestOptionDescription, 48);
 		return true;
 	}
-}
-
-Option::Option(funcUtil util, std::string description)
-    : util(util)
-    , description(description)
-{
 }

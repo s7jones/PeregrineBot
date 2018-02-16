@@ -9,6 +9,7 @@ public:
 	BWAPI::Position getPosition() const { return pos; }
 	int x() { return getPosition().x; }
 	int y() { return getPosition().y; }
+	BWAPI::UnitType getType() const { return type; }
 
 	virtual bool operator<(const UnitInfo& other) const
 	{
