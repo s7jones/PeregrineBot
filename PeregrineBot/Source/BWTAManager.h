@@ -21,4 +21,3 @@ private:
 	bool analyzing      = false;
 	const bool analysis = true;
 };
-#pragma once
