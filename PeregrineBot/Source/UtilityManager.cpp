@@ -10,7 +10,7 @@ using namespace Filter;
 
 bool UtilityManager::getBestActionForZergling(BWAPI::Unit zergling)
 {
-	if (options.size() == 0) {
+	if (options.empty()) {
 		constructOptions();
 	}
 	bool flag      = false;
@@ -322,7 +322,7 @@ void UtilityManager::constructOptions()
 					if (Broodwar->isVisible(TilePosition(pos))) {
 						auto unitsOnBaseTile = Broodwar->getUnitsOnTile(TilePosition(pos),
 						                                                IsEnemy && IsVisible && Exists && IsResourceDepot && !IsLifted);
-						if (unitsOnBaseTile.size() == 0) {
+						if (unitsOnBaseTile.empty()) {
 							score = 0;
 						}
 					}
@@ -352,12 +352,12 @@ bool UtilityManager::performBestActionForZerglingInEnemyBase(
 		}
 	}
 
-	if (bestOptionResult.first == 0 || bestOptionResult.second.u == nullptr) {
-		return false;
-	} else {
+	if (bestOptionResult.first != 0 && bestOptionResult.second.u != nullptr) {
 		OrderManager::Instance().Attack(zergling, bestOptionResult.second);
 		GUIManager::Instance().drawTextOnScreen(zergling, bestOptionDescription, 48);
 		GUIManager::Instance().drawLineOnScreen(zergling, bestOptionResult.second, 48);
 		return true;
 	}
+
+	return false;
 }

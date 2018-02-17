@@ -92,9 +92,8 @@ bool isReachable(BWTA::Region* region1, BWTA::Region* region2)
 {
 	if (region1 == nullptr || region2 == nullptr) {
 		return false;
-	} else {
-		return region1->isReachable(region2);
 	}
+	return region1->isReachable(region2);
 }
 
 // jaj22 linked this on discord: https://pastebin.com/k6esbYUj

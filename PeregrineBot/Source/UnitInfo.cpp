@@ -28,12 +28,12 @@ void UnitInfo::update() const
 
 bool UnitInfo::exists() const
 {
-	if (u) {
-		return u->exists();
-	} else {
+	if (!u) {
 		errorMessage("unit null 3");
 		return false;
 	}
+
+	return u->exists();
 }
 
 void EnemyUnitInfo::update() const

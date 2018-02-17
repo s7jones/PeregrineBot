@@ -30,7 +30,7 @@ public:
 	BWAPI::Unit u = nullptr;
 
 private:
-	mutable int lastFrameSeen;
+	mutable int lastFrameSeen    = 0;
 	mutable BWAPI::Position pos  = { 0, 0 };
 	mutable BWAPI::UnitType type = BWAPI::UnitTypes::Unknown;
 };

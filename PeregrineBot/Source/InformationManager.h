@@ -3,6 +3,7 @@
 #include "UnitInfo.h"
 #include "Utility.h"
 #include <array>
+#include <memory>
 
 // I couldn't put forward declarations of these above InformationManager
 struct ScoutingOptionFor4 {
@@ -46,7 +47,7 @@ public:
 	void overlordScouting(BWAPI::Unit overlord);
 	void spotting(BWAPI::Unit spotter);
 
-	ResourceUnitInfo* getClosestMineral(BWAPI::Unit u);
+	std::unique_ptr<ResourceUnitInfo> getClosestMineral(BWAPI::Unit u);
 
 	bool isEnemyBaseDeduced   = false;
 	bool isEnemyBaseReached   = false;

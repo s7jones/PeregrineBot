@@ -463,15 +463,15 @@ void InformationManager::overlordRetreatToHome(BWAPI::Unit overlord)
 	}
 }
 
-ResourceUnitInfo* InformationManager::getClosestMineral(BWAPI::Unit u)
+std::unique_ptr<ResourceUnitInfo> InformationManager::getClosestMineral(BWAPI::Unit u)
 {
-	double closestDist              = std::numeric_limits<double>::infinity();
-	ResourceUnitInfo* chosenMineral = nullptr;
+	double closestDist                              = std::numeric_limits<double>::infinity();
+	std::unique_ptr<ResourceUnitInfo> chosenMineral = nullptr;
 	for (auto mineral : minerals) {
 		auto dist = distanceGround(u->getPosition(), mineral.getPosition());
 		if (closestDist > dist) {
 			closestDist   = dist;
-			chosenMineral = &mineral;
+			chosenMineral = std::make_unique<ResourceUnitInfo>(mineral);
 		}
 	}
 	return chosenMineral;
@@ -617,7 +617,7 @@ void InformationManager::validateResources()
 		auto tp    = TilePosition(it->getPosition());
 		if (Broodwar->isVisible(tp)) {
 			auto visibleMinerals = Broodwar->getUnitsOnTile(tp, IsMineralField);
-			if (visibleMinerals.size() == 0) {
+			if (visibleMinerals.empty()) {
 				erase = true;
 				DebugMessenger::Instance() << "remove mineral" << std::endl;
 			}

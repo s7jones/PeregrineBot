@@ -14,7 +14,7 @@ public:
 		static BaseManager instance;
 		return instance;
 	}
-	void ManageBases(BWAPI::Unit u);
+	void ManageBases(BWAPI::Unit base);
 	void DoAllWorkerTasks(BWAPI::Unit u);
 	void onUnitShow(BWAPI::Unit unit);
 	void onUnitCreate(BWAPI::Unit unit);
