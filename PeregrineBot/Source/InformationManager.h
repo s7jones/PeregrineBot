@@ -1,7 +1,8 @@
 #pragma once
-#include "Common.h"
+#include "BWAPI.h"
 #include "UnitInfo.h"
 #include "Utility.h"
+#include <array>
 
 // I couldn't put forward declarations of these above InformationManager
 struct ScoutingOptionFor4 {

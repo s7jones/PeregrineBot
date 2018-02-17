@@ -3,6 +3,7 @@
 #include "BWTAManager.h"
 #include "BaseManager.h"
 #include "BuildOrderManager.h"
+#include "DebugMessenger.h"
 #include "InformationManager.h"
 
 using namespace BWAPI;

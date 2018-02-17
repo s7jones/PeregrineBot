@@ -1,6 +1,8 @@
 #include "InformationManager.h"
 
+#include "DebugMessenger.h"
 #include "OrderManager.h"
+#include <boost/range/adaptor/reversed.hpp>
 
 using namespace BWAPI;
 using namespace Filter;

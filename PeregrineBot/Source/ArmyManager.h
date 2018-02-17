@@ -1,6 +1,8 @@
 #pragma once
-#include "Common.h"
+#include "BWAPI.h"
 #include "UnitInfo.h"
+#include <deque>
+#include <set>
 
 class ArmyManager {
 private:

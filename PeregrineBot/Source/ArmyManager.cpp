@@ -1,5 +1,6 @@
 #include "ArmyManager.h"
 
+#include "DebugMessenger.h"
 #include "GUIManager.h"
 #include "InformationManager.h"
 #include "OrderManager.h"

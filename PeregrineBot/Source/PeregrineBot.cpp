@@ -4,6 +4,7 @@
 #include "BWTAManager.h"
 #include "BaseManager.h"
 #include "BuildOrderManager.h"
+#include "DebugMessenger.h"
 #include "FileManager.h"
 #include "GUIManager.h"
 #include "InformationManager.h"

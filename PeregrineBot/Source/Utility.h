@@ -1,5 +1,6 @@
 #pragma once
-#include "Common.h"
+#include "BWAPI.h"
+#include "BWTA.h"
 
 double distanceAir(const BWAPI::Position p1, const BWAPI::Position p2);
 double distanceAir(const BWAPI::TilePosition start, const BWAPI::TilePosition end);

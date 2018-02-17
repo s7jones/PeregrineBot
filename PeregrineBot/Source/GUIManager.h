@@ -1,7 +1,7 @@
 #pragma once
-#include "Common.h"
-
+#include "BWAPI.h"
 #include "UnitInfo.h"
+#include <chrono>
 
 class GUIManager {
 private:

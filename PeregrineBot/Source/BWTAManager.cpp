@@ -1,5 +1,7 @@
 #include "BWTAManager.h"
 
+#include "DebugMessenger.h"
+
 using namespace BWAPI;
 using namespace Filter;
 

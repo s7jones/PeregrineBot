@@ -1,6 +1,5 @@
 #pragma once
-#include "Common.h"
-
+#include "BWAPI.h"
 #include "UnitInfo.h"
 
 using UtilResult = std::pair<double, EnemyUnitInfo>;

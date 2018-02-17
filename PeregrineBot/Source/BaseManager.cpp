@@ -2,6 +2,7 @@
 
 #include "BuildOrderManager.h"
 #include "BuildingManager.h"
+#include "DebugMessenger.h"
 #include "GUIManager.h"
 #include "InformationManager.h"
 #include "OrderManager.h"

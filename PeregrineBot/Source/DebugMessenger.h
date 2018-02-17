@@ -1,6 +1,6 @@
 #pragma once
-#include <BWAPI.h>
-#include <BWAPI/Game.h>
+#include "BWAPI.h"
+#include "BWAPI/Game.h"
 #include <boost/filesystem.hpp>
 
 class DebugMessenger {

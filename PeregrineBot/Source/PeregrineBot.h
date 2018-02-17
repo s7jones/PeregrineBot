@@ -1,5 +1,5 @@
 #pragma once
-#include "Common.h"
+#include "BWAPI.h"
 
 // Remember not to use "Broodwar" in any global class constructor!
 
