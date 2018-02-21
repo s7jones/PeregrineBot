@@ -137,7 +137,6 @@
   <ItemGroup>
     <None Include="..\.clang-format" />
     <None Include="..\README.md" />
-    <None Include=".clang-tidy" />
     <None Include="packages.config">
       <SubType>Designer</SubType>
     </None>
