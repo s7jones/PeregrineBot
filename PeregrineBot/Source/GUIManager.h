@@ -5,10 +5,10 @@
 
 class GUIManager {
 private:
-	GUIManager() {}
+	GUIManager() = default;
 
 public:
-	static GUIManager& GUIManager::Instance()
+	static GUIManager& Instance()
 	{
 		static GUIManager instance;
 		return instance;

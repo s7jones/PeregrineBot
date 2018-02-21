@@ -3,10 +3,10 @@
 
 class FileManager {
 private:
-	FileManager() {}
+	FileManager() = default;
 
 public:
-	static FileManager& FileManager::Instance()
+	static FileManager& Instance()
 	{
 		static FileManager instance;
 		return instance;

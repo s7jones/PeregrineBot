@@ -6,10 +6,10 @@ class Base;
 
 class BaseManager {
 private:
-	BaseManager() {}
+	BaseManager() = default;
 
 public:
-	static BaseManager& BaseManager::Instance()
+	static BaseManager& Instance()
 	{
 		static BaseManager instance;
 		return instance;

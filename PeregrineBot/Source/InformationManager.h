@@ -30,7 +30,7 @@ struct distAndTime {
 
 class InformationManager {
 private:
-	InformationManager() {}
+	InformationManager() = default;
 
 public:
 	static InformationManager& Instance()

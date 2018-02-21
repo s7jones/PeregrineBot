@@ -8,10 +8,10 @@ class Option;
 
 class UtilityManager {
 private:
-	UtilityManager() {}
+	UtilityManager() = default;
 
 public:
-	static UtilityManager& UtilityManager::Instance()
+	static UtilityManager& Instance()
 	{
 		static UtilityManager instance;
 		return instance;
@@ -61,7 +61,7 @@ class Option {
 public:
 	using funcUtil = std::function<UtilResult(BWAPI::Unit)>;
 
-	Option::Option(funcUtil util, std::string description)
+	Option(funcUtil util, std::string description)
 	    : util(util)
 	    , description(description)
 	{

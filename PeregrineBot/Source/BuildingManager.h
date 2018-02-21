@@ -3,10 +3,10 @@
 
 class BuildingManager {
 private:
-	BuildingManager() {}
+	BuildingManager() = default;
 
 public:
-	static BuildingManager& BuildingManager::Instance()
+	static BuildingManager& Instance()
 	{
 		static BuildingManager instance;
 		return instance;

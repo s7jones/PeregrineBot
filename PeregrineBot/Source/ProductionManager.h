@@ -3,10 +3,10 @@
 
 class ProductionManager {
 private:
-	ProductionManager() {}
+	ProductionManager() = default;
 
 public:
-	static ProductionManager& ProductionManager::Instance()
+	static ProductionManager& Instance()
 	{
 		static ProductionManager instance;
 		return instance;

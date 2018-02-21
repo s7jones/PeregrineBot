@@ -4,10 +4,10 @@
 
 class BWTAManager {
 private:
-	BWTAManager() {}
+	BWTAManager() = default;
 
 public:
-	static BWTAManager& BWTAManager::Instance()
+	static BWTAManager& Instance()
 	{
 		static BWTAManager instance;
 		return instance;

@@ -4,10 +4,10 @@
 
 class OrderManager {
 private:
-	OrderManager() {}
+	OrderManager() = default;
 
 public:
-	static OrderManager& OrderManager::Instance()
+	static OrderManager& Instance()
 	{
 		static OrderManager instance;
 		return instance;

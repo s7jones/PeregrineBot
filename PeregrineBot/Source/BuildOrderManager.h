@@ -3,10 +3,10 @@
 
 class BuildOrderManager {
 private:
-	BuildOrderManager() {}
+	BuildOrderManager() = default;
 
 public:
-	static BuildOrderManager& BuildOrderManager::Instance()
+	static BuildOrderManager& Instance()
 	{
 		static BuildOrderManager instance;
 		return instance;

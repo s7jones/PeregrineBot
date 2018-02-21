@@ -6,7 +6,7 @@
 
 class ArmyManager {
 private:
-	ArmyManager() {}
+	ArmyManager() = default;
 
 public:
 	static ArmyManager& Instance()
