@@ -53,11 +53,13 @@ void InformationManager::setup()
 	DebugMessenger::Instance() << "max base to base ground is: " << maxBaseToBaseDistance.ground << "P" << std::endl;
 	DebugMessenger::Instance() << "max base to base air is: " << maxBaseToBaseDistance.air << "P" << std::endl;
 
-	// maybe make 128 * 1.5 a const "smudge factor" variable
-	auto addToSpottingMap = [this](UnitType ut, double smudgeFactor) {
+	auto addToSpottingMap = [this](UnitType ut, double smudgeDistanceFactor) {
 		auto maxDist = ut.isFlyer() ? maxBaseToBaseDistance.air : maxBaseToBaseDistance.ground;
-		spottingTimes.insert({ ut,
-		                       (maxDist + smudgeFactor) / ut.topSpeed() });
+		// add a smudge variable to account for units not starting at nexus centre
+		maxDist += smudgeDistanceFactor;
+		auto timeToTravelMaxDist = maxDist / ut.topSpeed();
+
+		spottingTimes.insert({ ut, timeToTravelMaxDist });
 	};
 
 	addToSpottingMap(UnitTypes::Zerg_Overlord, 128 * 1.5);
@@ -233,10 +235,10 @@ void InformationManager::updateScouting()
 			scoutedPositions.insert(p);
 			it = unscoutedPositions.erase(it);
 			if (!enemyMain.u) {
-				// replace IsBuilding by IsResourceDepot?
 				auto unitsOnBaseTile = Broodwar->getUnitsOnTile(TilePosition(p),
-				                                                IsEnemy && IsVisible && Exists && IsResourceDepot && !IsLifted);
-				if (unitsOnBaseTile.size() > 0) {
+				                                                IsEnemy && IsVisible && Exists
+				                                                    && IsResourceDepot && !IsLifted);
+				if (!unitsOnBaseTile.empty()) {
 					enemyMain          = { *unitsOnBaseTile.begin() };
 					isEnemyBaseDeduced = true;
 					DebugMessenger::Instance() << "Found enemy base at: " << Broodwar->getFrameCount() << "F" << std::endl;
@@ -253,22 +255,24 @@ void InformationManager::updateScouting()
 	// add logic here for "not" finding base even after scouting everything
 	// probably only applicable to Terran weird lifting stuff
 
-	if (!(isEnemyBaseDeduced || enemyMain.u) && unscoutedPositions.size() == 1) {
-		isEnemyBaseDeduced   = true;
-		BWAPI::Position base = (*unscoutedPositions.begin());
-		DebugMessenger::Instance() << "Enemy base deduced to be at: " << base.x << ", " << base.y << "P" << std::endl;
-	}
-
-	for (auto singleUnitWithPotentialBases : spottedUnitsAndPotentialBases) {
-		for (auto scoutedPosition : scoutedPositions) {
-			singleUnitWithPotentialBases.second.erase(scoutedPosition);
+	if (isSpottingUnitsTime) {
+		if (!(isEnemyBaseDeduced || enemyMain.u) && unscoutedPositions.size() == 1) {
+			isEnemyBaseDeduced   = true;
+			BWAPI::Position base = (*unscoutedPositions.begin());
+			DebugMessenger::Instance() << "Enemy base deduced to be at: " << base << "P" << std::endl;
 		}
 
-		if (singleUnitWithPotentialBases.second.size() == 1) {
-			isEnemyBaseFromSpotting = true;
-			enemyBaseSpottingGuess  = *singleUnitWithPotentialBases.second.begin();
-			Broodwar << "Spotted guess by removal and determined base at: " << enemyBaseSpottingGuess << "P" << std::endl;
-			return;
+		for (auto singleUnitWithPotentialBases : spottedUnitsAndPotentialBases) {
+			for (auto scoutedPosition : scoutedPositions) {
+				singleUnitWithPotentialBases.second.erase(scoutedPosition);
+			}
+
+			if (singleUnitWithPotentialBases.second.size() == 1) {
+				isEnemyBaseFromSpotting = true;
+				enemyBaseSpottingGuess  = *singleUnitWithPotentialBases.second.begin();
+				Broodwar << "Spotted guess by removal and determined base at: " << enemyBaseSpottingGuess << "P" << std::endl;
+				break;
+			}
 		}
 	}
 
@@ -341,36 +345,35 @@ void InformationManager::spotUnits(BWAPI::Unit spotter)
 			const auto range  = largestZergSightRange + 32;
 			auto unitsSpotted = spotter->getUnitsInRadius(range, IsEnemy && IsVisible);
 			for (auto target : unitsSpotted) {
-				auto it = find_if(spottedUnitsAndPotentialBases.begin(), spottedUnitsAndPotentialBases.end(),
-				                  [target](const unitAndPotentialBases& val) -> bool {
-					                  return val.first == target;
-				                  });
+				auto it = spottedUnitsAndPotentialBases.find(target);
 				if (it != spottedUnitsAndPotentialBases.end()) {
-					auto ut = target->getType();
-					auto it = spottingTimes.find(ut);
-					if (it == spottingTimes.end()) {
-						continue;
-					}
+					continue;
+				}
 
-					auto pO             = target->getPosition();
-					auto searchDistance = it->first.topSpeed() * Broodwar->getFrameCount();
-					searchDistance += 128 * 1.5; // add a bit to account for overlord/workers spawning in a different place from base
+				auto ut    = target->getType();
+				auto it_ut = spottingTimes.find(ut);
+				if (it_ut == spottingTimes.end()) {
+					continue;
+				}
 
-					std::set<Position> potentialStartsFromSpotting;
-					for (auto tp : otherStarts) {
-						auto pB          = getBasePos(tp);
-						auto distToStart = ut.isFlyer() ? distanceAir(pB, pO) : distanceGround(pB, pO);
-						if (distToStart < searchDistance) {
-							potentialStartsFromSpotting.insert(pB);
-						}
+				auto pO             = target->getPosition();
+				auto searchDistance = ut.topSpeed() * Broodwar->getFrameCount();
+				searchDistance += 128 * 1.5; // add a bit to account for overlord/workers spawning in a different place from base
+
+				std::set<Position> potentialStartsFromSpotting;
+				for (auto tp : otherStarts) {
+					auto pB          = getBasePos(tp);
+					auto distToStart = ut.isFlyer() ? distanceAir(pB, pO) : distanceGround(pB, pO);
+					if (distToStart < searchDistance) {
+						potentialStartsFromSpotting.insert(pB);
 					}
-					spottedUnitsAndPotentialBases.insert({ target, potentialStartsFromSpotting });
-					if (potentialStartsFromSpotting.size() == 1) {
-						isEnemyBaseFromSpotting = true;
-						enemyBaseSpottingGuess  = *potentialStartsFromSpotting.begin();
-						Broodwar << spotter->getType() << " spotted " << ut << " and determined base at: " << enemyBaseSpottingGuess << "P" << std::endl;
-						return;
-					}
+				}
+				spottedUnitsAndPotentialBases.insert({ target, potentialStartsFromSpotting });
+				if (potentialStartsFromSpotting.size() == 1) {
+					isEnemyBaseFromSpotting = true;
+					enemyBaseSpottingGuess  = *potentialStartsFromSpotting.begin();
+					Broodwar << spotter->getType() << " spotted " << ut << " and determined base at: " << enemyBaseSpottingGuess << "P" << std::endl;
+					return;
 				}
 			}
 		}
