@@ -107,6 +107,7 @@
     <ClCompile Include="Source\BWTAManager.cpp" />
     <ClCompile Include="Source\DebugMessenger.cpp" />
     <ClCompile Include="Source\Dll.cpp" />
+    <ClCompile Include="Source\FAP\FAP.cpp" />
     <ClCompile Include="Source\FileManager.cpp" />
     <ClCompile Include="Source\GUIManager.cpp" />
     <ClCompile Include="Source\InformationManager.cpp" />
@@ -124,6 +125,7 @@
     <ClInclude Include="Source\BuildOrderManager.h" />
     <ClInclude Include="Source\BWTAManager.h" />
     <ClInclude Include="Source\DebugMessenger.h" />
+    <ClInclude Include="Source\FAP\FAP.h" />
     <ClInclude Include="Source\FileManager.h" />
     <ClInclude Include="Source\GUIManager.h" />
     <ClInclude Include="Source\InformationManager.h" />

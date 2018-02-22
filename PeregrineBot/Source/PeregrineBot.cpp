@@ -29,6 +29,10 @@ With thanks to Martin Rooijackers' LetaBot(CIG2016)
 @ http://cilab.sejong.ac.kr/sc_competition2016/posting_data/source/LetaBot.rar
 for his BaseManager.
 
+With thanks to Hannes Bredberg's Neohuman bot
+@ https://github.com/N00byEdge/Neohuman
+for his fast approximation (FAP).
+
 Thanks to the following for help in iRC/Discord:
 jaj22, krasi0, ++N00byEdge, PurpleWaveJadien.
 
