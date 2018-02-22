@@ -1,13 +1,9 @@
 #include "BWTAManager.h"
 
+#include "DebugMessenger.h"
+
 using namespace BWAPI;
 using namespace Filter;
-
-BWTAManager& BWTAManager::Instance()
-{
-	static BWTAManager instance;
-	return instance;
-}
 
 void BWTAManager::analyze()
 {
@@ -19,8 +15,4 @@ void BWTAManager::analyze()
 		analyzed               = true;
 		analysis_just_finished = true;
 	}
-}
-
-BWTAManager::BWTAManager()
-{
 }

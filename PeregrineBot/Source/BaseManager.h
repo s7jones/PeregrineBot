@@ -1,12 +1,20 @@
 #pragma once
-#include "Common.h"
+#include "BWAPI.h"
+#include <set>
 
 class Base;
 
 class BaseManager {
+private:
+	BaseManager() = default;
+
 public:
-	static BaseManager& Instance();
-	void ManageBases(BWAPI::Unit u);
+	static BaseManager& Instance()
+	{
+		static BaseManager instance;
+		return instance;
+	}
+	void ManageBases(BWAPI::Unit base);
 	void DoAllWorkerTasks(BWAPI::Unit u);
 	void onUnitShow(BWAPI::Unit unit);
 	void onUnitCreate(BWAPI::Unit unit);
@@ -14,7 +22,6 @@ public:
 	void onUnitMorph(BWAPI::Unit unit);
 	void onUnitRenegade(BWAPI::Unit unit);
 
-	const Base* main = nullptr;
 	std::set<Base> hatcheries;
 	std::set<BWAPI::Unit> workers;
 	std::set<BWAPI::Unit> miners;
@@ -24,8 +31,6 @@ public:
 	std::set<invaderAndDefender> targetsAndAssignedDefenders;
 
 private:
-	BaseManager();
-
 	std::set<BWAPI::Unit> workersTraining;
 };
 

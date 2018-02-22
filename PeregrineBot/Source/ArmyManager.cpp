@@ -1,5 +1,6 @@
 #include "ArmyManager.h"
 
+#include "DebugMessenger.h"
 #include "GUIManager.h"
 #include "InformationManager.h"
 #include "OrderManager.h"
@@ -9,28 +10,20 @@
 using namespace BWAPI;
 using namespace Filter;
 
-ArmyManager::ArmyManager() {}
-
-ArmyManager& ArmyManager::Instance()
-{
-	static ArmyManager instance;
-	return instance;
-}
-
 void ArmyManager::ZerglingAttack(BWAPI::Unit u)
 {
-	auto enemyMain                       = InformationManager::Instance().enemyMain;
-	auto enemyRace                       = InformationManager::Instance().enemyRace;
-	auto unscoutedPositions              = InformationManager::Instance().unscoutedPositions;
-	auto isEnemyBaseFromOverlordSpotting = InformationManager::Instance().isEnemyBaseFromOverlordSpotting;
-	auto isEnemyBaseDeduced              = InformationManager::Instance().isEnemyBaseDeduced;
-	auto isEnemyBaseReached              = InformationManager::Instance().isEnemyBaseReached;
-	auto isEnemyBaseDestroyed            = InformationManager::Instance().isEnemyBaseDestroyed;
-	auto enemyBaseSpottingGuess          = InformationManager::Instance().enemyBaseSpottingGuess;
-	auto enemyBuildings                  = InformationManager::Instance().enemyBuildings;
+	const auto enemyMain               = InformationManager::Instance().enemyMain;
+	const auto enemyRace               = InformationManager::Instance().enemyRace;
+	const auto unscoutedPositions      = InformationManager::Instance().unscoutedPositions;
+	const auto isEnemyBaseFromSpotting = InformationManager::Instance().isEnemyBaseFromSpotting;
+	const auto isEnemyBaseDeduced      = InformationManager::Instance().isEnemyBaseDeduced;
+	const auto isEnemyBaseReached      = InformationManager::Instance().isEnemyBaseReached;
+	const auto isEnemyBaseDestroyed    = InformationManager::Instance().isEnemyBaseDestroyed;
+	const auto enemyBaseSpottingGuess  = InformationManager::Instance().enemyBaseSpottingGuess;
+	const auto enemyBuildings          = InformationManager::Instance().enemyBuildings;
 
-	if (enemyMain) {
-		if ((!isEnemyBaseReached) && (BWTA::getRegion(u->getPosition()) == BWTA::getRegion(enemyMain->getPosition()))) {
+	if (enemyMain.u) {
+		if ((!isEnemyBaseReached) && (BWTA::getRegion(u->getPosition()) == BWTA::getRegion(enemyMain.getPosition()))) {
 			InformationManager::Instance().isEnemyBaseReached = true;
 			DebugMessenger::Instance()
 			    << "reach enemy base: " << Broodwar->getFrameCount() << "F"
@@ -55,59 +48,71 @@ void ArmyManager::ZerglingAttack(BWAPI::Unit u)
 
 	bool priorityTarget = UtilityManager::Instance().getBestActionForZergling(u);
 
-	if (!priorityTarget) {
-		if (u->isIdle()) {
-			Unit closestGroundEnemy = u->getClosestUnit(IsEnemy && !IsFlying);
-			if (closestGroundEnemy) {
-				OrderManager::Instance().Attack(u, closestGroundEnemy);
-			} else {
-				if (enemyMain) {
-					if (!isEnemyBaseDestroyed) {
-						if (!Broodwar->isVisible(TilePosition(enemyMain->getPosition()))) {
-							OrderManager::Instance().Attack(u, *enemyMain);
-						} else if (!Broodwar->getUnitsOnTile(
-						                        TilePosition(enemyMain->getPosition()),
-						                        IsEnemy && IsVisible && Exists && IsBuilding && !IsLifted)
-						                .empty()) {
-							OrderManager::Instance().Attack(u, *enemyMain);
-						} else if (enemyBuildings.size() != 0) {
-							ZerglingAttackKnownBuildings(u);
-						} else {
-							ZerglingScoutSpreadOut(u);
-						}
+	if (priorityTarget) {
+		return;
+	}
+
+	if (u->isIdle()) {
+		Unit closestGroundEnemy = u->getClosestUnit(IsEnemy && !IsFlying);
+		if (closestGroundEnemy) {
+			OrderManager::Instance().Attack(u, closestGroundEnemy);
+		} else {
+			if (enemyMain.u) {
+				if (!isEnemyBaseDestroyed) {
+					if (!Broodwar->isVisible(TilePosition(enemyMain.getPosition()))) {
+						OrderManager::Instance().Attack(u, enemyMain);
+					} else if (!Broodwar->getUnitsOnTile(
+					                        TilePosition(enemyMain.getPosition()),
+					                        IsEnemy && IsVisible && Exists && IsBuilding && !IsLifted)
+					                .empty()) {
+						OrderManager::Instance().Attack(u, enemyMain);
 					} else if (enemyBuildings.size() != 0) {
 						ZerglingAttackKnownBuildings(u);
 					} else {
 						ZerglingScoutSpreadOut(u);
 					}
+				} else if (enemyBuildings.size() != 0) {
+					ZerglingAttackKnownBuildings(u);
 				} else {
-					if (enemyBuildings.size() != 0) {
-						ZerglingAttackKnownBuildings(u);
-					} else if (isEnemyBaseFromOverlordSpotting) {
-						OrderManager::Instance().Move(u, enemyBaseSpottingGuess);
-						DebugMessenger::Instance() << "scout overlord spot" << std::endl;
-					} else {
-						ZerglingScoutingBeforeBaseFound(u);
-					}
+					ZerglingScoutSpreadOut(u);
+				}
+			} else {
+				if (enemyBuildings.size() != 0) {
+					ZerglingAttackKnownBuildings(u);
+				} else if (isEnemyBaseFromSpotting) {
+					OrderManager::Instance().Move(u, enemyBaseSpottingGuess);
+					GUIManager::Instance().drawTextOnScreen(u, "scout overlord spot", 480);
+				} else {
+					ZerglingScoutingBeforeBaseFound(u);
 				}
 			}
-		} else if (u->isMoving()) { // attack move is most likely not covered here
-			UnitCommand lastCmd = u->getLastCommand();
-			if (lastCmd.getType() == UnitCommandTypes::Move) {
-				Position targetPos = lastCmd.getTargetPosition();
-				if ((unscoutedPositions.count(targetPos) == 0) && (!unscoutedPositions.empty())
-				    && (std::find(scoutLocationsZergling.begin(), scoutLocationsZergling.end(), targetPos) == scoutLocationsZergling.end())) {
-					auto p = *unscoutedPositions.begin();
-					OrderManager::Instance().Move(u, p);
-					GUIManager::Instance().drawTextOnScreen(u, "recalculate scouting", 480);
-					// DebugMessenger::Instance() << "recalculate scouting" <<
-					// std::endl;
-				} else if ((!enemyMain) && (isEnemyBaseFromOverlordSpotting)
-				           && enemyBaseSpottingGuess != targetPos) {
+		}
+	} else if (u->isMoving()) { // attack move is most likely not covered here
+		UnitCommand lastCmd = u->getLastCommand();
+		if (lastCmd.getType() == UnitCommandTypes::Move) {
+			Position targetPos = lastCmd.getTargetPosition();
+			if (!enemyMain.u) {
+				if (isEnemyBaseFromSpotting
+				    && enemyBaseSpottingGuess != targetPos) {
 					OrderManager::Instance().Move(u, enemyBaseSpottingGuess);
 					GUIManager::Instance().drawTextOnScreen(u, "recalculate scouting (overlord guess)", 480);
-					// DebugMessenger::Instance() << "recalculate scouting
-					// (overlord guess)" << std::endl;
+				}
+				// if moving to somewhere already scouted
+				else if (unscoutedPositions.count(targetPos) == 0) {
+					if (!unscoutedPositions.empty()) {
+						auto p = *unscoutedPositions.begin();
+						OrderManager::Instance().Move(u, p);
+						GUIManager::Instance().drawTextOnScreen(u, "recalculate scouting 1", 480);
+					}
+					// if moving to somewhere not in zergScoutLocations and there are places to go
+					else if ((std::find(scoutLocationsZergling.begin(), scoutLocationsZergling.end(), targetPos)
+					          == scoutLocationsZergling.end())
+					         && !scoutLocationsZergling.empty()) {
+						auto p = *scoutLocationIndex;
+						OrderManager::Instance().Move(u, p);
+						GUIManager::Instance().drawTextOnScreen(u, "recalculate scouting 2", 480);
+						incrementScoutLocationZerglingIndex();
+					}
 				}
 			}
 		}
@@ -152,7 +157,7 @@ void ArmyManager::ZerglingAttackKnownBuildings(BWAPI::Unit u)
 
 		for (auto building : enemyBuildingsAccessible) {
 			Position buildingPos    = building.getPosition();
-			double distanceBuilding = DistanceAir(u->getPosition(), buildingPos);
+			double distanceBuilding = distanceAir(u->getPosition(), buildingPos);
 			if (distanceBuilding < distanceEnemyBuildingAccessible) {
 				distanceEnemyBuildingAccessible = distanceBuilding;
 				buildingAccessiblePos           = buildingPos;
@@ -174,10 +179,10 @@ void ArmyManager::ZerglingScoutingBeforeBaseFound(BWAPI::Unit u)
 
 	if (Broodwar->getStartLocations().size() == 4) { // map size is 4, use new scouting
 		auto tp1                       = scoutingOptions.begin()->startToP1ToP2[1];
-		auto p1                        = GetBasePos(tp1);
+		auto p1                        = getBasePos(tp1);
 		const bool firstOptionScouted  = scoutedPositions.find(p1) != scoutedPositions.end();
 		auto tp2                       = scoutingOptions.begin()->startToP1ToP2[2];
-		auto p2                        = GetBasePos(tp2);
+		auto p2                        = getBasePos(tp2);
 		const bool secondOptionScouted = scoutedPositions.find(p2) != scoutedPositions.end();
 		std::stringstream ss;
 		if (!firstOptionScouted) {
@@ -245,13 +250,21 @@ void ArmyManager::ZerglingScoutSpreadOut(BWAPI::Unit u)
 				}
 			}
 		}
+
+		// deque iterators NOT valid after insertion
+		scoutLocationIndex = scoutLocationsZergling.begin();
 	} else {
 		GUIManager::Instance().drawTextOnScreen(u, "Zergling Scouting!", 48);
-		// DebugMessenger::Instance() << "Zergling Scouting!" << std::endl;
-
-		auto it    = scoutLocationsZergling.begin();
-		Position p = (*it);
+		Position p = *scoutLocationIndex;
 		OrderManager::Instance().Move(u, p);
-		scoutLocationsZergling.erase(it);
+		incrementScoutLocationZerglingIndex();
+	}
+}
+
+void ArmyManager::incrementScoutLocationZerglingIndex()
+{
+	scoutLocationIndex++;
+	if (scoutLocationIndex == scoutLocationsZergling.end()) {
+		scoutLocationIndex = scoutLocationsZergling.begin();
 	}
 }

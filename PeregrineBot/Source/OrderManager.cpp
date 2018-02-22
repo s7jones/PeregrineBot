@@ -4,17 +4,7 @@
 
 using namespace BWAPI;
 
-OrderManager::OrderManager()
-{
-}
-
-OrderManager& OrderManager::Instance()
-{
-	static OrderManager instance;
-	return instance;
-}
-
-void OrderManager::Update()
+void OrderManager::update()
 {
 	UpdateUnitsWaitingSinceLastOrder();
 }
@@ -50,9 +40,17 @@ void OrderManager::Attack(BWAPI::Unit attacker, BWAPI::Unit u)
 	attacker->attack(u);
 }
 
-void OrderManager::Attack(BWAPI::Unit attacker, EnemyUnitInfo u)
+void OrderManager::Attack(BWAPI::Unit attacker, EnemyUnitInfo enemy)
 {
-	Attack(attacker, u.getPosition());
+	if (Broodwar->isVisible((TilePosition)enemy.getPosition())) {
+		if (enemy.u) {
+			Attack(attacker, enemy.u);
+		} else {
+			Attack(attacker, enemy.getPosition());
+		}
+	} else {
+		Move(attacker, enemy.getPosition());
+	}
 }
 
 void OrderManager::Move(BWAPI::Unit mover, BWAPI::Position p, bool shiftClick)

@@ -10,8 +10,6 @@ UnitInfo::UnitInfo(BWAPI::Unit unitToWrap)
 	if (unitToWrap) {
 		u = unitToWrap;
 		update();
-	} else {
-		errorMessage("unit null 1");
 	}
 }
 
@@ -30,12 +28,12 @@ void UnitInfo::update() const
 
 bool UnitInfo::exists() const
 {
-	if (u) {
-		return u->exists();
-	} else {
+	if (!u) {
 		errorMessage("unit null 3");
 		return false;
 	}
+
+	return u->exists();
 }
 
 void EnemyUnitInfo::update() const
@@ -64,4 +62,16 @@ void ResourceUnitInfo::update() const
 int ResourceUnitInfo::getResources() const
 {
 	return resources;
+}
+
+void FriendlyUnitInfo::update() const
+{
+	UnitInfo::update();
+	if (u) {
+		if (exists()) {
+			if (u->isAttackFrame()) {
+				lastFrameAttacking = Broodwar->getFrameCount();
+			}
+		}
+	}
 }

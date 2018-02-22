@@ -1,12 +1,19 @@
 #pragma once
-#include "Common.h"
+#include "BWAPI.h"
 #include "UnitInfo.h"
+#include <deque>
+#include <set>
 
 class ArmyManager {
-	ArmyManager();
+private:
+	ArmyManager() = default;
 
 public:
-	static ArmyManager& Instance();
+	static ArmyManager& Instance()
+	{
+		static ArmyManager instance;
+		return instance;
+	}
 	void ZerglingAttack(BWAPI::Unit u);
 	std::set<EnemyUnitInfo> GetZerglingAccessibleBuildings(BWAPI::Unit u);
 	void ZerglingAttackKnownBuildings(BWAPI::Unit u);
@@ -14,5 +21,8 @@ public:
 	void ZerglingScoutSpreadOut(BWAPI::Unit u);
 
 private:
+	void incrementScoutLocationZerglingIndex();
+
 	std::deque<BWAPI::Position> scoutLocationsZergling;
+	std::deque<BWAPI::Position>::iterator scoutLocationIndex;
 };

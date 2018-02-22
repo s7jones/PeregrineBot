@@ -123,7 +123,6 @@
     <ClInclude Include="Source\BuildingManager.h" />
     <ClInclude Include="Source\BuildOrderManager.h" />
     <ClInclude Include="Source\BWTAManager.h" />
-    <ClInclude Include="Source\Common.h" />
     <ClInclude Include="Source\DebugMessenger.h" />
     <ClInclude Include="Source\FileManager.h" />
     <ClInclude Include="Source\GUIManager.h" />

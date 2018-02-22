@@ -4,6 +4,7 @@
 #include "BWTAManager.h"
 #include "BaseManager.h"
 #include "BuildOrderManager.h"
+#include "DebugMessenger.h"
 #include "FileManager.h"
 #include "GUIManager.h"
 #include "InformationManager.h"
@@ -18,7 +19,7 @@ Beats the vanilla AI consistently on the SSCAI maps.
 
 With thanks to Chris Coxe's ZZZKbot
 @ https://github.com/chriscoxe/ZZZKBot
-for his GetPos function and some useful UnitFilters.
+for his getPos function and some useful UnitFilters.
 
 With thanks to Dave Churchill's UAlbertaBot
 @ https://github.com/davechurchill/ualbertabot
@@ -48,7 +49,7 @@ using namespace Filter;
 
 void PeregrineBot::onStart()
 {
-	DebugMessenger::Instance().Setup(debug_flag);
+	DebugMessenger::Instance().setup(debug_flag);
 	DebugMessenger::Instance() << "TESTTESTTESTTEST" << std::endl;
 
 	// Print the map name.
@@ -85,7 +86,7 @@ void PeregrineBot::onStart()
 
 		BWTAManager::Instance().analyze();
 
-		InformationManager::Instance().Setup();
+		InformationManager::Instance().setup();
 	}
 }
 
@@ -114,9 +115,9 @@ void PeregrineBot::onFrame()
 	if (Broodwar->getFrameCount() % Broodwar->getLatencyFrames() != 0)
 		return;
 
-	// Update waiting units
-	OrderManager::Instance().Update();
-	InformationManager::Instance().Update();
+	// update waiting units
+	OrderManager::Instance().update();
+	InformationManager::Instance().update();
 
 	// Iterate through all the units that we own
 	for (auto& u : Broodwar->self()->getUnits()) {
@@ -136,6 +137,12 @@ void PeregrineBot::onFrame()
 		// Ignore the unit if it is incomplete or busy constructing
 		/* if ( !u->isCompleted() || u->isConstructing() )
 		continue;*/
+
+		if (u->getType() == UnitTypes::Zerg_Overlord
+		    || u->getType() == UnitTypes::Zerg_Zergling
+		    || u->getType().isBuilding()) {
+			InformationManager::Instance().spotting(u);
+		}
 
 		bool unitNeedsToWait = OrderManager::Instance().DoesUnitHasOrder(u);
 		if (unitNeedsToWait) {
@@ -170,7 +177,7 @@ void PeregrineBot::onFrame()
 		}
 
 		if (u->getType() == UnitTypes::Zerg_Overlord) {
-			InformationManager::Instance().OverlordScouting(u);
+			InformationManager::Instance().overlordScouting(u);
 			continue;
 		}
 

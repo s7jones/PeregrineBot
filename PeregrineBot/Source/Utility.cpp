@@ -2,7 +2,7 @@
 
 using namespace BWAPI;
 
-double DistanceAir(const BWAPI::Position p1, const BWAPI::Position p2)
+double distanceAir(const BWAPI::Position p1, const BWAPI::Position p2)
 {
 	auto dx   = abs(p1.x - p2.x);
 	auto dy   = abs(p1.y - p2.y);
@@ -10,39 +10,39 @@ double DistanceAir(const BWAPI::Position p1, const BWAPI::Position p2)
 	return dist;
 }
 
-double DistanceAir(const BWAPI::TilePosition start, const BWAPI::TilePosition end)
+double distanceAir(const BWAPI::TilePosition start, const BWAPI::TilePosition end)
 {
-	auto p1   = GetBasePos(start);
-	auto p2   = GetBasePos(end);
-	auto dist = DistanceAir(p1, p2);
+	auto p1   = getBasePos(start);
+	auto p2   = getBasePos(end);
+	auto dist = distanceAir(p1, p2);
 	return dist;
 }
 
-BWAPI::Position GetPos(const BWAPI::TilePosition tp, const BWAPI::UnitType ut)
+BWAPI::Position getPos(const BWAPI::TilePosition tp, const BWAPI::UnitType ut)
 {
 	return BWAPI::Position(BWAPI::Position(tp) + BWAPI::Position((ut.tileWidth() * BWAPI::TILEPOSITION_SCALE) / 2, (ut.tileHeight() * BWAPI::TILEPOSITION_SCALE) / 2));
 }
 
-BWAPI::Position GetBasePos(const BWAPI::TilePosition tp)
+BWAPI::Position getBasePos(const BWAPI::TilePosition tp)
 {
-	return GetPos(tp, BWAPI::UnitTypes::Special_Start_Location);
+	return getPos(tp, BWAPI::UnitTypes::Special_Start_Location);
 }
 
-double DistanceGround(const BWAPI::TilePosition start, const BWAPI::TilePosition end)
+double distanceGround(const BWAPI::TilePosition start, const BWAPI::TilePosition end)
 {
 	auto dist = BWTA::getGroundDistance(start, end);
 	return dist;
 }
 
-double DistanceGround(const BWAPI::Position start, const BWAPI::Position end)
+double distanceGround(const BWAPI::Position start, const BWAPI::Position end)
 {
-	return DistanceGround(TilePosition(start), TilePosition(end));
+	return distanceGround(TilePosition(start), TilePosition(end));
 }
 
-/*auto TimeGround =
+/*auto timeGround =
 [](const BWAPI::TilePosition start, const BWAPI::TilePosition end, const UnitType ut, const bool reach)
 {
-auto gdist = DistanceGround(start, end);
+auto gdist = distanceGround(start, end);
 
 if (!reach) {
 gdist -= ut.sightRange();
@@ -52,16 +52,16 @@ double time = gdist / ut.topSpeed();
 return time;
 };
 
-auto TimeGround =
+auto timeGround =
 [](const BWAPI::TilePosition start, const BWAPI::TilePosition end, const bool reach)
 {
-auto time = TimeGround(start, end, UnitTypes::Zerg_Zergling, true);
+auto time = timeGround(start, end, UnitTypes::Zerg_Zergling, true);
 return time;
 }; */
 
-double TimeGround(const BWAPI::TilePosition start, const BWAPI::TilePosition end)
+double timeGround(const BWAPI::TilePosition start, const BWAPI::TilePosition end)
 {
-	auto gdist = DistanceGround(start, end);
+	auto gdist = distanceGround(start, end);
 
 	//if (!reach) {
 	//	gdist -= ut.sightRange();
@@ -71,16 +71,16 @@ double TimeGround(const BWAPI::TilePosition start, const BWAPI::TilePosition end
 	return time;
 }
 
-//auto TimeAir =
+//auto timeAir =
 //[](const BWAPI::TilePosition start, const BWAPI::TilePosition end, const bool reach)
 //{
-//	auto time = TimeGround(start, end, UnitTypes::Zerg_Zergling, true);
+//	auto time = timeGround(start, end, UnitTypes::Zerg_Zergling, true);
 //	return time;
 //};
 
-double TimeAir(const BWAPI::TilePosition start, const BWAPI::TilePosition end)
+double timeAir(const BWAPI::TilePosition start, const BWAPI::TilePosition end)
 {
-	auto adist = DistanceAir(start, end)
+	auto adist = distanceAir(start, end)
 	    - BWAPI::UnitTypes::Zerg_Overlord.sightRange();
 
 	double travelTime = adist / BWAPI::UnitTypes::Zerg_Overlord.topSpeed();
@@ -92,9 +92,29 @@ bool isReachable(BWTA::Region* region1, BWTA::Region* region2)
 {
 	if (region1 == nullptr || region2 == nullptr) {
 		return false;
-	} else {
-		return region1->isReachable(region2);
 	}
+	return region1->isReachable(region2);
+}
+
+// jaj22 linked this on discord: https://pastebin.com/k6esbYUj
+// tscmoo said he used the below code in OpenBW
+static const bool psi_field_mask[5][8] = {
+	{ 1, 1, 1, 1, 1, 1, 1, 1 },
+	{ 1, 1, 1, 1, 1, 1, 1, 1 },
+	{ 1, 1, 1, 1, 1, 1, 1, 0 },
+	{ 1, 1, 1, 1, 1, 1, 0, 0 },
+	{ 1, 1, 1, 0, 0, 0, 0, 0 }
+};
+
+bool isInPylonRange(int relx, int rely)
+{
+	unsigned x = std::abs(relx);
+	unsigned y = std::abs(rely);
+	if (x >= 256) return false;
+	if (y >= 160) return false;
+	if (relx < 0) --x;
+	if (rely < 0) --y;
+	return psi_field_mask[y / 32u][x / 32u];
 }
 
 void errorMessage(std::string message)

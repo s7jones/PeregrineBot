@@ -1,5 +1,5 @@
 #pragma once
-#include "Common.h"
+#include "BWAPI.h"
 
 class UnitInfo {
 public:
@@ -9,6 +9,7 @@ public:
 	BWAPI::Position getPosition() const { return pos; }
 	int x() { return getPosition().x; }
 	int y() { return getPosition().y; }
+	BWAPI::UnitType getType() const { return type; }
 
 	virtual bool operator<(const UnitInfo& other) const
 	{
@@ -29,9 +30,18 @@ public:
 	BWAPI::Unit u = nullptr;
 
 private:
-	mutable int lastFrameSeen;
+	mutable int lastFrameSeen    = 0;
 	mutable BWAPI::Position pos  = { 0, 0 };
 	mutable BWAPI::UnitType type = BWAPI::UnitTypes::Unknown;
+};
+
+class FriendlyUnitInfo : public UnitInfo {
+public:
+	using UnitInfo::UnitInfo;
+	void update() const override;
+
+private:
+	mutable int lastFrameAttacking;
 };
 
 class EnemyUnitInfo : public UnitInfo {

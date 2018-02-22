@@ -1,9 +1,14 @@
 #pragma once
-#include "Common.h"
+#include "BWAPI.h"
 
 class ProductionManager {
-	ProductionManager();
+private:
+	ProductionManager() = default;
 
 public:
-	static ProductionManager& Instance();
+	static ProductionManager& Instance()
+	{
+		static ProductionManager instance;
+		return instance;
+	}
 };

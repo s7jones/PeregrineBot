@@ -1,22 +1,16 @@
 #include "FileManager.h"
 
+#include "DebugMessenger.h"
+#include "InformationManager.h"
 #include <cpptoml.h>
 #include <rapidjson\document.h>
 #include <rapidjson\filereadstream.h>
 #include <rapidjson\rapidjson.h>
 #include <rapidjson\reader.h>
 
-#include "InformationManager.h"
-
 using namespace BWAPI;
 using namespace Filter;
 using namespace rapidjson;
-
-FileManager& FileManager::Instance()
-{
-	static FileManager instance;
-	return instance;
-}
 
 bool FileManager::readJsonConfig()
 {
@@ -126,8 +120,4 @@ void FileManager::writeStatisticsToFile(std::string botVersion, bool isWinner)
 	}
 
 	output.close();
-}
-
-FileManager::FileManager()
-{
 }
