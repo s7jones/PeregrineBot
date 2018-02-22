@@ -1,7 +1,5 @@
 #include "FAP.h"
 
-#include "Util.h"
-
 Neolib::FastAPproximation fap;
 
 namespace Neolib {
@@ -126,7 +124,7 @@ void FastAPproximation::dealDamage(const FastAPproximation::FAPUnit& fu, int dam
 			damage = (damage * 3) / 4;
 	}
 
-	fu.health -= MAX(128, damage);
+	fu.health -= std::max(128, damage);
 }
 
 int inline FastAPproximation::distButNotReally(const FAPUnit& u1, const FAPUnit& u2)
