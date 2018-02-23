@@ -3,7 +3,8 @@
 
 class UnitInfo {
 public:
-	UnitInfo(BWAPI::Unit unitToWrap);
+	UnitInfo(BWAPI::Unit unitToWrap)
+	    : u(unitToWrap){};
 	virtual void update() const;
 	bool exists() const;
 	BWAPI::Position getPosition() const { return pos; }
@@ -41,7 +42,7 @@ public:
 	void update() const override;
 
 private:
-	mutable int lastFrameAttacking;
+	mutable int lastFrameAttacking = 0;
 };
 
 class EnemyUnitInfo : public UnitInfo {
@@ -50,9 +51,9 @@ public:
 	void update() const override;
 
 private:
-	mutable int shields;
-	mutable int hp;
-	mutable int energy;
+	mutable int shields = 0;
+	mutable int hp      = 0;
+	mutable int energy  = 0;
 	mutable std::pair<double, double> velocity;
 };
 
