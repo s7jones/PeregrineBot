@@ -117,8 +117,8 @@ void ArmyManager::ZerglingAttack(BWAPI::Unit u)
 				}
 			}
 		} else if (lastCmd.getType() == UnitCommandTypes::Attack_Unit) {
-			using EnemyContainer                 = std::set<EnemyUnitInfo>;
-			auto lastCommandInEnemyUnitContainer = [lastCmd](EnemyContainer container) -> bool {
+			using EnemyContainer            = std::set<EnemyUnitInfo>;
+			auto lastCommandUnitInContainer = [lastCmd](EnemyContainer container) -> bool {
 				auto it = std::find_if(container.begin(), container.end(),
 				                       [lastCmd](const EnemyUnitInfo& enemy) -> bool {
 					                       return lastCmd.getUnit() == enemy.u;
@@ -126,8 +126,8 @@ void ArmyManager::ZerglingAttack(BWAPI::Unit u)
 				return it != container.end();
 			};
 
-			if (!lastCommandInEnemyUnitContainer(enemyBuildings)
-			    && !lastCommandInEnemyUnitContainer(enemyArmy)) {
+			if (!lastCommandUnitInContainer(enemyBuildings)
+			    && !lastCommandUnitInContainer(enemyArmy)) {
 				errorMessage("unit not in enemy containers, stopping.");
 				OrderManager::Instance().Stop(u);
 			}
