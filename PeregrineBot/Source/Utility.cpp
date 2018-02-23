@@ -20,7 +20,9 @@ double distanceAir(const BWAPI::TilePosition start, const BWAPI::TilePosition en
 
 BWAPI::Position getPos(const BWAPI::TilePosition tp, const BWAPI::UnitType ut)
 {
-	return BWAPI::Position(BWAPI::Position(tp) + BWAPI::Position((ut.tileWidth() * BWAPI::TILEPOSITION_SCALE) / 2, (ut.tileHeight() * BWAPI::TILEPOSITION_SCALE) / 2));
+	return { BWAPI::Position(tp)
+		     + BWAPI::Position((ut.tileWidth() * BWAPI::TILEPOSITION_SCALE) / 2,
+		                       (ut.tileHeight() * BWAPI::TILEPOSITION_SCALE) / 2) };
 }
 
 BWAPI::Position getBasePos(const BWAPI::TilePosition tp)
