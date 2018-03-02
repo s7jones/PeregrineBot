@@ -10,6 +10,47 @@
 using namespace BWAPI;
 using namespace Filter;
 
+void ArmyManager::SquadsRegroup()
+{
+	for (const auto friendly : InformationManager::Instance().friendlyUnits) {
+		if (friendly.getType() != UnitTypes::Zerg_Zergling) {
+			continue;
+		}
+
+		bool isUnitAssigned = false;
+
+		Squad closestSquad;
+		double closestSquadDistance = std::numeric_limits<double>::infinity();
+
+		for (const auto squad : squads) {
+
+			auto distance = distanceGround(friendly.getPosition(), squad.getPosition());
+			if (distance < closestSquadDistance) {
+				closestSquadDistance = distance;
+				closestSquad         = squad;
+			}
+
+			if (squad.count(friendly.u)) {
+				isUnitAssigned = true;
+				break;
+			}
+		}
+
+		if (!isUnitAssigned) {
+			if (closestSquadDistance < SQUAD_RADIUS) {
+				closestSquad.insert(friendly.u);
+			} else {
+				Squad newSquad;
+				newSquad.insert(friendly.u);
+			}
+		}
+	}
+}
+
+void ArmyManager::SquadsAttack()
+{
+}
+
 void ArmyManager::ZerglingAttack(BWAPI::Unit u)
 {
 	const auto enemyMain               = InformationManager::Instance().enemyMain;

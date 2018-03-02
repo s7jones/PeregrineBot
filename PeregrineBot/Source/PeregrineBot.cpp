@@ -188,6 +188,10 @@ void PeregrineBot::onFrame()
 
 	} // closure: unit iterator
 
+	ArmyManager::Instance().SquadsRegroup();
+
+	ArmyManager::Instance().SquadsAttack();
+
 	if (Broodwar->getFrameCount() > 86400) Broodwar->leaveGame();
 }
 

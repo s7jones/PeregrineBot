@@ -14,6 +14,8 @@ public:
 		static ArmyManager instance;
 		return instance;
 	}
+	void SquadsRegroup();
+	void SquadsAttack();
 	void ZerglingAttack(BWAPI::Unit u);
 	std::set<EnemyUnitInfo> GetZerglingAccessibleBuildings(BWAPI::Unit u);
 	void ZerglingAttackKnownBuildings(BWAPI::Unit u);
@@ -22,6 +24,10 @@ public:
 
 private:
 	void incrementScoutLocationZerglingIndex();
+
+	using Squad = BWAPI::Unitset;
+	std::set<Squad> squads;
+	const int SQUAD_RADIUS;
 
 	std::deque<BWAPI::Position> scoutLocationsZergling;
 	std::deque<BWAPI::Position>::iterator scoutLocationIndex;
