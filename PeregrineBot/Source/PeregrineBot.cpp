@@ -181,11 +181,6 @@ void PeregrineBot::onFrame()
 			continue;
 		}
 
-		if (u->getType() == UnitTypes::Zerg_Zergling) {
-			ArmyManager::Instance().zerglingAttack(u);
-			continue;
-		}
-
 	} // closure: unit iterator
 
 	ArmyManager::Instance().update();
