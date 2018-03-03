@@ -11,6 +11,8 @@ enum SquadCommandTypes {
 
 class SquadCommand {
 public:
+	SquadCommand() = default;
+
 	SquadCommand(SquadCommandTypes type, BWAPI::Unit target)
 	    : type(type)
 	    , targetUnit(target)
