@@ -46,7 +46,7 @@ private:
 	void handleIdleUnits();
 	void incrementScoutLocationZerglingIndex();
 
-	std::set<Squad> squads;
+	std::vector<Squad> squads;
 	const int SQUAD_RADIUS = 128;
 
 	std::deque<BWAPI::Position> scoutLocationsZergling;

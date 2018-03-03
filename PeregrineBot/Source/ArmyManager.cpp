@@ -52,7 +52,7 @@ void ArmyManager::putUnassignedInSquads()
 			} else {
 				Squad newSquad;
 				newSquad.insert(friendly.u);
-				squads.insert(newSquad);
+				squads.push_back(newSquad);
 			}
 		}
 	}
@@ -160,7 +160,7 @@ void ArmyManager::attackWithSquad(Squad& squad)
 			// reassign idle members
 		} else {
 			if (Squad::ALLMOVING) { // attack move is most likely not covered here
-				UnitCommand lastCmd = squad.begin()->getLastCommand();
+				UnitCommand lastCmd = (*squad.begin())->getLastCommand();
 				if (lastCmd.getType() == UnitCommandTypes::Move) {
 					Position targetPos = lastCmd.getTargetPosition();
 					if (!enemyMain.u) {
@@ -216,7 +216,7 @@ void ArmyManager::attackWithSquad(Squad& squad)
 
 void ArmyManager::handleIdleUnits()
 {
-	std::set<Squad> idleSquadList, combinedSet;
+	std::vector<Squad> idleSquadList;
 
 	for (auto squad : squads) {
 		auto it = squad.begin();
@@ -225,7 +225,7 @@ void ArmyManager::handleIdleUnits()
 			if (unit->isIdle()) {
 				Squad idleSquad;
 				idleSquad.insert(unit);
-				idleSquadList.insert(idleSquad);
+				idleSquadList.push_back(idleSquad);
 				it = squad.erase(it);
 			} else {
 				it++;
@@ -233,11 +233,7 @@ void ArmyManager::handleIdleUnits()
 		}
 	}
 
-	// combine idle squads into squads
-	set_union(squads.begin(), squads.end(),
-	          idleSquadList.begin(), idleSquadList.end(),
-	          inserter(combinedSet, combinedSet.begin()));
-	squads = combinedSet;
+	squads.insert(squads.end(), idleSquadList.begin(), idleSquadList.end());
 }
 
 void ArmyManager::zerglingAttack(BWAPI::Unit u)
