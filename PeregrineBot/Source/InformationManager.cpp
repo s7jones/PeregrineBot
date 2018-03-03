@@ -300,17 +300,17 @@ void InformationManager::overlordScoutingAtGameStart(BWAPI::Unit overlord)
 			auto p                        = getBasePos(tp);
 			const bool firstOptionScouted = scoutedPositions.find(p) != scoutedPositions.end();
 			if (!firstOptionScouted) {
-				OrderManager::Instance().Move(overlord, p, true);
+				OrderManager::Instance().move(overlord, p, true);
 			} else {
 				for (auto p2 : boost::adaptors::reverse(unscoutedPositions)) { //https://stackoverflow.com/questions/8542591/c11-reverse-range-based-for-loop
 					if (p2 == p)
 						continue;
-					OrderManager::Instance().Move(overlord, p2, true);
+					OrderManager::Instance().move(overlord, p2, true);
 				}
 			}
 		} else {                                                          // map size isn't 4, so use old scouting
 			for (auto p : boost::adaptors::reverse(unscoutedPositions)) { //https://stackoverflow.com/questions/8542591/c11-reverse-range-based-for-loop
-				OrderManager::Instance().Move(overlord, p, true);
+				OrderManager::Instance().move(overlord, p, true);
 			}
 		}
 	}
@@ -441,7 +441,7 @@ void InformationManager::overlordScoutingAfterBaseFound(BWAPI::Unit overlord)
 			} else {
 				auto it              = scoutLocations.begin();
 				Position baseToScout = (*it);
-				OrderManager::Instance().Move(overlord, baseToScout);
+				OrderManager::Instance().move(overlord, baseToScout);
 				scoutLocations.erase(it);
 			}
 		} else { // enemy race is terran, move back to our own base
@@ -456,7 +456,7 @@ void InformationManager::overlordRetreatToHome(BWAPI::Unit overlord)
 	auto distanceFromOwnBase = overlord->getDistance(ownBasePos);
 	if (distanceFromOwnBase > 128) {
 		DebugMessenger::Instance() << "Retreat overlord." << std::endl;
-		OrderManager::Instance().Move(overlord, ownBasePos);
+		OrderManager::Instance().move(overlord, ownBasePos);
 	} else {
 		//DebugMessenger::Instance() << "Overlord being attacked in base." << std::endl;
 		// spamming when enemy race is terran.

@@ -165,7 +165,7 @@ void BaseManager::DoAllWorkerTasks(BWAPI::Unit u)
 
 	if (defenders.find(u) != defenders.end()) {
 		if (distanceAir(u->getPosition(), hatcheries.begin()->base->getPosition()) > hatcheries.begin()->borderRadius) {
-			OrderManager::Instance().Stop(u);
+			OrderManager::Instance().stop(u);
 			GUIManager::Instance().drawTextOnScreen(u, "don't chase");
 			defenders.erase(u);
 			for (auto defencePair : targetsAndAssignedDefenders) {
@@ -197,7 +197,7 @@ void BaseManager::DoAllWorkerTasks(BWAPI::Unit u)
 				DebugMessenger::Instance() << "Worker couldn't gather mineral or from refinery" << std::endl;
 				auto closestKnownMineral = InformationManager::Instance().getClosestMineral(u);
 				if (closestKnownMineral) {
-					OrderManager::Instance().Move(u, closestKnownMineral->getPosition());
+					OrderManager::Instance().move(u, closestKnownMineral->getPosition());
 				}
 			} else {
 				miners.insert(u);

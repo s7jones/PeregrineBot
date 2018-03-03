@@ -1,6 +1,6 @@
 #pragma once
-#include "ArmyManager.h"
 #include "BWAPI.h"
+#include "Squad.h"
 #include "UnitInfo.h"
 
 class OrderManager {
@@ -21,10 +21,13 @@ public:
 	void attack(BWAPI::Unit attacker, EnemyUnitInfo enemy);
 	void attack(Squad& squad, BWAPI::Unit u);
 	void attack(Squad& squad, EnemyUnitInfo enemy);
-	void Move(BWAPI::Unit mover, BWAPI::Position p, bool shiftClick = false);
-	void Move(BWAPI::Unit mover, EnemyUnitInfo u, bool shiftClick = false);
+	void move(BWAPI::Unit mover, BWAPI::Position p, bool shiftClick = false);
+	void move(BWAPI::Unit mover, EnemyUnitInfo u, bool shiftClick = false);
+	void move(Squad& squad, BWAPI::Position p, bool shiftClick = false);
+	void move(Squad& squad, EnemyUnitInfo u, bool shiftClick = false);
 	void Build(BWAPI::Unit builder, BWAPI::UnitType buildingType, BWAPI::TilePosition buildPosition);
-	void Stop(BWAPI::Unit stopper);
+	void stop(BWAPI::Unit stopper);
+	void stop(Squad& squad);
 
 private:
 	std::map<BWAPI::Unit, int> unitsToWaitAfterOrder;
