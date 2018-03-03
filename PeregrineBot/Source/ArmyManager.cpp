@@ -240,7 +240,7 @@ void ArmyManager::handleIdleUnits()
 	squads = combinedSet;
 }
 
-void ArmyManager::ZerglingAttack(BWAPI::Unit u)
+void ArmyManager::zerglingAttack(BWAPI::Unit u)
 {
 	const auto enemyMain               = InformationManager::Instance().enemyMain;
 	const auto enemyRace               = InformationManager::Instance().enemyRace;
@@ -365,7 +365,7 @@ void ArmyManager::ZerglingAttack(BWAPI::Unit u)
 	}
 }
 
-std::set<EnemyUnitInfo> ArmyManager::GetZerglingAccessibleBuildings(BWAPI::Unit u)
+std::set<EnemyUnitInfo> ArmyManager::getZerglingAccessibleBuildings(BWAPI::Unit u)
 {
 	auto enemyBuildings = InformationManager::Instance().enemyBuildings;
 	std::set<EnemyUnitInfo> enemyBuildingsAccessible;
@@ -394,7 +394,7 @@ std::set<EnemyUnitInfo> ArmyManager::GetZerglingAccessibleBuildings(BWAPI::Unit 
 
 void ArmyManager::zerglingAttackKnownBuildings(BWAPI::Unit u)
 {
-	auto enemyBuildingsAccessible = GetZerglingAccessibleBuildings(u);
+	auto enemyBuildingsAccessible = getZerglingAccessibleBuildings(u);
 
 	if (enemyBuildingsAccessible.size() != 0) {
 
@@ -461,7 +461,7 @@ void ArmyManager::zerglingScoutSpreadOut(BWAPI::Unit u)
 	auto enemyBuildings     = InformationManager::Instance().enemyBuildings;
 	auto unscoutedPositions = InformationManager::Instance().unscoutedPositions;
 	if (scoutLocationsZergling.empty()) {
-		auto enemyBuildingsAccessible = GetZerglingAccessibleBuildings(u);
+		auto enemyBuildingsAccessible = getZerglingAccessibleBuildings(u);
 
 		for (auto building : enemyBuildingsAccessible) {
 			Position buildingPos = building.getPosition();

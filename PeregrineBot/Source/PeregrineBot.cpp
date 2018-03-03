@@ -182,7 +182,7 @@ void PeregrineBot::onFrame()
 		}
 
 		if (u->getType() == UnitTypes::Zerg_Zergling) {
-			ArmyManager::Instance().ZerglingAttack(u);
+			ArmyManager::Instance().zerglingAttack(u);
 			continue;
 		}
 

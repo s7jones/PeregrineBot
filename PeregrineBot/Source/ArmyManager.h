@@ -16,8 +16,7 @@ public:
 		return instance;
 	}
 	void update();
-	void ZerglingAttack(BWAPI::Unit u);
-	std::set<EnemyUnitInfo> GetZerglingAccessibleBuildings(BWAPI::Unit u);
+	void zerglingAttack(BWAPI::Unit u);
 	void zerglingAttackKnownBuildings(BWAPI::Unit u);
 	void zerglingScoutingBeforeBaseFound(BWAPI::Unit u);
 	void zerglingScoutSpreadOut(BWAPI::Unit u);
@@ -41,6 +40,7 @@ public:
 	}
 
 private:
+	std::set<EnemyUnitInfo> getZerglingAccessibleBuildings(BWAPI::Unit u);
 	void putUnassignedInSquads();
 	void attackWithSquad(Squad& squad);
 	void handleIdleUnits();
