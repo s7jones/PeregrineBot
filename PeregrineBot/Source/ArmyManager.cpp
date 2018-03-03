@@ -10,7 +10,17 @@
 using namespace BWAPI;
 using namespace Filter;
 
-void ArmyManager::SquadsRegroup()
+void ArmyManager::update()
+{
+	putUnassignedInSquads();
+	handleIdleUnits();
+
+	for (auto squad : squads) {
+		attackWithSquad(squad);
+	}
+}
+
+void ArmyManager::putUnassignedInSquads()
 {
 	for (const auto friendly : InformationManager::Instance().friendlyUnits) {
 		if (friendly.getType() != UnitTypes::Zerg_Zergling) {
@@ -42,13 +52,192 @@ void ArmyManager::SquadsRegroup()
 			} else {
 				Squad newSquad;
 				newSquad.insert(friendly.u);
+				squads.insert(newSquad);
 			}
 		}
 	}
 }
 
-void ArmyManager::SquadsAttack()
+void ArmyManager::attackWithSquad(Squad& squad)
 {
+	// for now let's try and leverage existing individual attack
+	const auto enemyMain               = InformationManager::Instance().enemyMain;
+	const auto enemyRace               = InformationManager::Instance().enemyRace;
+	const auto unscoutedPositions      = InformationManager::Instance().unscoutedPositions;
+	const auto isEnemyBaseFromSpotting = InformationManager::Instance().isEnemyBaseFromSpotting;
+	const auto isEnemyBaseDeduced      = InformationManager::Instance().isEnemyBaseDeduced;
+	const auto isEnemyBaseReached      = InformationManager::Instance().isEnemyBaseReached;
+	const auto isEnemyBaseDestroyed    = InformationManager::Instance().isEnemyBaseDestroyed;
+	const auto enemyBaseSpottingGuess  = InformationManager::Instance().enemyBaseSpottingGuess;
+	const auto enemyBuildings          = InformationManager::Instance().enemyBuildings;
+	const auto enemyArmy               = InformationManager::Instance().enemyArmy;
+
+	for (const auto unit : squad) {
+		if (enemyMain.u) {
+			if ((!isEnemyBaseReached) && (BWTA::getRegion(unit->getPosition()) == BWTA::getRegion(enemyMain.getPosition()))) {
+				InformationManager::Instance().isEnemyBaseReached = true;
+				DebugMessenger::Instance()
+				    << "reach enemy base: " << Broodwar->getFrameCount() << "F"
+				    << std::endl;
+			}
+		}
+	}
+
+	/* ## isIdle calling false after previous attack order in frame
+    s7jones / Peregrine - Today at 12:51 AM
+    so basically if I call Unit->attack(something); then next line
+    Unit->isIdle();
+
+    then isIdle should return false?
+    jaj22 - Today at 12:51 AM
+    yeah, I just checked
+    ++N00byEdge - Today at 12:51 AM
+    yes, if you're using latcom
+    s7jones / Peregrine - Today at 12:51 AM
+    that's crazy, I really don't have good intuitions about BWAPI and the
+    engine
+    */
+
+	bool priorityTarget = UtilityManager::Instance().getBestActionForSquad(squad);
+
+	if (priorityTarget) {
+		return;
+	}
+
+	bool allIdle = true, someIdle = false;
+
+	for (auto unit : squad) {
+		if (!unit->isIdle()) {
+			allIdle = false;
+			break;
+		} else {
+			if (!someIdle) {
+				someIdle = true;
+			}
+		}
+	}
+
+	auto idleState   = squad.isIdle();
+	auto movingState = squad.isMoving();
+
+	if (idleState == Squad::ALLIDLE) {
+		Unit closestGroundEnemy = squad.getClosestUnit(IsEnemy && !IsFlying);
+		if (closestGroundEnemy) {
+			OrderManager::Instance().attack(squad, closestGroundEnemy);
+		} else {
+			if (enemyMain.u) {
+				if (!isEnemyBaseDestroyed) {
+					if (!Broodwar->isVisible(TilePosition(enemyMain.getPosition()))) {
+						OrderManager::Instance().attack(squad, enemyMain);
+					} else if (!Broodwar->getUnitsOnTile(
+					                        TilePosition(enemyMain.getPosition()),
+					                        IsEnemy && IsVisible && Exists && IsBuilding && !IsLifted)
+					                .empty()) {
+						OrderManager::Instance().attack(squad, enemyMain);
+					} else if (enemyBuildings.size() != 0) {
+						ZerglingAttackKnownBuildings(squad);
+					} else {
+						ZerglingScoutSpreadOut(squad);
+					}
+				} else if (enemyBuildings.size() != 0) {
+					ZerglingAttackKnownBuildings(squad);
+				} else {
+					ZerglingScoutSpreadOut(squad);
+				}
+			} else {
+				if (enemyBuildings.size() != 0) {
+					ZerglingAttackKnownBuildings(squad);
+				} else if (isEnemyBaseFromSpotting) {
+					OrderManager::Instance().Move(squad, enemyBaseSpottingGuess);
+					GUIManager::Instance().drawTextOnScreen(squad, "scout overlord spot", 480);
+				} else {
+					ZerglingScoutingBeforeBaseFound(squad);
+				}
+			}
+		}
+	} else {
+		if (Squad::SOMEIDLE) {
+			// reassign idle members
+		} else {
+			if (Squad::ALLMOVING) { // attack move is most likely not covered here
+				UnitCommand lastCmd = squad.getLastCommand();
+				if (lastCmd.getType() == UnitCommandTypes::Move) {
+					Position targetPos = lastCmd.getTargetPosition();
+					if (!enemyMain.u) {
+						if (isEnemyBaseFromSpotting
+						    && enemyBaseSpottingGuess != targetPos) {
+							OrderManager::Instance().Move(squad, enemyBaseSpottingGuess);
+							GUIManager::Instance().drawTextOnScreen(squad, "recalculate scouting (overlord guess)", 480);
+						}
+						// if moving to somewhere already scouted
+						else if (unscoutedPositions.count(targetPos) == 0) {
+							if (!unscoutedPositions.empty()) {
+								auto p = *unscoutedPositions.begin();
+								OrderManager::Instance().Move(squad, p);
+								GUIManager::Instance().drawTextOnScreen(squad, "recalculate scouting 1", 480);
+							}
+							// if moving to somewhere not in zergScoutLocations and there are places to go
+							else if ((std::find(scoutLocationsZergling.begin(), scoutLocationsZergling.end(), targetPos)
+							          == scoutLocationsZergling.end())
+							         && !scoutLocationsZergling.empty()) {
+								auto p = *scoutLocationIndex;
+								OrderManager::Instance().Move(squad, p);
+								GUIManager::Instance().drawTextOnScreen(squad, "recalculate scouting 2", 480);
+								incrementScoutLocationZerglingIndex();
+							}
+						}
+					}
+				} else if (lastCmd.getType() == UnitCommandTypes::Attack_Unit) {
+					using EnemyContainer            = std::set<EnemyUnitInfo>;
+					auto lastCommandUnitInContainer = [lastCmd](EnemyContainer container) -> bool {
+						auto it = std::find_if(container.begin(), container.end(),
+						                       [lastCmd](const EnemyUnitInfo& enemy) -> bool {
+							                       return lastCmd.getUnit() == enemy.u;
+						                       });
+						return it != container.end();
+					};
+
+					if (!lastCommandUnitInContainer(enemyBuildings)
+					    && !lastCommandUnitInContainer(enemyArmy)) {
+						errorMessage("unit not in enemy containers, stopping.");
+						OrderManager::Instance().Stop(squad);
+					}
+				}
+			} else {
+				if (Squad::SOMEMOVING) {
+					// reassign non moving
+				} else {
+					// none are moving - do nothing
+				}
+			}
+		}
+	}
+}
+
+void ArmyManager::handleIdleUnits()
+{
+	std::set<Squad> idleSquadList, combinedSet;
+
+	for (auto squad : squads) {
+		auto it = squad.begin();
+		while (squad.size() > 1 && it != squad.end()) {
+			auto unit = (*it);
+			if (unit->isIdle()) {
+				Squad idleSquad;
+				idleSquad.insert(unit);
+				idleSquadList.insert(idleSquad);
+				it = squad.erase(it);
+			} else {
+				it++;
+			}
+		}
+	}
+
+	// combine idle squads into squads
+	set_union(squads.begin(), squads.end(),
+	          idleSquadList.begin(), idleSquadList.end(),
+	          inserter(combinedSet, combinedSet.begin()));
+	squads = combinedSet;
 }
 
 void ArmyManager::ZerglingAttack(BWAPI::Unit u)
@@ -97,17 +286,17 @@ void ArmyManager::ZerglingAttack(BWAPI::Unit u)
 	if (u->isIdle()) {
 		Unit closestGroundEnemy = u->getClosestUnit(IsEnemy && !IsFlying);
 		if (closestGroundEnemy) {
-			OrderManager::Instance().Attack(u, closestGroundEnemy);
+			OrderManager::Instance().attack(u, closestGroundEnemy);
 		} else {
 			if (enemyMain.u) {
 				if (!isEnemyBaseDestroyed) {
 					if (!Broodwar->isVisible(TilePosition(enemyMain.getPosition()))) {
-						OrderManager::Instance().Attack(u, enemyMain);
+						OrderManager::Instance().attack(u, enemyMain);
 					} else if (!Broodwar->getUnitsOnTile(
 					                        TilePosition(enemyMain.getPosition()),
 					                        IsEnemy && IsVisible && Exists && IsBuilding && !IsLifted)
 					                .empty()) {
-						OrderManager::Instance().Attack(u, enemyMain);
+						OrderManager::Instance().attack(u, enemyMain);
 					} else if (enemyBuildings.size() != 0) {
 						ZerglingAttackKnownBuildings(u);
 					} else {
@@ -221,7 +410,7 @@ void ArmyManager::ZerglingAttackKnownBuildings(BWAPI::Unit u)
 			}
 		}
 
-		OrderManager::Instance().Attack(u, buildingAccessiblePos);
+		OrderManager::Instance().attack(u, buildingAccessiblePos);
 		GUIManager::Instance().drawTextOnScreen(u, "attacking accessible building", 48);
 		// DebugMessenger::Instance() << "attacking accessible building" <<
 		// std::endl;

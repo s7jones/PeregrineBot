@@ -1,4 +1,5 @@
 #pragma once
+#include "ArmyManager.h"
 #include "BWAPI.h"
 #include "UnitInfo.h"
 
@@ -17,6 +18,7 @@ public:
 		return instance;
 	}
 	bool getBestActionForZergling(BWAPI::Unit zergling);
+	bool getBestActionForSquad(Squad squad);
 
 private:
 	void constructOptions();

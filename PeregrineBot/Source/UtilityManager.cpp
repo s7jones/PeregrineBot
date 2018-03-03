@@ -31,6 +31,11 @@ bool UtilityManager::getBestActionForZergling(BWAPI::Unit zergling)
 	return flag;
 }
 
+bool UtilityManager::getBestActionForSquad(Squad squad)
+{
+	return false;
+}
+
 void UtilityManager::constructOptions()
 {
 	auto enemyRace = InformationManager::Instance().enemyRace;
@@ -352,7 +357,7 @@ bool UtilityManager::performBestActionForZerglingInEnemyBase(
 	}
 
 	if (bestOptionResult.first != 0 && bestOptionResult.second.u != nullptr) {
-		OrderManager::Instance().Attack(zergling, bestOptionResult.second);
+		OrderManager::Instance().attack(zergling, bestOptionResult.second);
 		GUIManager::Instance().drawTextOnScreen(zergling, bestOptionDescription, 48);
 		GUIManager::Instance().drawLineOnScreen(zergling, bestOptionResult.second, 48);
 		return true;

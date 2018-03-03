@@ -138,7 +138,7 @@ void BaseManager::DoAllWorkerTasks(BWAPI::Unit u)
 				// always keep 1 mining
 				if (miners.size() > 1) {
 					targetsAndAssignedDefenders.insert({ invader, u });
-					OrderManager::Instance().Attack(u, invader);
+					OrderManager::Instance().attack(u, invader);
 					GUIManager::Instance().drawTextOnScreen(u, "this is SPARTA!");
 					defenders.insert(u);
 					miners.erase(u);
@@ -152,7 +152,7 @@ void BaseManager::DoAllWorkerTasks(BWAPI::Unit u)
 					targetsAndAssignedDefenders.erase(defencePair);
 					if (miners.size() > 1) {
 						targetsAndAssignedDefenders.insert({ invader, u });
-						OrderManager::Instance().Attack(u, invader);
+						OrderManager::Instance().attack(u, invader);
 						GUIManager::Instance().drawTextOnScreen(u, "prepare for glory (reinforce)");
 						defenders.insert(u);
 						miners.erase(u);
