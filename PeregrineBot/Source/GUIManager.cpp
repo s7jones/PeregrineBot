@@ -1,5 +1,6 @@
 #include "GUIManager.h"
 
+#include "ArmyManager.h"
 #include "BWTAManager.h"
 #include "BaseManager.h"
 #include "BuildOrderManager.h"
@@ -51,6 +52,10 @@ void GUIManager::draw()
 		ss << "border " << hatch.borderRadius;
 		GUIManager::Instance().drawTextOnScreen(hatch.base, ss.str());
 		Broodwar->drawCircleMap(hatch.base->getPosition(), hatch.borderRadius, Colors::White);
+	}
+
+	for (auto squad : ArmyManager::Instance().getSquads()) {
+		Broodwar->drawCircleMap(squad.getPosition(), ArmyManager::Instance().SQUAD_RADIUS, Colors::Purple);
 	}
 
 	drawOnScreenMessages();
@@ -116,10 +121,10 @@ void GUIManager::drawTopLeftOverlay()
 	Broodwar->drawTextScreen(1, 50, "Htchrs/Wrkrs: %i/%i", BaseManager::Instance().hatcheries.size(), BaseManager::Instance().workers.size());
 	Broodwar->drawTextScreen(1, 60, "Frame Time: %.1fms", duration);
 	Broodwar->drawTextScreen(1, 70, "APM: %i", Broodwar->getAPM());
-
 	int invaders = (!BaseManager::Instance().hatcheries.empty()) ? BaseManager::Instance().hatcheries.begin()->checkForInvaders().size() : 0;
 	Broodwar->drawTextScreen(1, 80, "Invaders: %i", invaders);
 	Broodwar->drawTextScreen(1, 90, "Mnrs/Dfndrs: %i/%i", BaseManager::Instance().miners.size(), BaseManager::Instance().defenders.size());
+	Broodwar->drawTextScreen(1, 100, "Squads: %i", ArmyManager::Instance().getSquads().size());
 
 	Broodwar->drawTextScreen(100, 0, "BO index: %i", std::distance(BuildOrderManager::Instance().bo.cbegin(), BuildOrderManager::Instance().boIndex));
 	Broodwar->drawTextScreen(100, 10, "Pool: %i", BuildOrderManager::Instance().pool);
