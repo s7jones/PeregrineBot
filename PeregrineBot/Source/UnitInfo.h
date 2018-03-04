@@ -3,8 +3,7 @@
 
 class UnitInfo {
 public:
-	UnitInfo(BWAPI::Unit unitToWrap)
-	    : u(unitToWrap){};
+	UnitInfo(BWAPI::Unit unitToWrap);
 	virtual void update() const;
 	bool exists() const;
 	BWAPI::Position getPosition() const { return pos; }
@@ -38,7 +37,11 @@ private:
 
 class FriendlyUnitInfo : public UnitInfo {
 public:
-	using UnitInfo::UnitInfo;
+	FriendlyUnitInfo(BWAPI::Unit unitToWrap)
+	    : UnitInfo(unitToWrap)
+	{
+		FriendlyUnitInfo::update();
+	}
 	void update() const override;
 
 private:
@@ -47,7 +50,11 @@ private:
 
 class EnemyUnitInfo : public UnitInfo {
 public:
-	using UnitInfo::UnitInfo;
+	EnemyUnitInfo(BWAPI::Unit unitToWrap)
+	    : UnitInfo(unitToWrap)
+	{
+		EnemyUnitInfo::update();
+	}
 	void update() const override;
 
 private:
@@ -59,7 +66,11 @@ private:
 
 class ResourceUnitInfo : public UnitInfo {
 public:
-	using UnitInfo::UnitInfo;
+	ResourceUnitInfo(BWAPI::Unit unitToWrap)
+	    : UnitInfo(unitToWrap)
+	{
+		ResourceUnitInfo::update();
+	}
 	void update() const override;
 	int getResources() const;
 
