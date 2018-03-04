@@ -113,6 +113,7 @@
     <ClCompile Include="Source\OrderManager.cpp" />
     <ClCompile Include="Source\PeregrineBot.cpp" />
     <ClCompile Include="Source\ProductionManager.cpp" />
+    <ClCompile Include="Source\Squad.cpp" />
     <ClCompile Include="Source\UnitInfo.cpp" />
     <ClCompile Include="Source\Utility.cpp" />
     <ClCompile Include="Source\UtilityManager.cpp" />

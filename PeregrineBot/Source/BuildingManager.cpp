@@ -32,7 +32,7 @@ bool BuildingManager::tryToBuild(BWAPI::Unit builder, BWAPI::UnitType ut)
 		if ((lastChecked + delay) < Broodwar->getFrameCount()) {
 			TilePosition buildPosition = Broodwar->getBuildLocation(ut, builder->getTilePosition());
 			if (buildPosition != TilePositions::Unknown) {
-				OrderManager::Instance().Build(builder, ut, buildPosition);
+				OrderManager::Instance().build(builder, ut, buildPosition);
 				lastChecked = Broodwar->getFrameCount();
 				return true;
 			}

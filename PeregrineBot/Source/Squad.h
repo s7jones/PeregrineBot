@@ -37,7 +37,13 @@ public:
 
 class Squad : public BWAPI::Unitset {
 public:
-	Squad() = default;
+	Squad()
+	{
+		id = numberSquadsMade++;
+	}
+
+	unsigned int id;
+	static unsigned int numberSquadsMade;
 
 	enum SquadIdleTypes {
 		ALLIDLE,

@@ -6,37 +6,55 @@ using namespace BWAPI;
 
 void OrderManager::update()
 {
-	UpdateUnitsWaitingSinceLastOrder();
+	updateUnitsWaitingSinceLastOrder();
 }
 
-void OrderManager::UpdateUnitsWaitingSinceLastOrder()
+void OrderManager::updateUnitsWaitingSinceLastOrder()
 {
-	auto it = unitsToWaitAfterOrder.begin();
-	while (it != unitsToWaitAfterOrder.end()) {
+	auto it = unitsWaitingAfterOrder.begin();
+	while (it != unitsWaitingAfterOrder.end()) {
 		++(it->second); // increment counter
 		if (it->second >= 8) {
-			it = unitsToWaitAfterOrder.erase(it);
+			it = unitsWaitingAfterOrder.erase(it);
 		} else {
 			++it;
 		}
 	}
 }
 
-bool OrderManager::DoesUnitHasOrder(BWAPI::Unit unit)
+void OrderManager::updateSquadsWaitingSinceLastOrder()
 {
-	auto it = unitsToWaitAfterOrder.find(unit);
-	return (it != unitsToWaitAfterOrder.end());
+	auto it = squadsWaitingAfterOrder.begin();
+	while (it != squadsWaitingAfterOrder.end()) {
+		++(it->second); // increment counter
+		if (it->second >= 8) {
+			it = squadsWaitingAfterOrder.erase(it);
+		} else {
+			++it;
+		}
+	}
+}
+
+bool OrderManager::doesUnitHasOrder(BWAPI::Unit unit)
+{
+	auto it = unitsWaitingAfterOrder.find(unit);
+	return (it != unitsWaitingAfterOrder.end());
+}
+
+bool OrderManager::doesSquadHasOrder(Squad& unit)
+{
+	return false;
 }
 
 void OrderManager::attack(BWAPI::Unit attacker, BWAPI::Position p)
 {
-	unitsToWaitAfterOrder.insert({ attacker, 0 });
+	unitsWaitingAfterOrder.insert({ attacker, 0 });
 	attacker->attack(p);
 }
 
 void OrderManager::attack(BWAPI::Unit attacker, BWAPI::Unit u)
 {
-	unitsToWaitAfterOrder.insert({ attacker, 0 });
+	unitsWaitingAfterOrder.insert({ attacker, 0 });
 	attacker->attack(u);
 }
 
@@ -55,6 +73,7 @@ void OrderManager::attack(BWAPI::Unit attacker, EnemyUnitInfo enemy)
 
 void OrderManager::attack(Squad& squad, BWAPI::Unit u)
 {
+	squadsWaitingAfterOrder.insert({ squad.id, 0 });
 	for (const auto attacker : squad) {
 		attack(attacker, u);
 	}
@@ -65,6 +84,7 @@ void OrderManager::attack(Squad& squad, BWAPI::Unit u)
 
 void OrderManager::attack(Squad& squad, EnemyUnitInfo enemy)
 {
+	squadsWaitingAfterOrder.insert({ squad.id, 0 });
 	for (const auto attacker : squad) {
 		attack(attacker, enemy);
 	}
@@ -87,7 +107,7 @@ void OrderManager::attack(Squad& squad, EnemyUnitInfo enemy)
 
 void OrderManager::move(BWAPI::Unit mover, BWAPI::Position p, bool shiftClick)
 {
-	unitsToWaitAfterOrder.insert({ mover, 0 });
+	unitsWaitingAfterOrder.insert({ mover, 0 });
 	mover->move(p, shiftClick);
 }
 
@@ -98,6 +118,7 @@ void OrderManager::move(BWAPI::Unit mover, EnemyUnitInfo u, bool shiftClick)
 
 void OrderManager::move(Squad& squad, BWAPI::Position p, bool shiftClick)
 {
+	squadsWaitingAfterOrder.insert({ squad.id, 0 });
 	for (const auto mover : squad) {
 		move(mover, p, shiftClick);
 	}
@@ -108,6 +129,7 @@ void OrderManager::move(Squad& squad, BWAPI::Position p, bool shiftClick)
 
 void OrderManager::move(Squad& squad, EnemyUnitInfo u, bool shiftClick)
 {
+	squadsWaitingAfterOrder.insert({ squad.id, 0 });
 	for (const auto mover : squad) {
 		move(mover, u, shiftClick);
 	}
@@ -116,20 +138,21 @@ void OrderManager::move(Squad& squad, EnemyUnitInfo u, bool shiftClick)
 	squad.setLastCommand(command);
 }
 
-void OrderManager::Build(BWAPI::Unit builder, BWAPI::UnitType buildingType, BWAPI::TilePosition buildPosition)
+void OrderManager::build(BWAPI::Unit builder, BWAPI::UnitType buildingType, BWAPI::TilePosition buildPosition)
 {
-	unitsToWaitAfterOrder.insert({ builder, 0 });
+	unitsWaitingAfterOrder.insert({ builder, 0 });
 	builder->build(buildingType, buildPosition);
 }
 
 void OrderManager::stop(BWAPI::Unit stopper)
 {
-	unitsToWaitAfterOrder.insert({ stopper, 0 });
+	unitsWaitingAfterOrder.insert({ stopper, 0 });
 	stopper->stop();
 }
 
 void OrderManager::stop(Squad& squad)
 {
+	squadsWaitingAfterOrder.insert({ squad.id, 0 });
 	for (const auto stopper : squad) {
 		stop(stopper);
 	}

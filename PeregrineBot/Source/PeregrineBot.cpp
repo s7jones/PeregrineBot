@@ -144,7 +144,7 @@ void PeregrineBot::onFrame()
 			InformationManager::Instance().spotting(u);
 		}
 
-		const bool unitNeedsToWait = OrderManager::Instance().DoesUnitHasOrder(u);
+		const bool unitNeedsToWait = OrderManager::Instance().doesUnitHasOrder(u);
 		if (unitNeedsToWait) {
 			continue;
 		}

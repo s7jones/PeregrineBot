@@ -20,7 +20,6 @@ public:
 	void onUnitDestroy(BWAPI::Unit unit);
 
 	void update();
-
 	using SquadList = std::vector<Squad>;
 	const SquadList& getSquads() { return squads; };
 	void zerglingAttack(BWAPI::Unit u);

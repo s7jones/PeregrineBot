@@ -17,6 +17,10 @@ void ArmyManager::update()
 	removeEmptySquads();
 
 	for (auto squad : squads) {
+		const bool squadNeedsToWait = OrderManager::Instance().doesSquadHasOrder(squad);
+		if (squadNeedsToWait) {
+			continue;
+		}
 		attackWithSquad(squad);
 	}
 }
