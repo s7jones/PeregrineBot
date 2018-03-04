@@ -30,8 +30,8 @@ private:
 	std::vector<OptionIndividual> options_individual;
 	std::vector<OptionSquad> options_squad;
 
-	const struct utilities {
-		const struct putilities {
+	struct utilities {
+		struct putilities {
 			double injrZeal        = 5;
 			double injrWork        = 4;
 			double closestZealCann = 1.1;
@@ -43,24 +43,22 @@ private:
 			double addArtosisGtwy = 1;
 			double addArtosisCann = 0.5;
 			double addArtosisAll  = 0.01;
-		} p;
-		const struct tutilities {
+		} const p;
+		struct tutilities {
 			double closestMrneFireBunkWork = 1;
 			double closestWork             = 0.9;
 			double closestSdpt             = 0.8;
 			double enemyBase               = 0.7;
 			double closestAll              = 0.6;
-		} t;
-		const struct zutilities {
+		} const t;
+		struct zutilities {
 			double injrZerg             = 2;
 			double closestLingSunkWork  = 1;
 			double closestWork          = 0.9;
 			double closestAllNotLarvEgg = 0.8;
 			double closestAll           = 0.7;
-		} z;
-	};
-
-	utilities scores;
+		} const z;
+	} const scores{};
 };
 
 class OptionIndividual {
