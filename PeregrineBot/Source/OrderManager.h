@@ -15,7 +15,7 @@ public:
 	}
 	void update();
 	bool doesUnitHasOrder(BWAPI::Unit unit);
-	bool doesSquadHasOrder(Squad& unit);
+	bool doesSquadHaveOrder(Squad& squad);
 	void attack(BWAPI::Unit attacker, BWAPI::Position p);
 	void attack(BWAPI::Unit attacker, BWAPI::Unit u);
 	void attack(BWAPI::Unit attacker, EnemyUnitInfo enemy);
@@ -34,5 +34,5 @@ private:
 	void updateSquadsWaitingSinceLastOrder();
 
 	std::map<BWAPI::Unit, int> unitsWaitingAfterOrder;
-	std::map<int, int> squadsWaitingAfterOrder;
+	std::map<unsigned int, int> squadsWaitingAfterOrder;
 };

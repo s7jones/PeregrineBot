@@ -7,6 +7,7 @@ using namespace BWAPI;
 void OrderManager::update()
 {
 	updateUnitsWaitingSinceLastOrder();
+	updateSquadsWaitingSinceLastOrder();
 }
 
 void OrderManager::updateUnitsWaitingSinceLastOrder()
@@ -41,9 +42,10 @@ bool OrderManager::doesUnitHasOrder(BWAPI::Unit unit)
 	return (it != unitsWaitingAfterOrder.end());
 }
 
-bool OrderManager::doesSquadHasOrder(Squad& unit)
+bool OrderManager::doesSquadHaveOrder(Squad& squad)
 {
-	return false;
+	auto it = squadsWaitingAfterOrder.find(squad.id);
+	return (it != squadsWaitingAfterOrder.end());
 }
 
 void OrderManager::attack(BWAPI::Unit attacker, BWAPI::Position p)
