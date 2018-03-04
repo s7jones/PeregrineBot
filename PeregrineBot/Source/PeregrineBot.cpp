@@ -263,6 +263,7 @@ void PeregrineBot::onUnitDestroy(BWAPI::Unit unit)
 {
 	InformationManager::Instance().onUnitDestroy(unit);
 	BaseManager::Instance().onUnitDestroy(unit);
+	ArmyManager::Instance().onUnitDestroy(unit);
 }
 
 void PeregrineBot::onUnitMorph(BWAPI::Unit unit)

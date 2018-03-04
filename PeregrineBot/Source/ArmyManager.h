@@ -16,6 +16,9 @@ public:
 		static ArmyManager instance;
 		return instance;
 	}
+
+	void onUnitDestroy(BWAPI::Unit unit);
+
 	void update();
 
 	using SquadList = std::vector<Squad>;
@@ -50,6 +53,7 @@ private:
 	void putUnassignedInSquads();
 	void attackWithSquad(Squad& squad);
 	void handleIdleUnits();
+	void removeEmptySquads();
 	void incrementScoutLocationZerglingIndex();
 
 	std::vector<Squad> squads;

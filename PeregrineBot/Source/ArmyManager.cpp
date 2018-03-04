@@ -14,6 +14,7 @@ void ArmyManager::update()
 {
 	putUnassignedInSquads();
 	handleIdleUnits();
+	removeEmptySquads();
 
 	for (auto squad : squads) {
 		attackWithSquad(squad);
@@ -157,11 +158,11 @@ void ArmyManager::attackWithSquad(Squad& squad)
 			}
 		}
 	} else {
-		if (Squad::SOMEIDLE) {
+		if (idleState == Squad::SOMEIDLE) {
 			// reassign idle members
 			errorMessage("some (but not all or none) in squad idle");
 		} else {
-			if (Squad::ALLMOVING) { // attack move is most likely not covered here
+			if (movingState == Squad::ALLMOVING) { // attack move is most likely not covered here
 				UnitCommand lastCmd = (*squad.begin())->getLastCommand();
 				if (lastCmd.getType() == UnitCommandTypes::Move) {
 					Position targetPos = lastCmd.getTargetPosition();
@@ -206,7 +207,7 @@ void ArmyManager::attackWithSquad(Squad& squad)
 					}
 				}
 			} else {
-				if (Squad::SOMEMOVING) {
+				if (movingState == Squad::SOMEMOVING) {
 					// reassign non moving
 				} else {
 					// none are moving - do nothing
@@ -236,6 +237,16 @@ void ArmyManager::handleIdleUnits()
 	}
 
 	squads.insert(squads.end(), idleSquadList.begin(), idleSquadList.end());
+}
+
+void ArmyManager::removeEmptySquads()
+{
+	squads.erase(std::remove_if(squads.begin(),
+	                            squads.end(),
+	                            [](Squad& squad) -> bool {
+		                            return squad.empty();
+	                            }),
+	             squads.end());
 }
 
 void ArmyManager::zerglingAttack(BWAPI::Unit u)
@@ -511,4 +522,15 @@ void ArmyManager::incrementScoutLocationZerglingIndex()
 	if (scoutLocationIndex == scoutLocationsZergling.end()) {
 		scoutLocationIndex = scoutLocationsZergling.begin();
 	}
+}
+
+void ArmyManager::onUnitDestroy(BWAPI::Unit unit)
+{
+	if (unit->getType() == UnitTypes::Zerg_Zergling && unit->getPlayer() == Broodwar->self()) {
+		for (auto squad : squads) {
+			squad.erase(unit);
+		}
+	}
+
+	removeEmptySquads();
 }
