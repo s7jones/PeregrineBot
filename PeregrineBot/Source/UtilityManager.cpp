@@ -15,7 +15,7 @@ bool UtilityManager::getBestActionForZergling(BWAPI::Unit zergling)
 	}
 	bool flag            = false;
 	const auto enemyMain = InformationManager::Instance().enemyMain;
-	if (enemyMain.u) {
+	if (enemyMain.unit) {
 		if (BWTA::getRegion(enemyMain.getPosition()) == BWTA::getRegion(zergling->getPosition())) {
 			flag = performBestActionForZerglingInEnemyBase(zergling);
 			if (flag) return true;
@@ -38,7 +38,7 @@ bool UtilityManager::getBestActionForSquad(Squad& squad)
 	}
 	bool flag            = false;
 	const auto enemyMain = InformationManager::Instance().enemyMain;
-	if (enemyMain.u) {
+	if (enemyMain.unit) {
 		if (BWTA::getRegion(enemyMain.getPosition()) == BWTA::getRegion(squad.getPosition())) {
 			flag = performBestActionForSquadInEnemyBase(squad);
 			if (flag) return true;
@@ -61,10 +61,10 @@ void UtilityManager::constructOptionsIndividual()
 	if (enemyRace != Races::Unknown) {
 		switch (enemyRace) {
 		case Races::Enum::Protoss: {
-			auto genericInjr = [& scores = scores](Unit u, UnitType enemyType, double scoreGiven) -> UtilResult {
-				auto weapon = u->getType().groundWeapon();
+			auto genericInjr = [& scores = scores](Unit unit, UnitType enemyType, double scoreGiven) -> UtilResult {
+				auto weapon = unit->getType().groundWeapon();
 				if (weapon.damageAmount() == 0) return std::make_pair(0, nullptr);
-				const auto enemies = u->getUnitsInRadius(
+				const auto enemies = unit->getUnitsInRadius(
 				    weapon.maxRange() * 2,
 				    IsEnemy
 				        && (GetType == enemyType));
@@ -96,21 +96,21 @@ void UtilityManager::constructOptionsIndividual()
 				return p;
 			};
 
-			auto utilityInjrZeal = [& scores = scores, genericInjr](Unit u) -> UtilResult {
-				return genericInjr(u, UnitTypes::Protoss_Zealot, scores.p.injrZeal);
+			auto utilityInjrZeal = [& scores = scores, genericInjr](Unit unit) -> UtilResult {
+				return genericInjr(unit, UnitTypes::Protoss_Zealot, scores.p.injrZeal);
 			};
 			OptionIndividual injrZeal = { utilityInjrZeal, "attack injured zealot" };
 			options_individual.push_back(injrZeal);
 
-			auto utilityInjrWork = [& scores = scores, genericInjr](Unit u) -> UtilResult {
-				return genericInjr(u, UnitTypes::Protoss_Probe, scores.p.injrWork);
+			auto utilityInjrWork = [& scores = scores, genericInjr](Unit unit) -> UtilResult {
+				return genericInjr(unit, UnitTypes::Protoss_Probe, scores.p.injrWork);
 			};
 			OptionIndividual injrWork = { utilityInjrWork, "attack injured worker" };
 			options_individual.push_back(injrWork);
 
 			// couldn't take unit filter out of getClosestUnit without a runtime crash
-			auto utilityClosest = [& scores = scores](Unit u) -> UtilResult {
-				Unit other = u->getClosestUnit(
+			auto utilityClosest = [& scores = scores](Unit unit) -> UtilResult {
+				Unit other = unit->getClosestUnit(
 				    IsEnemy
 				    && (GetType == UnitTypes::Protoss_Zealot
 				        || GetType == UnitTypes::Protoss_Photon_Cannon));
@@ -121,7 +121,7 @@ void UtilityManager::constructOptionsIndividual()
 			OptionIndividual enemyClosest = { utilityClosest, "attack closest zealot/cannon" };
 			options_individual.push_back(enemyClosest);
 
-			auto utilityArtosis = [& scores = scores](Unit u) -> UtilResult {
+			auto utilityArtosis = [& scores = scores](Unit unit) -> UtilResult {
 				const auto enemyBuildings = InformationManager::Instance().enemyBuildings;
 				std::set<EnemyUnitInfo> pylons;
 				for (const auto enemyBuilding : enemyBuildings) {
@@ -177,8 +177,8 @@ void UtilityManager::constructOptionsIndividual()
 			OptionIndividual enemyArtosisPylon = { utilityArtosis, "attack artosis pylon" };
 			options_individual.push_back(enemyArtosisPylon);
 
-			auto utilitySupply = [& scores = scores](Unit u) -> UtilResult {
-				Unit supply = u->getClosestUnit(
+			auto utilitySupply = [& scores = scores](Unit unit) -> UtilResult {
+				Unit supply = unit->getClosestUnit(
 				    IsEnemy
 				    && GetType == UnitTypes::Protoss_Pylon);
 				double score = supply ? scores.p.closestPyln : 0;
@@ -188,8 +188,8 @@ void UtilityManager::constructOptionsIndividual()
 			OptionIndividual enemySupply = { utilitySupply, "attack closest pylon" };
 			options_individual.push_back(enemySupply);
 
-			auto utilityWorker = [& scores = scores](Unit u) -> UtilResult {
-				Unit worker  = u->getClosestUnit(IsEnemy && IsWorker);
+			auto utilityWorker = [& scores = scores](Unit unit) -> UtilResult {
+				Unit worker  = unit->getClosestUnit(IsEnemy && IsWorker);
 				double score = worker ? scores.p.closestWork : 0;
 				auto p       = std::make_pair(score, worker);
 				return p;
@@ -197,8 +197,8 @@ void UtilityManager::constructOptionsIndividual()
 			OptionIndividual enemyWorker = { utilityWorker, "attack closest worker" };
 			options_individual.push_back(enemyWorker);
 
-			auto utilityAtAll = [& scores = scores](Unit u) -> UtilResult {
-				Unit any     = u->getClosestUnit(IsEnemy && !IsFlying);
+			auto utilityAtAll = [& scores = scores](Unit unit) -> UtilResult {
+				Unit any     = unit->getClosestUnit(IsEnemy && !IsFlying);
 				double score = any ? scores.p.closestAll : 0;
 				auto p       = std::make_pair(score, any);
 				return p;
@@ -210,9 +210,9 @@ void UtilityManager::constructOptionsIndividual()
 		}
 		case Races::Enum::Zerg: {
 			// stateful lambdas - https://youtu.be/_1X9D8Z5huA
-			auto utilityInjrZerg = [& scores = scores](Unit u) -> UtilResult {
-				auto weapon        = u->getType().groundWeapon();
-				const auto enemies = u->getUnitsInRadius(
+			auto utilityInjrZerg = [& scores = scores](Unit unit) -> UtilResult {
+				auto weapon        = unit->getType().groundWeapon();
+				const auto enemies = unit->getUnitsInRadius(
 				    weapon.maxRange() * 2,
 				    IsEnemy
 				        && (GetType == UnitTypes::Zerg_Zergling));
@@ -243,8 +243,8 @@ void UtilityManager::constructOptionsIndividual()
 			OptionIndividual injrZerg = { utilityInjrZerg, "attack injured zerg" };
 			options_individual.push_back(injrZerg);
 
-			auto utilityClosest = [& scores = scores](Unit u) -> UtilResult {
-				Unit other = u->getClosestUnit(
+			auto utilityClosest = [& scores = scores](Unit unit) -> UtilResult {
+				Unit other = unit->getClosestUnit(
 				    IsEnemy
 				    && (GetType == UnitTypes::Zerg_Zergling
 				        || GetType == UnitTypes::Zerg_Sunken_Colony
@@ -256,8 +256,8 @@ void UtilityManager::constructOptionsIndividual()
 			OptionIndividual enemyClosest = { utilityClosest, "attack closest zergling/sunken/worker" };
 			options_individual.push_back(enemyClosest);
 
-			auto utilityWorker = [& scores = scores](Unit u) -> UtilResult {
-				Unit worker  = u->getClosestUnit(IsEnemy && IsWorker);
+			auto utilityWorker = [& scores = scores](Unit unit) -> UtilResult {
+				Unit worker  = unit->getClosestUnit(IsEnemy && IsWorker);
 				double score = worker ? scores.z.closestWork : 0;
 				auto p       = std::make_pair(score, worker);
 				return p;
@@ -265,10 +265,10 @@ void UtilityManager::constructOptionsIndividual()
 			OptionIndividual enemyWorker = { utilityWorker, "attack closest worker" };
 			options_individual.push_back(enemyWorker);
 
-			auto utilityEnemy = [& scores = scores](Unit u) -> UtilResult {
-				Unit any     = u->getClosestUnit(IsEnemy && !IsFlying
-                                             && (GetType != UnitTypes::Zerg_Larva
-                                                 || GetType != UnitTypes::Zerg_Egg));
+			auto utilityEnemy = [& scores = scores](Unit unit) -> UtilResult {
+				Unit any     = unit->getClosestUnit(IsEnemy && !IsFlying
+                                                && (GetType != UnitTypes::Zerg_Larva
+                                                    || GetType != UnitTypes::Zerg_Egg));
 				double score = any ? scores.z.closestAllNotLarvEgg : 0;
 				auto p       = std::make_pair(score, any);
 				return p;
@@ -276,8 +276,8 @@ void UtilityManager::constructOptionsIndividual()
 			OptionIndividual enemyEnemy = { utilityEnemy, "attack closest ground enemy(!larva/egg)" };
 			options_individual.push_back(enemyEnemy);
 
-			auto utilityAtAll = [& scores = scores](Unit u) -> UtilResult {
-				Unit any     = u->getClosestUnit(IsEnemy && !IsFlying);
+			auto utilityAtAll = [& scores = scores](Unit unit) -> UtilResult {
+				Unit any     = unit->getClosestUnit(IsEnemy && !IsFlying);
 				double score = any ? scores.z.closestAll : 0;
 				auto p       = std::make_pair(score, any);
 				return p;
@@ -288,8 +288,8 @@ void UtilityManager::constructOptionsIndividual()
 			break;
 		}
 		case Races::Enum::Terran: {
-			auto utilityClosest = [& scores = scores](Unit u) -> UtilResult {
-				Unit other = u->getClosestUnit(
+			auto utilityClosest = [& scores = scores](Unit unit) -> UtilResult {
+				Unit other = unit->getClosestUnit(
 				    IsEnemy
 				    && (GetType == UnitTypes::Terran_Marine
 				        || GetType == UnitTypes::Terran_Firebat
@@ -303,8 +303,8 @@ void UtilityManager::constructOptionsIndividual()
 			    utilityClosest, "attack closest marine/firebat/bunker/worker");
 			options_individual.push_back(enemyClosest);
 
-			auto utilityWorker = [& scores = scores](Unit u) -> UtilResult {
-				Unit worker  = u->getClosestUnit(IsEnemy && IsWorker);
+			auto utilityWorker = [& scores = scores](Unit unit) -> UtilResult {
+				Unit worker  = unit->getClosestUnit(IsEnemy && IsWorker);
 				double score = worker ? scores.t.closestWork : 0;
 				auto p       = std::make_pair(score, worker);
 				return p;
@@ -312,8 +312,8 @@ void UtilityManager::constructOptionsIndividual()
 			OptionIndividual enemyWorker = { utilityWorker, "attack closest worker" };
 			options_individual.push_back(enemyWorker);
 
-			auto utilitySupply = [& scores = scores](Unit u) -> UtilResult {
-				Unit supply = u->getClosestUnit(
+			auto utilitySupply = [& scores = scores](Unit unit) -> UtilResult {
+				Unit supply = unit->getClosestUnit(
 				    IsEnemy
 				    && GetType == UnitTypes::Terran_Supply_Depot);
 				double score = supply ? scores.t.closestSdpt : 0;
@@ -323,8 +323,8 @@ void UtilityManager::constructOptionsIndividual()
 			OptionIndividual enemySupply = { utilitySupply, "attack closest depot" };
 			options_individual.push_back(enemySupply);
 
-			auto utilityAtAll = [& scores = scores](Unit u) -> UtilResult {
-				Unit any     = u->getClosestUnit(IsEnemy && !IsFlying);
+			auto utilityAtAll = [& scores = scores](Unit unit) -> UtilResult {
+				Unit any     = unit->getClosestUnit(IsEnemy && !IsFlying);
 				double score = any ? scores.t.closestAll : 0;
 				auto p       = std::make_pair(score, any);
 				return p;
@@ -332,13 +332,13 @@ void UtilityManager::constructOptionsIndividual()
 			OptionIndividual enemyAtAll = { utilityAtAll, "attack closest ground enemy" };
 			options_individual.push_back(enemyAtAll);
 
-			auto utilityEnemyBase = [& scores = scores](Unit u) -> UtilResult {
+			auto utilityEnemyBase = [& scores = scores](Unit unit) -> UtilResult {
 				const auto enemyMain = InformationManager::Instance().enemyMain;
 				double score         = scores.t.enemyBase;
 				UtilResult p         = std::make_pair(0, nullptr);
-				if (!enemyMain.u) {
+				if (!enemyMain.unit) {
 					score = 0;
-					p     = std::make_pair(score, enemyMain.u);
+					p     = std::make_pair(score, enemyMain.unit);
 				} else {
 					auto pos = enemyMain.getPosition();
 					if (Broodwar->isVisible(TilePosition(pos))) {
@@ -647,9 +647,9 @@ void UtilityManager::constructOptionsSquad()
 				const auto enemyMain = InformationManager::Instance().enemyMain;
 				double score         = scores.t.enemyBase;
 				UtilResult p         = std::make_pair(0, nullptr);
-				if (!enemyMain.u) {
+				if (!enemyMain.unit) {
 					score = 0;
-					p     = std::make_pair(score, enemyMain.u);
+					p     = std::make_pair(score, enemyMain.unit);
 				} else {
 					auto pos = enemyMain.getPosition();
 					if (Broodwar->isVisible(TilePosition(pos))) {
@@ -684,7 +684,7 @@ bool UtilityManager::performBestActionForZerglingInEnemyBase(BWAPI::Unit zerglin
 		}
 	}
 
-	if (bestOptionResult.first != 0 && bestOptionResult.second.u != nullptr) {
+	if (bestOptionResult.first != 0 && bestOptionResult.second.unit != nullptr) {
 		OrderManager::Instance().attack(zergling, bestOptionResult.second);
 		GUIManager::Instance().drawTextOnScreen(zergling, bestOptionDescription, 48);
 		GUIManager::Instance().drawLineOnScreen(zergling, bestOptionResult.second, 48);
@@ -706,7 +706,7 @@ bool UtilityManager::performBestActionForSquadInEnemyBase(Squad& squad)
 		}
 	}
 
-	if (bestOptionResult.first != 0 && bestOptionResult.second.u != nullptr) {
+	if (bestOptionResult.first != 0 && bestOptionResult.second.unit != nullptr) {
 		OrderManager::Instance().attack(squad, bestOptionResult.second);
 		GUIManager::Instance().drawTextOnScreen(*squad.begin(), bestOptionDescription, 48);
 		GUIManager::Instance().drawLineOnScreen(*squad.begin(), bestOptionResult.second, 48);

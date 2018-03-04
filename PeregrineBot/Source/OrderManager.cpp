@@ -54,17 +54,17 @@ void OrderManager::attack(BWAPI::Unit attacker, BWAPI::Position p)
 	attacker->attack(p);
 }
 
-void OrderManager::attack(BWAPI::Unit attacker, BWAPI::Unit u)
+void OrderManager::attack(BWAPI::Unit attacker, BWAPI::Unit unit)
 {
 	unitsWaitingAfterOrder.insert({ attacker, 0 });
-	attacker->attack(u);
+	attacker->attack(unit);
 }
 
 void OrderManager::attack(BWAPI::Unit attacker, EnemyUnitInfo enemy)
 {
 	if (Broodwar->isVisible((TilePosition)enemy.getPosition())) {
-		if (enemy.u) {
-			attack(attacker, enemy.u);
+		if (enemy.unit) {
+			attack(attacker, enemy.unit);
 		} else {
 			attack(attacker, enemy.getPosition());
 		}
@@ -73,14 +73,14 @@ void OrderManager::attack(BWAPI::Unit attacker, EnemyUnitInfo enemy)
 	}
 }
 
-void OrderManager::attack(Squad& squad, BWAPI::Unit u)
+void OrderManager::attack(Squad& squad, BWAPI::Unit unit)
 {
 	squadsWaitingAfterOrder.insert({ squad.id, 0 });
 	for (const auto attacker : squad) {
-		attack(attacker, u);
+		attack(attacker, unit);
 	}
 
-	SquadCommand command = { SquadCommandTypes::ATTACK_UNIT, u };
+	SquadCommand command = { SquadCommandTypes::ATTACK_UNIT, unit };
 	squad.setLastCommand(command);
 }
 
@@ -94,7 +94,7 @@ void OrderManager::attack(Squad& squad, EnemyUnitInfo enemy)
 	SquadCommandTypes type;
 
 	if (Broodwar->isVisible((TilePosition)enemy.getPosition())) {
-		if (enemy.u) {
+		if (enemy.unit) {
 			type = SquadCommandTypes::ATTACK_UNIT;
 		} else {
 			type = SquadCommandTypes::ATTACK_MOVE;
@@ -113,9 +113,9 @@ void OrderManager::move(BWAPI::Unit mover, BWAPI::Position p, bool shiftClick)
 	mover->move(p, shiftClick);
 }
 
-void OrderManager::move(BWAPI::Unit mover, EnemyUnitInfo u, bool shiftClick)
+void OrderManager::move(BWAPI::Unit mover, EnemyUnitInfo unit, bool shiftClick)
 {
-	move(mover, u.getPosition(), shiftClick);
+	move(mover, unit.getPosition(), shiftClick);
 }
 
 void OrderManager::move(Squad& squad, BWAPI::Position p, bool shiftClick)
@@ -129,14 +129,14 @@ void OrderManager::move(Squad& squad, BWAPI::Position p, bool shiftClick)
 	squad.setLastCommand(command);
 }
 
-void OrderManager::move(Squad& squad, EnemyUnitInfo u, bool shiftClick)
+void OrderManager::move(Squad& squad, EnemyUnitInfo unit, bool shiftClick)
 {
 	squadsWaitingAfterOrder.insert({ squad.id, 0 });
 	for (const auto mover : squad) {
-		move(mover, u, shiftClick);
+		move(mover, unit, shiftClick);
 	}
 
-	SquadCommand command = { SquadCommandTypes::MOVE, u };
+	SquadCommand command = { SquadCommandTypes::MOVE, unit };
 	squad.setLastCommand(command);
 }
 

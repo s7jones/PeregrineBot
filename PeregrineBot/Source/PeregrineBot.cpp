@@ -120,45 +120,45 @@ void PeregrineBot::onFrame()
 	InformationManager::Instance().update();
 
 	// Iterate through all the units that we own
-	for (auto& u : Broodwar->self()->getUnits()) {
+	for (auto& unit : Broodwar->self()->getUnits()) {
 		// Ignore the unit if it no longer exists
 		// Make sure to include this block when handling any Unit pointer!
-		if (!u->exists())
+		if (!unit->exists())
 			continue;
 
 		// Ignore the unit if it has one of the following status ailments
-		if (u->isLockedDown() || u->isMaelstrommed() || u->isStasised())
+		if (unit->isLockedDown() || unit->isMaelstrommed() || unit->isStasised())
 			continue;
 
 		// Ignore the unit if it is in one of the following states
-		if (u->isLoaded() || !u->isPowered() || u->isStuck())
+		if (unit->isLoaded() || !unit->isPowered() || unit->isStuck())
 			continue;
 
 		// Ignore the unit if it is incomplete or busy constructing
 		/* if ( !u->isCompleted() || u->isConstructing() )
 		continue;*/
 
-		if (u->getType() == UnitTypes::Zerg_Overlord
-		    || u->getType() == UnitTypes::Zerg_Zergling
-		    || u->getType().isBuilding()) {
-			InformationManager::Instance().spotting(u);
+		if (unit->getType() == UnitTypes::Zerg_Overlord
+		    || unit->getType() == UnitTypes::Zerg_Zergling
+		    || unit->getType().isBuilding()) {
+			InformationManager::Instance().spotting(unit);
 		}
 
-		const bool unitNeedsToWait = OrderManager::Instance().doesUnitHasOrder(u);
+		const bool unitNeedsToWait = OrderManager::Instance().doesUnitHasOrder(unit);
 		if (unitNeedsToWait) {
 			continue;
 		}
 
 		// Finally make the unit do some stuff!
 		// If the unit is a worker unit
-		if (u->getType().isWorker()) {
-			BaseManager::Instance().DoAllWorkerTasks(u);
+		if (unit->getType().isWorker()) {
+			BaseManager::Instance().DoAllWorkerTasks(unit);
 			continue;
 		}
 
 		if (!BuildOrderManager::Instance().buildOrderComplete) {
 			if ((*BuildOrderManager::Instance().boIndex == UnitTypes::Zerg_Spawning_Pool)
-			    && (u->getType() == UnitTypes::Zerg_Spawning_Pool) && (u->isBeingConstructed())) {
+			    && (unit->getType() == UnitTypes::Zerg_Spawning_Pool) && (unit->isBeingConstructed())) {
 				BuildOrderManager::Instance().incrementBuildOrder();
 				BuildOrderManager::Instance().pool = true;
 				DebugMessenger::Instance() << "pool isBeingConstructed: " << Broodwar->getFrameCount() << "F" << std::endl;
@@ -166,18 +166,18 @@ void PeregrineBot::onFrame()
 		}
 
 		if ((!BuildOrderManager::Instance().poolready)
-		    && (u->getType() == UnitTypes::Zerg_Spawning_Pool) && (u->isCompleted())) {
+		    && (unit->getType() == UnitTypes::Zerg_Spawning_Pool) && (unit->isCompleted())) {
 			BuildOrderManager::Instance().poolready = true;
 			DebugMessenger::Instance() << "pool ready: " << Broodwar->getFrameCount() << "F" << std::endl;
 		}
 
-		if (u->getType().isResourceDepot()) {
-			BaseManager::Instance().ManageBases(u);
+		if (unit->getType().isResourceDepot()) {
+			BaseManager::Instance().ManageBases(unit);
 			continue;
 		}
 
-		if (u->getType() == UnitTypes::Zerg_Overlord) {
-			InformationManager::Instance().overlordScouting(u);
+		if (unit->getType() == UnitTypes::Zerg_Overlord) {
+			InformationManager::Instance().overlordScouting(unit);
 			continue;
 		}
 

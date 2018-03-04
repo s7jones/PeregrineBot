@@ -22,10 +22,10 @@ public:
 	void update();
 	using SquadList = std::vector<Squad>;
 	const SquadList& getSquads() { return squads; };
-	void zerglingAttack(BWAPI::Unit u);
-	void zerglingAttackKnownBuildings(BWAPI::Unit u);
-	void zerglingScoutingBeforeBaseFound(BWAPI::Unit u);
-	void zerglingScoutSpreadOut(BWAPI::Unit u);
+	void zerglingAttack(BWAPI::Unit unit);
+	void zerglingAttackKnownBuildings(BWAPI::Unit unit);
+	void zerglingScoutingBeforeBaseFound(BWAPI::Unit unit);
+	void zerglingScoutSpreadOut(BWAPI::Unit unit);
 	void zerglingAttackKnownBuildings(const Squad& squad)
 	{
 		for (auto unit : squad) {
@@ -48,7 +48,7 @@ public:
 	const int SQUAD_RADIUS = 128;
 
 private:
-	std::set<EnemyUnitInfo> getZerglingAccessibleBuildings(BWAPI::Unit u);
+	std::set<EnemyUnitInfo> getZerglingAccessibleBuildings(BWAPI::Unit unit);
 	void putUnassignedInSquads();
 	void attackWithSquad(Squad& squad);
 	void handleIdleUnits();

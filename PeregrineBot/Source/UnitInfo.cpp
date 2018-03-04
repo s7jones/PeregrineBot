@@ -6,41 +6,41 @@ using namespace BWAPI;
 using namespace Filter;
 
 UnitInfo::UnitInfo(BWAPI::Unit unitToWrap)
-    : u(unitToWrap)
+    : unit(unitToWrap)
 {
 	UnitInfo::update();
 }
 
 void UnitInfo::update() const
 {
-	if (u) {
+	if (unit) {
 		if (exists()) {
 			lastFrameSeen = Broodwar->getFrameCount();
-			pos           = u->getPosition();
-			type          = u->getType();
+			pos           = unit->getPosition();
+			type          = unit->getType();
 		}
 	}
 }
 
 bool UnitInfo::exists() const
 {
-	if (!u) {
+	if (!unit) {
 		errorMessage("unit null 3");
 		return false;
 	}
 
-	return u->exists();
+	return unit->exists();
 }
 
 void EnemyUnitInfo::update() const
 {
 	UnitInfo::update();
-	if (u) {
+	if (unit) {
 		if (exists()) {
-			shields  = u->getShields();
-			hp       = u->getHitPoints();
-			energy   = u->getEnergy();
-			velocity = std::make_pair(u->getVelocityX(), u->getVelocityY());
+			shields  = unit->getShields();
+			hp       = unit->getHitPoints();
+			energy   = unit->getEnergy();
+			velocity = std::make_pair(unit->getVelocityX(), unit->getVelocityY());
 		}
 	}
 }
@@ -48,9 +48,9 @@ void EnemyUnitInfo::update() const
 void ResourceUnitInfo::update() const
 {
 	UnitInfo::update();
-	if (u) {
+	if (unit) {
 		if (exists()) {
-			resources = u->getResources();
+			resources = unit->getResources();
 		}
 	}
 }
@@ -63,9 +63,9 @@ int ResourceUnitInfo::getResources() const
 void FriendlyUnitInfo::update() const
 {
 	UnitInfo::update();
-	if (u) {
+	if (unit) {
 		if (exists()) {
-			if (u->isAttackFrame()) {
+			if (unit->isAttackFrame()) {
 				lastFrameAttacking = Broodwar->getFrameCount();
 			}
 		}

@@ -15,7 +15,7 @@ public:
 		return instance;
 	}
 	void ManageBases(BWAPI::Unit base);
-	void DoAllWorkerTasks(BWAPI::Unit u);
+	void DoAllWorkerTasks(BWAPI::Unit unit);
 	void onUnitShow(BWAPI::Unit unit);
 	void onUnitCreate(BWAPI::Unit unit);
 	void onUnitDestroy(BWAPI::Unit unit);
@@ -36,7 +36,7 @@ private:
 
 class Base {
 public:
-	Base(BWAPI::Unit u);
+	Base(BWAPI::Unit unit);
 	BWAPI::Unitset checkForInvaders() const;
 	void calculateBorder() const;
 	bool operator<(const Base& other) const

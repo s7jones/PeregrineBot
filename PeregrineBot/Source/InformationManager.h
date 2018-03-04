@@ -48,7 +48,7 @@ public:
 	void overlordScouting(BWAPI::Unit overlord);
 	void spotting(BWAPI::Unit spotter);
 
-	std::unique_ptr<ResourceUnitInfo> getClosestMineral(BWAPI::Unit u);
+	std::unique_ptr<ResourceUnitInfo> getClosestMineral(BWAPI::Unit unit);
 
 	bool isEnemyBaseDeduced   = false;
 	bool isEnemyBaseReached   = false;

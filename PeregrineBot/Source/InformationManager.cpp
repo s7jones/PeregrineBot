@@ -80,9 +80,9 @@ void InformationManager::setup()
 void InformationManager::setupScouting()
 {
 	std::set<Unit> overlords;
-	for (Unit u : Broodwar->self()->getUnits()) {
-		if (u->getType() == UnitTypes::Zerg_Overlord)
-			overlords.insert(u);
+	for (Unit unit : Broodwar->self()->getUnits()) {
+		if (unit->getType() == UnitTypes::Zerg_Overlord)
+			overlords.insert(unit);
 	}
 
 	TilePosition airOrigin;
@@ -234,7 +234,7 @@ void InformationManager::updateScouting()
 		if (Broodwar->isVisible(TilePosition(p))) {
 			scoutedPositions.insert(p);
 			it = unscoutedPositions.erase(it);
-			if (!enemyMain.u) {
+			if (!enemyMain.unit) {
 				auto unitsOnBaseTile = Broodwar->getUnitsOnTile(TilePosition(p),
 				                                                IsEnemy && IsVisible && Exists
 				                                                    && IsResourceDepot && !IsLifted);
@@ -256,7 +256,7 @@ void InformationManager::updateScouting()
 	// probably only applicable to Terran weird lifting stuff
 
 	if (isSpottingUnitsTime) {
-		if (!(isEnemyBaseDeduced || enemyMain.u) && unscoutedPositions.size() == 1) {
+		if (!(isEnemyBaseDeduced || enemyMain.unit) && unscoutedPositions.size() == 1) {
 			isEnemyBaseDeduced   = true;
 			BWAPI::Position base = (*unscoutedPositions.begin());
 			DebugMessenger::Instance() << "Enemy base deduced to be at: " << base << "P" << std::endl;
@@ -276,7 +276,7 @@ void InformationManager::updateScouting()
 		}
 	}
 
-	if (enemyMain.u || isEnemyBaseFromSpotting) {
+	if (enemyMain.unit || isEnemyBaseFromSpotting) {
 		if (isSpottingUnitsTime) isSpottingUnitsTime = false;
 		if (isSpottingCreepTime) isSpottingCreepTime = false;
 	}
@@ -289,7 +289,7 @@ void InformationManager::overlordScouting(BWAPI::Unit overlord)
 		return;
 	}
 
-	if (!enemyMain.u) {
+	if (!enemyMain.unit) {
 		overlordScoutingAtGameStart(overlord);
 	} else {
 		overlordScoutingAfterBaseFound(overlord);
@@ -468,12 +468,12 @@ void InformationManager::overlordRetreatToHome(BWAPI::Unit overlord)
 	}
 }
 
-std::unique_ptr<ResourceUnitInfo> InformationManager::getClosestMineral(BWAPI::Unit u)
+std::unique_ptr<ResourceUnitInfo> InformationManager::getClosestMineral(BWAPI::Unit unit)
 {
 	double closestDist                              = std::numeric_limits<double>::infinity();
 	std::unique_ptr<ResourceUnitInfo> chosenMineral = nullptr;
 	for (auto mineral : minerals) {
-		auto dist = distanceGround(u->getPosition(), mineral.getPosition());
+		auto dist = distanceGround(unit->getPosition(), mineral.getPosition());
 		if (closestDist > dist) {
 			closestDist   = dist;
 			chosenMineral = std::make_unique<ResourceUnitInfo>(mineral);
@@ -506,7 +506,7 @@ void InformationManager::onUnitDestroy(BWAPI::Unit unit)
 	if ((IsEnemy)(unit)) {
 		if ((IsBuilding)(unit)) {
 			enemyBuildings.erase(unit);
-			if (enemyMain.u) {
+			if (enemyMain.unit) {
 				if (((IsResourceDepot)(unit) == true) && (unit->getPosition() == enemyMain.getPosition())) {
 					isEnemyBaseDestroyed = true;
 					DebugMessenger::Instance() << "destroyed enemy base: " << Broodwar->getFrameCount() << std::endl;
@@ -560,7 +560,7 @@ void InformationManager::validateEnemyUnits()
 		while (it != enemyBuildings.end()) {
 			bool erase = false;
 			if (it->exists()) {
-				if ((!IsBuilding || !IsEnemy)(it->u)) {
+				if ((!IsBuilding || !IsEnemy)(it->unit)) {
 					erase = true;
 					DebugMessenger::Instance() << "remove enemy building on validation" << std::endl;
 				}
@@ -579,7 +579,7 @@ void InformationManager::validateEnemyUnits()
 		while (it != enemyArmy.end()) {
 			bool erase = false;
 			if (it->exists()) {
-				if ((IsBuilding || !IsEnemy)(it->u)) {
+				if ((IsBuilding || !IsEnemy)(it->unit)) {
 					erase = true;
 					DebugMessenger::Instance() << "remove enemy army on validation" << std::endl;
 				}

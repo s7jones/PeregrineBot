@@ -13,21 +13,21 @@ public:
 
 	virtual bool operator<(const UnitInfo& other) const
 	{
-		return u < other.u;
+		return unit < other.unit;
 	}
 	friend bool operator<(const UnitInfo& lhs, BWAPI::Unit rhs)
 	{
-		return lhs.u < rhs;
+		return lhs.unit < rhs;
 	}
 	friend bool operator<(BWAPI::Unit lhs, const UnitInfo& rhs)
 	{
-		return lhs < rhs.u;
+		return lhs < rhs.unit;
 	}
 	// transparent comparators
 	// https://www.youtube.com/watch?v=BBUacofxOP8
 	using is_transparent = void;
 
-	BWAPI::Unit u = nullptr;
+	BWAPI::Unit unit = nullptr;
 
 private:
 	mutable int lastFrameSeen    = 0;

@@ -10,24 +10,24 @@
 using namespace BWAPI;
 using namespace Filter;
 
-void GUIManager::drawTextOnScreen(BWAPI::Unit u, std::string format, int frames)
+void GUIManager::drawTextOnScreen(BWAPI::Unit unit, std::string format, int frames)
 {
 	MessageAndFrames mnf = { format, frames };
-	messageBuffer.insert_or_assign(u, mnf);
+	messageBuffer.insert_or_assign(unit, mnf);
 }
 
-void GUIManager::drawLineOnScreen(BWAPI::Unit u, EnemyUnitInfo enemy, int frames)
+void GUIManager::drawLineOnScreen(BWAPI::Unit unit, EnemyUnitInfo enemy, int frames)
 {
 	TargetAndFrames tnf = { enemy, frames };
-	lineBuffer.insert_or_assign(u, tnf);
+	lineBuffer.insert_or_assign(unit, tnf);
 }
 
-void GUIManager::drawTextOnUnit(BWAPI::Unit u, std::string format)
+void GUIManager::drawTextOnUnit(BWAPI::Unit unit, std::string format)
 {
-	if (!u->exists()) {
+	if (!unit->exists()) {
 		return;
 	}
-	Broodwar->drawTextMap(u->getPosition(), format.c_str());
+	Broodwar->drawTextMap(unit->getPosition(), format.c_str());
 }
 
 void GUIManager::draw()
