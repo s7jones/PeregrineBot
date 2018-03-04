@@ -75,6 +75,8 @@ void InformationManager::setup()
         });
 
 	spottingTime = ptr->second;
+
+	DebugMessenger::Instance() << "spottingTime: " << spottingTime << "F" << std::endl;
 }
 
 void InformationManager::setupScouting()
@@ -255,7 +257,7 @@ void InformationManager::updateScouting()
 	// add logic here for "not" finding base even after scouting everything
 	// probably only applicable to Terran weird lifting stuff
 
-	if (isSpottingUnitsTime) {
+	if (isSpottingUnitsTime && !isEnemyBaseFromSpotting) {
 		if (!(isEnemyBaseDeduced || enemyMain.unit) && unscoutedPositions.size() == 1) {
 			isEnemyBaseDeduced   = true;
 			BWAPI::Position base = (*unscoutedPositions.begin());
