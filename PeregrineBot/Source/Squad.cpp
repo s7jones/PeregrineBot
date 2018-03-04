@@ -1,3 +1,3 @@
 #include "Squad.h"
 
-unsigned int Squad::numberSquadsMade = 0;
+SquadID Squad::numberSquadsMade = 0;

@@ -35,6 +35,8 @@ public:
 	EnemyUnitInfo targetEnemy      = { nullptr };
 };
 
+using SquadID = unsigned int;
+
 class Squad : public BWAPI::Unitset {
 public:
 	Squad()
@@ -42,8 +44,8 @@ public:
 		id = numberSquadsMade++;
 	}
 
-	unsigned int id;
-	static unsigned int numberSquadsMade;
+	SquadID id;
+	static SquadID numberSquadsMade;
 
 	enum SquadIdleTypes {
 		ALLIDLE,
