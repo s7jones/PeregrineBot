@@ -4,6 +4,7 @@
 #include "UnitInfo.h"
 #include <deque>
 #include <set>
+#include <vector>
 
 class ArmyManager {
 private:
@@ -16,6 +17,9 @@ public:
 		return instance;
 	}
 	void update();
+
+	using SquadList = std::vector<Squad>;
+	const SquadList& getSquads() { return squads; };
 	void zerglingAttack(BWAPI::Unit u);
 	void zerglingAttackKnownBuildings(BWAPI::Unit u);
 	void zerglingScoutingBeforeBaseFound(BWAPI::Unit u);
@@ -39,6 +43,8 @@ public:
 		}
 	}
 
+	const int SQUAD_RADIUS = 128;
+
 private:
 	std::set<EnemyUnitInfo> getZerglingAccessibleBuildings(BWAPI::Unit u);
 	void putUnassignedInSquads();
@@ -47,7 +53,6 @@ private:
 	void incrementScoutLocationZerglingIndex();
 
 	std::vector<Squad> squads;
-	const int SQUAD_RADIUS = 128;
 
 	std::deque<BWAPI::Position> scoutLocationsZergling;
 	std::deque<BWAPI::Position>::iterator scoutLocationIndex;

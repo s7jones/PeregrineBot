@@ -33,13 +33,6 @@ void ArmyManager::putUnassignedInSquads()
 		double closestSquadDistance = std::numeric_limits<double>::infinity();
 
 		for (const auto squad : squads) {
-
-			auto distance = distanceGround(friendly.getPosition(), squad.getPosition());
-			if (distance < closestSquadDistance) {
-				closestSquadDistance = distance;
-				closestSquad         = squad;
-			}
-
 			if (squad.count(friendly.u)) {
 				isUnitAssigned = true;
 				break;
@@ -47,6 +40,14 @@ void ArmyManager::putUnassignedInSquads()
 		}
 
 		if (!isUnitAssigned) {
+			for (const auto squad : squads) {
+				auto distance = distanceAir(friendly.getPosition(), squad.getPosition());
+				if (distance < closestSquadDistance) {
+					closestSquadDistance = distance;
+					closestSquad         = squad;
+				}
+			}
+
 			if (closestSquadDistance < SQUAD_RADIUS) {
 				closestSquad.insert(friendly.u);
 			} else {
