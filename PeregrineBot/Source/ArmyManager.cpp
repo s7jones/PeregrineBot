@@ -99,7 +99,7 @@ void ArmyManager::attackWithSquad(Squad& squad)
     engine
     */
 
-	bool priorityTarget = UtilityManager::Instance().getBestActionForSquad(squad);
+	const bool priorityTarget = UtilityManager::Instance().getBestActionForSquad(squad);
 
 	if (priorityTarget) {
 		return;
@@ -159,6 +159,7 @@ void ArmyManager::attackWithSquad(Squad& squad)
 	} else {
 		if (Squad::SOMEIDLE) {
 			// reassign idle members
+			errorMessage("some (but not all or none) in squad idle");
 		} else {
 			if (Squad::ALLMOVING) { // attack move is most likely not covered here
 				UnitCommand lastCmd = (*squad.begin())->getLastCommand();
@@ -274,7 +275,7 @@ void ArmyManager::zerglingAttack(BWAPI::Unit u)
 	engine
 	*/
 
-	bool priorityTarget = UtilityManager::Instance().getBestActionForZergling(u);
+	const bool priorityTarget = UtilityManager::Instance().getBestActionForZergling(u);
 
 	if (priorityTarget) {
 		return;
@@ -364,7 +365,7 @@ void ArmyManager::zerglingAttack(BWAPI::Unit u)
 
 std::set<EnemyUnitInfo> ArmyManager::getZerglingAccessibleBuildings(BWAPI::Unit u)
 {
-	auto enemyBuildings = InformationManager::Instance().enemyBuildings;
+	const auto enemyBuildings = InformationManager::Instance().enemyBuildings;
 	std::set<EnemyUnitInfo> enemyBuildingsAccessible;
 	for (auto iter = enemyBuildings.begin(); iter != enemyBuildings.end(); iter++) {
 		auto building    = *iter;
@@ -416,9 +417,9 @@ void ArmyManager::zerglingAttackKnownBuildings(BWAPI::Unit u)
 
 void ArmyManager::zerglingScoutingBeforeBaseFound(BWAPI::Unit u)
 {
-	auto scoutingOptions    = InformationManager::Instance().scoutingOptions;
-	auto scoutedPositions   = InformationManager::Instance().scoutedPositions;
-	auto unscoutedPositions = InformationManager::Instance().unscoutedPositions;
+	const auto scoutingOptions    = InformationManager::Instance().scoutingOptions;
+	const auto scoutedPositions   = InformationManager::Instance().scoutedPositions;
+	const auto unscoutedPositions = InformationManager::Instance().unscoutedPositions;
 
 	if (Broodwar->getStartLocations().size() == 4) { // map size is 4, use new scouting
 		auto tp1                       = scoutingOptions.begin()->startToP1ToP2[1];
@@ -455,8 +456,8 @@ void ArmyManager::zerglingScoutingBeforeBaseFound(BWAPI::Unit u)
 
 void ArmyManager::zerglingScoutSpreadOut(BWAPI::Unit u)
 {
-	auto enemyBuildings     = InformationManager::Instance().enemyBuildings;
-	auto unscoutedPositions = InformationManager::Instance().unscoutedPositions;
+	const auto enemyBuildings     = InformationManager::Instance().enemyBuildings;
+	const auto unscoutedPositions = InformationManager::Instance().unscoutedPositions;
 	if (scoutLocationsZergling.empty()) {
 		auto enemyBuildingsAccessible = getZerglingAccessibleBuildings(u);
 

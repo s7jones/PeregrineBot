@@ -7,8 +7,8 @@ using namespace BWAPI;
 
 bool BuildingManager::isAnythingToBuild(BWAPI::Unit builder)
 {
-	bool flag = false;
-	auto ut   = BuildOrderManager::Instance().rebuildBuilding();
+	bool flag     = false;
+	const auto ut = BuildOrderManager::Instance().rebuildBuilding();
 	if (ut != UnitTypes::Unknown) {
 		return tryToBuild(builder, ut);
 	}

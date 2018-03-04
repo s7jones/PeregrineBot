@@ -60,10 +60,10 @@ void BaseManager::ManageBases(BWAPI::Unit base)
 			}
 		}
 
-		auto poolready     = BuildOrderManager::Instance().poolready;
-		auto gotZergMoney  = Broodwar->self()->minerals() >= UnitTypes::Zerg_Zergling.mineralPrice();
-		auto gotZergSupply = Broodwar->self()->supplyTotal() - Broodwar->self()->supplyUsed() > 0;
-		auto zergBO        = *BuildOrderManager::Instance().boIndex == UnitTypes::Zerg_Zergling;
+		const auto poolready     = BuildOrderManager::Instance().poolready;
+		const auto gotZergMoney  = Broodwar->self()->minerals() >= UnitTypes::Zerg_Zergling.mineralPrice();
+		const auto gotZergSupply = Broodwar->self()->supplyTotal() - Broodwar->self()->supplyUsed() > 0;
+		const auto zergBO        = *BuildOrderManager::Instance().boIndex == UnitTypes::Zerg_Zergling;
 
 		if (poolready && gotZergMoney
 		    && gotZergSupply
@@ -195,7 +195,7 @@ void BaseManager::DoAllWorkerTasks(BWAPI::Unit u)
 				// If the call fails, then print the last error message
 				DebugMessenger::Instance() << Broodwar->getLastError() << std::endl;
 				DebugMessenger::Instance() << "Worker couldn't gather mineral or from refinery" << std::endl;
-				auto closestKnownMineral = InformationManager::Instance().getClosestMineral(u);
+				const auto closestKnownMineral = InformationManager::Instance().getClosestMineral(u);
 				if (closestKnownMineral) {
 					OrderManager::Instance().move(u, closestKnownMineral->getPosition());
 				}
