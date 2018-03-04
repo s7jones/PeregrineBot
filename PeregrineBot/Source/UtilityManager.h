@@ -5,7 +5,8 @@
 
 using UtilResult = std::pair<double, EnemyUnitInfo>;
 
-class Option;
+class OptionIndividual;
+class OptionSquad;
 
 class UtilityManager {
 private:
@@ -18,13 +19,16 @@ public:
 		return instance;
 	}
 	bool getBestActionForZergling(BWAPI::Unit zergling);
-	bool getBestActionForSquad(Squad squad);
+	bool getBestActionForSquad(Squad& squad);
 
 private:
-	void constructOptions();
+	void constructOptionsIndividual();
+	void constructOptionsSquad();
 	bool performBestActionForZerglingInEnemyBase(BWAPI::Unit zergling);
+	bool performBestActionForSquadInEnemyBase(Squad& squad);
 
-	std::vector<Option> options;
+	std::vector<OptionIndividual> options_individual;
+	std::vector<OptionSquad> options_squad;
 
 	const struct utilities {
 		const struct putilities {
@@ -59,11 +63,27 @@ private:
 	utilities scores;
 };
 
-class Option {
+class OptionIndividual {
 public:
 	using funcUtil = std::function<UtilResult(BWAPI::Unit)>;
 
-	Option(funcUtil util, std::string description)
+	OptionIndividual(funcUtil util, std::string description)
+	    : util(util)
+	    , description(description)
+	{
+	}
+
+	funcUtil util;
+	std::string description;
+
+private:
+};
+
+class OptionSquad {
+public:
+	using funcUtil = std::function<UtilResult(const Squad&)>;
+
+	OptionSquad(funcUtil util, std::string description)
 	    : util(util)
 	    , description(description)
 	{
