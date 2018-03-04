@@ -4,7 +4,7 @@
 
 void DebugMessenger::setup(bool debug_flag_define)
 {
-	bool debug_flag_json = FileManager::Instance().readJsonConfig();
+	const bool debug_flag_json = FileManager::Instance().readJsonConfig();
 
 	if (debug_flag_json || debug_flag_define) {
 		debug_enabled = true;

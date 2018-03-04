@@ -1,5 +1,6 @@
 #pragma once
 #include "BWAPI.h"
+#include "Squad.h"
 #include "UnitInfo.h"
 
 class OrderManager {
@@ -13,16 +14,25 @@ public:
 		return instance;
 	}
 	void update();
-	void UpdateUnitsWaitingSinceLastOrder();
-	bool DoesUnitHasOrder(BWAPI::Unit unit);
-	void Attack(BWAPI::Unit attacker, BWAPI::Position p);
-	void Attack(BWAPI::Unit attacker, BWAPI::Unit u);
-	void Attack(BWAPI::Unit attacker, EnemyUnitInfo enemy);
-	void Move(BWAPI::Unit mover, BWAPI::Position p, bool shiftClick = false);
-	void Move(BWAPI::Unit mover, EnemyUnitInfo u, bool shiftClick = false);
-	void Build(BWAPI::Unit builder, BWAPI::UnitType buildingType, BWAPI::TilePosition buildPosition);
-	void Stop(BWAPI::Unit stopper);
+	bool doesUnitHasOrder(BWAPI::Unit unit);
+	bool doesSquadHaveOrder(Squad& squad);
+	void attack(BWAPI::Unit attacker, BWAPI::Position p);
+	void attack(BWAPI::Unit attacker, BWAPI::Unit u);
+	void attack(BWAPI::Unit attacker, EnemyUnitInfo enemy);
+	void attack(Squad& squad, BWAPI::Unit u);
+	void attack(Squad& squad, EnemyUnitInfo enemy);
+	void move(BWAPI::Unit mover, BWAPI::Position p, bool shiftClick = false);
+	void move(BWAPI::Unit mover, EnemyUnitInfo u, bool shiftClick = false);
+	void move(Squad& squad, BWAPI::Position p, bool shiftClick = false);
+	void move(Squad& squad, EnemyUnitInfo u, bool shiftClick = false);
+	void build(BWAPI::Unit builder, BWAPI::UnitType buildingType, BWAPI::TilePosition buildPosition);
+	void stop(BWAPI::Unit stopper);
+	void stop(Squad& squad);
 
 private:
-	std::map<BWAPI::Unit, int> unitsToWaitAfterOrder;
+	void updateUnitsWaitingSinceLastOrder();
+	void updateSquadsWaitingSinceLastOrder();
+
+	std::map<BWAPI::Unit, int> unitsWaitingAfterOrder;
+	std::map<unsigned int, int> squadsWaitingAfterOrder;
 };

@@ -300,17 +300,17 @@ void InformationManager::overlordScoutingAtGameStart(BWAPI::Unit overlord)
 			auto p                        = getBasePos(tp);
 			const bool firstOptionScouted = scoutedPositions.find(p) != scoutedPositions.end();
 			if (!firstOptionScouted) {
-				OrderManager::Instance().Move(overlord, p, true);
+				OrderManager::Instance().move(overlord, p, true);
 			} else {
 				for (auto p2 : boost::adaptors::reverse(unscoutedPositions)) { //https://stackoverflow.com/questions/8542591/c11-reverse-range-based-for-loop
 					if (p2 == p)
 						continue;
-					OrderManager::Instance().Move(overlord, p2, true);
+					OrderManager::Instance().move(overlord, p2, true);
 				}
 			}
 		} else {                                                          // map size isn't 4, so use old scouting
 			for (auto p : boost::adaptors::reverse(unscoutedPositions)) { //https://stackoverflow.com/questions/8542591/c11-reverse-range-based-for-loop
-				OrderManager::Instance().Move(overlord, p, true);
+				OrderManager::Instance().move(overlord, p, true);
 			}
 		}
 	}
@@ -426,22 +426,24 @@ void InformationManager::overlordScoutingAfterBaseFound(BWAPI::Unit overlord)
 			static std::deque<Position> scoutLocations;
 			if (scoutLocations.empty()) {
 				auto enemyRegion = BWTA::getRegion(enemyMain.getPosition());
-				auto& poly       = enemyRegion->getPolygon();
-				for (size_t j = 0; j < poly.size(); ++j) {
-					// The points in Polygon appear to be all along the perimeter.
-					Position point1 = poly[j];
-					scoutLocations.push_back(point1);
-				}
-				for (const auto& region : BWTA::getRegions()) {
-					for (const auto& base : region->getBaseLocations()) {
-						Position point1 = base->getPosition();
+				if (enemyRegion) {
+					auto& poly = enemyRegion->getPolygon();
+					for (size_t j = 0; j < poly.size(); ++j) {
+						// The points in Polygon appear to be all along the perimeter.
+						Position point1 = poly[j];
 						scoutLocations.push_back(point1);
+					}
+					for (const auto& region : BWTA::getRegions()) {
+						for (const auto& base : region->getBaseLocations()) {
+							Position point1 = base->getPosition();
+							scoutLocations.push_back(point1);
+						}
 					}
 				}
 			} else {
 				auto it              = scoutLocations.begin();
 				Position baseToScout = (*it);
-				OrderManager::Instance().Move(overlord, baseToScout);
+				OrderManager::Instance().move(overlord, baseToScout);
 				scoutLocations.erase(it);
 			}
 		} else { // enemy race is terran, move back to our own base
@@ -456,7 +458,7 @@ void InformationManager::overlordRetreatToHome(BWAPI::Unit overlord)
 	auto distanceFromOwnBase = overlord->getDistance(ownBasePos);
 	if (distanceFromOwnBase > 128) {
 		DebugMessenger::Instance() << "Retreat overlord." << std::endl;
-		OrderManager::Instance().Move(overlord, ownBasePos);
+		OrderManager::Instance().move(overlord, ownBasePos);
 	} else {
 		//DebugMessenger::Instance() << "Overlord being attacked in base." << std::endl;
 		// spamming when enemy race is terran.

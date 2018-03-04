@@ -60,10 +60,10 @@ void BaseManager::ManageBases(BWAPI::Unit base)
 			}
 		}
 
-		auto poolready     = BuildOrderManager::Instance().poolready;
-		auto gotZergMoney  = Broodwar->self()->minerals() >= UnitTypes::Zerg_Zergling.mineralPrice();
-		auto gotZergSupply = Broodwar->self()->supplyTotal() - Broodwar->self()->supplyUsed() > 0;
-		auto zergBO        = *BuildOrderManager::Instance().boIndex == UnitTypes::Zerg_Zergling;
+		const auto poolready     = BuildOrderManager::Instance().poolready;
+		const auto gotZergMoney  = Broodwar->self()->minerals() >= UnitTypes::Zerg_Zergling.mineralPrice();
+		const auto gotZergSupply = Broodwar->self()->supplyTotal() - Broodwar->self()->supplyUsed() > 0;
+		const auto zergBO        = *BuildOrderManager::Instance().boIndex == UnitTypes::Zerg_Zergling;
 
 		if (poolready && gotZergMoney
 		    && gotZergSupply
@@ -138,7 +138,7 @@ void BaseManager::DoAllWorkerTasks(BWAPI::Unit u)
 				// always keep 1 mining
 				if (miners.size() > 1) {
 					targetsAndAssignedDefenders.insert({ invader, u });
-					OrderManager::Instance().Attack(u, invader);
+					OrderManager::Instance().attack(u, invader);
 					GUIManager::Instance().drawTextOnScreen(u, "this is SPARTA!");
 					defenders.insert(u);
 					miners.erase(u);
@@ -152,7 +152,7 @@ void BaseManager::DoAllWorkerTasks(BWAPI::Unit u)
 					targetsAndAssignedDefenders.erase(defencePair);
 					if (miners.size() > 1) {
 						targetsAndAssignedDefenders.insert({ invader, u });
-						OrderManager::Instance().Attack(u, invader);
+						OrderManager::Instance().attack(u, invader);
 						GUIManager::Instance().drawTextOnScreen(u, "prepare for glory (reinforce)");
 						defenders.insert(u);
 						miners.erase(u);
@@ -165,7 +165,7 @@ void BaseManager::DoAllWorkerTasks(BWAPI::Unit u)
 
 	if (defenders.find(u) != defenders.end()) {
 		if (distanceAir(u->getPosition(), hatcheries.begin()->base->getPosition()) > hatcheries.begin()->borderRadius) {
-			OrderManager::Instance().Stop(u);
+			OrderManager::Instance().stop(u);
 			GUIManager::Instance().drawTextOnScreen(u, "don't chase");
 			defenders.erase(u);
 			for (auto defencePair : targetsAndAssignedDefenders) {
@@ -195,9 +195,9 @@ void BaseManager::DoAllWorkerTasks(BWAPI::Unit u)
 				// If the call fails, then print the last error message
 				DebugMessenger::Instance() << Broodwar->getLastError() << std::endl;
 				DebugMessenger::Instance() << "Worker couldn't gather mineral or from refinery" << std::endl;
-				auto closestKnownMineral = InformationManager::Instance().getClosestMineral(u);
+				const auto closestKnownMineral = InformationManager::Instance().getClosestMineral(u);
 				if (closestKnownMineral) {
-					OrderManager::Instance().Move(u, closestKnownMineral->getPosition());
+					OrderManager::Instance().move(u, closestKnownMineral->getPosition());
 				}
 			} else {
 				miners.insert(u);

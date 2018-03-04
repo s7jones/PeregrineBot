@@ -7,8 +7,8 @@ using namespace BWAPI;
 
 bool BuildingManager::isAnythingToBuild(BWAPI::Unit builder)
 {
-	bool flag = false;
-	auto ut   = BuildOrderManager::Instance().rebuildBuilding();
+	bool flag     = false;
+	const auto ut = BuildOrderManager::Instance().rebuildBuilding();
 	if (ut != UnitTypes::Unknown) {
 		return tryToBuild(builder, ut);
 	}
@@ -32,7 +32,7 @@ bool BuildingManager::tryToBuild(BWAPI::Unit builder, BWAPI::UnitType ut)
 		if ((lastChecked + delay) < Broodwar->getFrameCount()) {
 			TilePosition buildPosition = Broodwar->getBuildLocation(ut, builder->getTilePosition());
 			if (buildPosition != TilePositions::Unknown) {
-				OrderManager::Instance().Build(builder, ut, buildPosition);
+				OrderManager::Instance().build(builder, ut, buildPosition);
 				lastChecked = Broodwar->getFrameCount();
 				return true;
 			}

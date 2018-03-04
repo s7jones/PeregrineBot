@@ -144,7 +144,7 @@ void PeregrineBot::onFrame()
 			InformationManager::Instance().spotting(u);
 		}
 
-		bool unitNeedsToWait = OrderManager::Instance().DoesUnitHasOrder(u);
+		const bool unitNeedsToWait = OrderManager::Instance().doesUnitHasOrder(u);
 		if (unitNeedsToWait) {
 			continue;
 		}
@@ -181,12 +181,9 @@ void PeregrineBot::onFrame()
 			continue;
 		}
 
-		if (u->getType() == UnitTypes::Zerg_Zergling) {
-			ArmyManager::Instance().ZerglingAttack(u);
-			continue;
-		}
-
 	} // closure: unit iterator
+
+	ArmyManager::Instance().update();
 
 	if (Broodwar->getFrameCount() > 86400) Broodwar->leaveGame();
 }
@@ -266,6 +263,7 @@ void PeregrineBot::onUnitDestroy(BWAPI::Unit unit)
 {
 	InformationManager::Instance().onUnitDestroy(unit);
 	BaseManager::Instance().onUnitDestroy(unit);
+	ArmyManager::Instance().onUnitDestroy(unit);
 }
 
 void PeregrineBot::onUnitMorph(BWAPI::Unit unit)

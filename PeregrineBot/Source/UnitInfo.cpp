@@ -5,6 +5,12 @@
 using namespace BWAPI;
 using namespace Filter;
 
+UnitInfo::UnitInfo(BWAPI::Unit unitToWrap)
+    : u(unitToWrap)
+{
+	UnitInfo::update();
+}
+
 void UnitInfo::update() const
 {
 	if (u) {
@@ -13,8 +19,6 @@ void UnitInfo::update() const
 			pos           = u->getPosition();
 			type          = u->getType();
 		}
-	} else {
-		errorMessage("unit null 2");
 	}
 }
 
