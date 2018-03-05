@@ -3,6 +3,7 @@
 #include "UnitInfo.h"
 #include "Utility.h"
 #include <array>
+#include <map>
 #include <memory>
 
 // I couldn't put forward declarations of these above InformationManager
@@ -47,7 +48,7 @@ public:
 	void overlordScouting(BWAPI::Unit overlord);
 	void spotting(BWAPI::Unit spotter);
 
-	std::unique_ptr<ResourceUnitInfo> getClosestMineral(BWAPI::Unit u);
+	std::unique_ptr<ResourceUnitInfo> getClosestMineral(BWAPI::Unit unit);
 
 	bool isEnemyBaseDeduced   = false;
 	bool isEnemyBaseReached   = false;
@@ -91,13 +92,12 @@ private:
 	void spotCreep(BWAPI::Unit spotter);
 
 	struct {
-		double ground;
-		double air;
+		double ground = 0;
+		double air    = 0;
 	} maxBaseToBaseDistance;
 	std::map<BWAPI::UnitType, double> spottingTimes;
-	double spottingTime         = 0;
-	bool isSpottingCreepTime    = true;
-	bool isSpottingUnitsTime    = true;
-	using unitAndPotentialBases = std::pair<BWAPI::Unit, std::set<BWAPI::Position>>;
-	std::set<unitAndPotentialBases> spottedUnitsAndPotentialBases;
+	double spottingTime      = 0;
+	bool isSpottingCreepTime = true;
+	bool isSpottingUnitsTime = true;
+	std::map<BWAPI::Unit, std::set<BWAPI::Position>> spottedUnitsAndPotentialBases;
 };

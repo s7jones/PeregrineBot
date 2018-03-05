@@ -13,12 +13,12 @@ public:
 		static GUIManager instance;
 		return instance;
 	}
-	void drawTextOnScreen(BWAPI::Unit u, std::string format, int frames = 480);
-	void drawLineOnScreen(BWAPI::Unit u, EnemyUnitInfo enemy, int frames = 480);
+	void drawTextOnScreen(BWAPI::Unit unit, std::string format, int frames = 480);
+	void drawLineOnScreen(BWAPI::Unit unit, EnemyUnitInfo enemy, int frames = 480);
 	void draw();
 
 private:
-	void drawTextOnUnit(BWAPI::Unit u, std::string format);
+	void drawTextOnUnit(BWAPI::Unit unit, std::string format);
 	void drawOnScreenLines();
 	void drawOnScreenMessages();
 	void drawTopLeftOverlay();
