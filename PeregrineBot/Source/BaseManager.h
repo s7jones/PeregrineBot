@@ -54,7 +54,7 @@ public:
 	using is_transparent = void;
 
 	mutable double borderRadius = 256;
-	BWAPI::Unit base;
+	BWAPI::Unit base            = nullptr;
 
 private:
 };
