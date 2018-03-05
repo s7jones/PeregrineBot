@@ -369,7 +369,8 @@ void UtilityManager::constructOptionsSquad()
 	if (enemyRace != Races::Unknown) {
 		// race agnostic options
 		auto reinforce = [& scores = scores](Squad squad) -> UtilResult {
-			if ()
+			if (false) {
+			}
 		};
 
 		// race specific options
