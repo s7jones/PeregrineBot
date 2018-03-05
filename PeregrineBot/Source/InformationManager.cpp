@@ -77,6 +77,8 @@ void InformationManager::setup()
 	spottingTime = ptr->second;
 
 	DebugMessenger::Instance() << "spottingTime: " << spottingTime << "F" << std::endl;
+
+	addInitialResources();
 }
 
 void InformationManager::setupScouting()
@@ -418,6 +420,19 @@ void InformationManager::spotCreep(BWAPI::Unit spotter)
 				}
 			}
 		}
+	}
+}
+
+void InformationManager::addInitialResources()
+{
+	const auto staticMinerals = Broodwar->getStaticMinerals();
+	const auto staticGeysers  = Broodwar->getStaticGeysers();
+
+	for (const auto mineral : staticMinerals) {
+		addToMinerals(mineral);
+	}
+	for (const auto geyser : staticGeysers) {
+		addToGeysers(geyser);
 	}
 }
 

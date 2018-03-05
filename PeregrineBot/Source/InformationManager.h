@@ -90,6 +90,7 @@ private:
 	void validateResources();
 	void spotUnits(BWAPI::Unit spotter);
 	void spotCreep(BWAPI::Unit spotter);
+	void addInitialResources();
 
 	struct {
 		double ground = 0;
