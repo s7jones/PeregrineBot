@@ -10,11 +10,11 @@
 struct ScoutingOptionFor4 {
 	std::array<BWAPI::TilePosition, 3> startToP1ToP2;
 	BWAPI::TilePosition POther;
-	std::array<double, 2> groundTimeFromStartToP1ToP2;
-	double airTimeFromStartToOther;
-	double maxTime;
-	double meanTime;
-	double stdDev;
+	std::array<double, 2> groundTimeFromStartToP1ToP2 = { 0, 0 };
+	double airTimeFromStartToOther                    = 0;
+	double maxTime                                    = 0;
+	double meanTime                                   = 0;
+	double stdDev                                     = 0;
 };
 
 struct sortByMeanTime {

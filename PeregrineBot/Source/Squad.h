@@ -23,7 +23,7 @@ public:
 	    , targetPosition(target)
 	{
 	}
-	SquadCommand(SquadCommandTypes type, EnemyUnitInfo enemy)
+	SquadCommand(SquadCommandTypes type, const EnemyUnitInfo& enemy)
 	    : type(type)
 	    , targetEnemy(enemy)
 	{
@@ -112,7 +112,7 @@ public:
 		return lastCommand;
 	}
 
-	void setLastCommand(SquadCommand command)
+	void setLastCommand(const SquadCommand command)
 	{
 		lastCommand = command;
 	}

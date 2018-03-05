@@ -113,7 +113,7 @@ void OrderManager::move(BWAPI::Unit mover, BWAPI::Position p, bool shiftClick)
 	mover->move(p, shiftClick);
 }
 
-void OrderManager::move(BWAPI::Unit mover, EnemyUnitInfo unit, bool shiftClick)
+void OrderManager::move(BWAPI::Unit mover, const EnemyUnitInfo& unit, bool shiftClick)
 {
 	move(mover, unit.getPosition(), shiftClick);
 }
@@ -129,7 +129,7 @@ void OrderManager::move(Squad& squad, BWAPI::Position p, bool shiftClick)
 	squad.setLastCommand(command);
 }
 
-void OrderManager::move(Squad& squad, EnemyUnitInfo unit, bool shiftClick)
+void OrderManager::move(Squad& squad, const EnemyUnitInfo& unit, bool shiftClick)
 {
 	squadsWaitingAfterOrder.insert({ squad.id, 0 });
 	for (const auto mover : squad) {

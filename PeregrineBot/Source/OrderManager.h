@@ -22,9 +22,9 @@ public:
 	void attack(Squad& squad, BWAPI::Unit unit);
 	void attack(Squad& squad, EnemyUnitInfo enemy);
 	void move(BWAPI::Unit mover, BWAPI::Position p, bool shiftClick = false);
-	void move(BWAPI::Unit mover, EnemyUnitInfo unit, bool shiftClick = false);
+	void move(BWAPI::Unit mover, const EnemyUnitInfo& unit, bool shiftClick = false);
 	void move(Squad& squad, BWAPI::Position p, bool shiftClick = false);
-	void move(Squad& squad, EnemyUnitInfo unit, bool shiftClick = false);
+	void move(Squad& squad, const EnemyUnitInfo& unit, bool shiftClick = false);
 	void build(BWAPI::Unit builder, BWAPI::UnitType buildingType, BWAPI::TilePosition buildPosition);
 	void stop(BWAPI::Unit stopper);
 	void stop(Squad& squad);
