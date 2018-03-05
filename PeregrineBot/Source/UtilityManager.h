@@ -65,7 +65,7 @@ class OptionIndividual {
 public:
 	using funcUtil = std::function<UtilResult(BWAPI::Unit)>;
 
-	OptionIndividual(funcUtil util, std::string description)
+	OptionIndividual(const funcUtil& util, const std::string& description)
 	    : util(util)
 	    , description(description)
 	{
@@ -81,7 +81,7 @@ class OptionSquad {
 public:
 	using funcUtil = std::function<UtilResult(const Squad&)>;
 
-	OptionSquad(funcUtil util, std::string description)
+	OptionSquad(const funcUtil& util, const std::string& description)
 	    : util(util)
 	    , description(description)
 	{

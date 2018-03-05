@@ -75,5 +75,5 @@ public:
 	int getResources() const;
 
 private:
-	mutable int resources;
+	mutable int resources = 0;
 };

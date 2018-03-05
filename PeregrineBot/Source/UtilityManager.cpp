@@ -125,20 +125,20 @@ void UtilityManager::constructOptionsIndividual()
 			auto utilityArtosis = [& scores = scores](Unit u) -> UtilResult {
 				const auto enemyBuildings = InformationManager::Instance().enemyBuildings;
 				std::set<EnemyUnitInfo> pylons;
-				for (const auto enemyBuilding : enemyBuildings) {
+				for (const auto& enemyBuilding : enemyBuildings) {
 					if (enemyBuilding.getType() == UnitTypes::Protoss_Pylon) {
 						pylons.insert(enemyBuilding);
 					}
 				}
 				std::map<EnemyUnitInfo, std::vector<EnemyUnitInfo>> artosisPylonsAndBuildings;
-				for (auto enemyBuilding : enemyBuildings) {
+				for (const auto& enemyBuilding : enemyBuildings) {
 					if ((enemyBuilding.getType() == UnitTypes::Protoss_Pylon)
 					    || (enemyBuilding.getType() == UnitTypes::Protoss_Nexus)
 					    || (enemyBuilding.getType() == UnitTypes::Protoss_Assimilator)) {
 						continue;
 					}
 					std::set<EnemyUnitInfo> suppliers;
-					for (const auto pylon : pylons) {
+					for (const auto& pylon : pylons) {
 						auto rel = pylon.getPosition() - enemyBuilding.getPosition();
 						if (isInPylonRange(rel.x, rel.y)) {
 							suppliers.insert(pylon);
@@ -162,7 +162,7 @@ void UtilityManager::constructOptionsIndividual()
 				EnemyUnitInfo pylon = { nullptr };
 				for (auto artosisPylonBuildings : artosisPylonsAndBuildings) {
 					double score = scores.p.artosisPyln;
-					for (auto building : artosisPylonBuildings.second) {
+					for (const auto& building : artosisPylonBuildings.second) {
 						score += unitTypeScoreLambda(building.getType());
 					}
 
@@ -444,20 +444,20 @@ void UtilityManager::constructOptionsSquad()
 			auto utilityArtosis = [& scores = scores](Squad squad) -> UtilResult {
 				const auto enemyBuildings = InformationManager::Instance().enemyBuildings;
 				std::set<EnemyUnitInfo> pylons;
-				for (const auto enemyBuilding : enemyBuildings) {
+				for (const auto& enemyBuilding : enemyBuildings) {
 					if (enemyBuilding.getType() == UnitTypes::Protoss_Pylon) {
 						pylons.insert(enemyBuilding);
 					}
 				}
 				std::map<EnemyUnitInfo, std::vector<EnemyUnitInfo>> artosisPylonsAndBuildings;
-				for (auto enemyBuilding : enemyBuildings) {
+				for (const auto& enemyBuilding : enemyBuildings) {
 					if ((enemyBuilding.getType() == UnitTypes::Protoss_Pylon)
 					    || (enemyBuilding.getType() == UnitTypes::Protoss_Nexus)
 					    || (enemyBuilding.getType() == UnitTypes::Protoss_Assimilator)) {
 						continue;
 					}
 					std::set<EnemyUnitInfo> suppliers;
-					for (const auto pylon : pylons) {
+					for (const auto& pylon : pylons) {
 						auto rel = pylon.getPosition() - enemyBuilding.getPosition();
 						if (isInPylonRange(rel.x, rel.y)) {
 							suppliers.insert(pylon);
@@ -481,7 +481,7 @@ void UtilityManager::constructOptionsSquad()
 				EnemyUnitInfo pylon = { nullptr };
 				for (auto artosisPylonBuildings : artosisPylonsAndBuildings) {
 					double score = scores.p.artosisPyln;
-					for (auto building : artosisPylonBuildings.second) {
+					for (const auto& building : artosisPylonBuildings.second) {
 						score += unitTypeScoreLambda(building.getType());
 					}
 

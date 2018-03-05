@@ -13,7 +13,7 @@ public:
 	}
 
 	bool readJsonConfig();
-	void writeStatisticsToFile(std::string botVersion, bool isWinner);
+	void writeStatisticsToFile(const std::string& botVersion, bool isWinner);
 
 private:
 };

@@ -119,7 +119,7 @@ bool isInPylonRange(int relx, int rely)
 	return psi_field_mask[y / 32u][x / 32u];
 }
 
-void errorMessage(std::string message)
+void errorMessage(const std::string& message)
 {
 	Broodwar << "err: " << message << std::endl;
 }

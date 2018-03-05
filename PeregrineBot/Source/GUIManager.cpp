@@ -10,7 +10,7 @@
 using namespace BWAPI;
 using namespace Filter;
 
-void GUIManager::drawTextOnScreen(BWAPI::Unit u, std::string format, int frames)
+void GUIManager::drawTextOnScreen(BWAPI::Unit u, const std::string& format, int frames)
 {
 	MessageAndFrames mnf = { format, frames };
 	messageBuffer.insert_or_assign(u, mnf);
@@ -22,7 +22,7 @@ void GUIManager::drawLineOnScreen(BWAPI::Unit u, EnemyUnitInfo enemy, int frames
 	lineBuffer.insert_or_assign(u, tnf);
 }
 
-void GUIManager::drawTextOnUnit(BWAPI::Unit u, std::string format)
+void GUIManager::drawTextOnUnit(BWAPI::Unit u, const std::string& format)
 {
 	if (!u->exists()) {
 		return;
@@ -47,14 +47,14 @@ void GUIManager::draw()
 
 	drawTopLeftOverlay();
 
-	for (auto hatch : BaseManager::Instance().hatcheries) {
+	for (const auto& hatch : BaseManager::Instance().hatcheries) {
 		std::stringstream ss;
 		ss << "border " << hatch.borderRadius;
 		GUIManager::Instance().drawTextOnScreen(hatch.base, ss.str());
 		Broodwar->drawCircleMap(hatch.base->getPosition(), hatch.borderRadius, Colors::White);
 	}
 
-	for (auto squad : ArmyManager::Instance().getSquads()) {
+	for (const auto& squad : ArmyManager::Instance().getSquads()) {
 		Broodwar->drawCircleMap(squad.getPosition(), ArmyManager::Instance().SQUAD_RADIUS, Colors::Purple);
 	}
 

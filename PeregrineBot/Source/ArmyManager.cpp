@@ -27,7 +27,7 @@ void ArmyManager::update()
 
 void ArmyManager::putUnassignedInSquads()
 {
-	for (const auto friendly : InformationManager::Instance().friendlyUnits) {
+	for (const auto& friendly : InformationManager::Instance().friendlyUnits) {
 		if (friendly.getType() != UnitTypes::Zerg_Zergling) {
 			continue;
 		}
@@ -37,7 +37,7 @@ void ArmyManager::putUnassignedInSquads()
 		Squad closestSquad;
 		double closestSquadDistance = std::numeric_limits<double>::infinity();
 
-		for (const auto squad : squads) {
+		for (const auto& squad : squads) {
 			if (squad.count(friendly.u)) {
 				isUnitAssigned = true;
 				break;
@@ -45,7 +45,7 @@ void ArmyManager::putUnassignedInSquads()
 		}
 
 		if (!isUnitAssigned) {
-			for (const auto squad : squads) {
+			for (const auto& squad : squads) {
 				auto distance = distanceAir(friendly.getPosition(), squad.getPosition());
 				if (distance < closestSquadDistance) {
 					closestSquadDistance = distance;
@@ -71,7 +71,6 @@ void ArmyManager::attackWithSquad(Squad& squad)
 	const auto enemyRace               = InformationManager::Instance().enemyRace;
 	const auto unscoutedPositions      = InformationManager::Instance().unscoutedPositions;
 	const auto isEnemyBaseFromSpotting = InformationManager::Instance().isEnemyBaseFromSpotting;
-	const auto isEnemyBaseDeduced      = InformationManager::Instance().isEnemyBaseDeduced;
 	const auto isEnemyBaseReached      = InformationManager::Instance().isEnemyBaseReached;
 	const auto isEnemyBaseDestroyed    = InformationManager::Instance().isEnemyBaseDestroyed;
 	const auto enemyBaseSpottingGuess  = InformationManager::Instance().enemyBaseSpottingGuess;
@@ -108,19 +107,6 @@ void ArmyManager::attackWithSquad(Squad& squad)
 
 	if (priorityTarget) {
 		return;
-	}
-
-	bool allIdle = true, someIdle = false;
-
-	for (auto unit : squad) {
-		if (!unit->isIdle()) {
-			allIdle = false;
-			break;
-		} else {
-			if (!someIdle) {
-				someIdle = true;
-			}
-		}
 	}
 
 	auto idleState   = squad.isIdle();
@@ -259,7 +245,6 @@ void ArmyManager::zerglingAttack(BWAPI::Unit u)
 	const auto enemyRace               = InformationManager::Instance().enemyRace;
 	const auto unscoutedPositions      = InformationManager::Instance().unscoutedPositions;
 	const auto isEnemyBaseFromSpotting = InformationManager::Instance().isEnemyBaseFromSpotting;
-	const auto isEnemyBaseDeduced      = InformationManager::Instance().isEnemyBaseDeduced;
 	const auto isEnemyBaseReached      = InformationManager::Instance().isEnemyBaseReached;
 	const auto isEnemyBaseDestroyed    = InformationManager::Instance().isEnemyBaseDestroyed;
 	const auto enemyBaseSpottingGuess  = InformationManager::Instance().enemyBaseSpottingGuess;
@@ -382,8 +367,7 @@ std::set<EnemyUnitInfo> ArmyManager::getZerglingAccessibleBuildings(BWAPI::Unit 
 {
 	const auto enemyBuildings = InformationManager::Instance().enemyBuildings;
 	std::set<EnemyUnitInfo> enemyBuildingsAccessible;
-	for (auto iter = enemyBuildings.begin(); iter != enemyBuildings.end(); iter++) {
-		auto building    = *iter;
+	for (const auto& building : enemyBuildings) {
 		auto buildingPos = building.getPosition();
 		auto zerglingPos = u->getPosition();
 
@@ -414,7 +398,7 @@ void ArmyManager::zerglingAttackKnownBuildings(BWAPI::Unit u)
 		double distanceEnemyBuildingAccessible = std::numeric_limits<double>::infinity();
 		Position buildingAccessiblePos;
 
-		for (auto building : enemyBuildingsAccessible) {
+		for (const auto& building : enemyBuildingsAccessible) {
 			Position buildingPos    = building.getPosition();
 			double distanceBuilding = distanceAir(u->getPosition(), buildingPos);
 			if (distanceBuilding < distanceEnemyBuildingAccessible) {
@@ -476,7 +460,7 @@ void ArmyManager::zerglingScoutSpreadOut(BWAPI::Unit u)
 	if (scoutLocationsZergling.empty()) {
 		auto enemyBuildingsAccessible = getZerglingAccessibleBuildings(u);
 
-		for (auto building : enemyBuildingsAccessible) {
+		for (const auto& building : enemyBuildingsAccessible) {
 			Position buildingPos = building.getPosition();
 			scoutLocationsZergling.push_front(buildingPos);
 		}

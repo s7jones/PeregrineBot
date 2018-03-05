@@ -56,13 +56,13 @@ bool FileManager::readJsonConfig()
 	return debug_flag_json || debug_flag_toml;
 }
 
-void FileManager::writeStatisticsToFile(std::string botVersion, bool isWinner)
+void FileManager::writeStatisticsToFile(const std::string& botVersion, bool isWinner)
 {
 	struct Scores {
-		std::string name;
-		int matches;
-		int score;
-		int percent;
+		std::string name = "";
+		int matches      = 0;
+		int score        = 0;
+		int percent      = 0;
 	};
 
 	Scores score[3];
