@@ -88,7 +88,7 @@ public:
 		bool allMoving = true, someMoving = false;
 
 		for (auto unit : *this) {
-			if (!unit->isIdle()) {
+			if (!unit->isMoving()) {
 				allMoving = false;
 				break;
 			} else {
