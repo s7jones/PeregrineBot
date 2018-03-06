@@ -297,9 +297,11 @@ BWAPI::Unitset Base::checkForInvaders() const
 void Base::calculateBorder() const
 {
 	auto region = BWTA::getRegion(base->getPosition());
-	auto& poly  = region->getPolygon();
+	if (!region) {
+		return;
+	}
 
-	region->getChokepoints();
+	auto& poly = region->getPolygon();
 
 	double maxDist = 0;
 	for (auto p : poly) {
