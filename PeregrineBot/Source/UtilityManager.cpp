@@ -333,22 +333,27 @@ void UtilityManager::constructOptionsIndividual()
 			options_individual.push_back(enemyAtAll);
 
 			auto utilityEnemyBase = [& scores = scores](Unit unit) -> UtilResult {
-				const auto enemyMain = InformationManager::Instance().enemyMain;
-				double score         = scores.t.enemyBase;
-				UtilResult p         = std::make_pair(0, nullptr);
-				if (!enemyMain.unit) {
+				const auto enemyMain            = InformationManager::Instance().enemyMain;
+				const auto isEnemyBaseDestroyed = InformationManager::Instance().isEnemyBaseDestroyed;
+				double score                    = scores.t.enemyBase;
+				UtilResult p                    = std::make_pair(0, nullptr);
+				if (isEnemyBaseDestroyed) {
 					score = 0;
-					p     = std::make_pair(score, enemyMain.unit);
 				} else {
-					auto pos = enemyMain.getPosition();
-					if (Broodwar->isVisible(TilePosition(pos))) {
-						auto unitsOnBaseTile = Broodwar->getUnitsOnTile(TilePosition(pos),
-						                                                IsEnemy && IsVisible && Exists && IsResourceDepot && !IsLifted);
-						if (unitsOnBaseTile.empty()) {
-							score = 0;
+					if (enemyMain.unit == nullptr) {
+						score = 0;
+						p     = std::make_pair(score, enemyMain.unit);
+					} else {
+						auto pos = enemyMain.getPosition();
+						if (Broodwar->isVisible(TilePosition(pos))) {
+							auto unitsOnBaseTile = Broodwar->getUnitsOnTile(TilePosition(pos),
+							                                                IsEnemy && IsVisible && Exists && IsResourceDepot && !IsLifted);
+							if (unitsOnBaseTile.empty()) {
+								score = 0;
+							}
 						}
+						p = std::make_pair(score, enemyMain);
 					}
-					p = std::make_pair(score, enemyMain);
 				}
 				return p;
 			};
@@ -644,22 +649,27 @@ void UtilityManager::constructOptionsSquad()
 			options_squad.push_back(enemyAtAll);
 
 			auto utilityEnemyBase = [& scores = scores](Squad squad) -> UtilResult {
-				const auto enemyMain = InformationManager::Instance().enemyMain;
-				double score         = scores.t.enemyBase;
-				UtilResult p         = std::make_pair(0, nullptr);
-				if (!enemyMain.unit) {
+				const auto enemyMain            = InformationManager::Instance().enemyMain;
+				const auto isEnemyBaseDestroyed = InformationManager::Instance().isEnemyBaseDestroyed;
+				double score                    = scores.t.enemyBase;
+				UtilResult p                    = std::make_pair(0, nullptr);
+				if (isEnemyBaseDestroyed) {
 					score = 0;
-					p     = std::make_pair(score, enemyMain.unit);
 				} else {
-					auto pos = enemyMain.getPosition();
-					if (Broodwar->isVisible(TilePosition(pos))) {
-						auto unitsOnBaseTile = Broodwar->getUnitsOnTile(TilePosition(pos),
-						                                                IsEnemy && IsVisible && Exists && IsResourceDepot && !IsLifted);
-						if (unitsOnBaseTile.empty()) {
-							score = 0;
+					if (enemyMain.unit == nullptr) {
+						score = 0;
+						p     = std::make_pair(score, enemyMain.unit);
+					} else {
+						auto pos = enemyMain.getPosition();
+						if (Broodwar->isVisible(TilePosition(pos))) {
+							auto unitsOnBaseTile = Broodwar->getUnitsOnTile(TilePosition(pos),
+							                                                IsEnemy && IsVisible && Exists && IsResourceDepot && !IsLifted);
+							if (unitsOnBaseTile.empty()) {
+								score = 0;
+							}
 						}
+						p = std::make_pair(score, enemyMain);
 					}
-					p = std::make_pair(score, enemyMain);
 				}
 				return p;
 			};
