@@ -453,11 +453,9 @@ void InformationManager::overlordScoutingAfterBaseFound(BWAPI::Unit overlord)
 						Position point1 = poly[j];
 						scoutLocations.push_back(point1);
 					}
-					for (const auto& region : BWTA::getRegions()) {
-						for (const auto& base : region->getBaseLocations()) {
-							Position point1 = base->getPosition();
-							scoutLocations.push_back(point1);
-						}
+					for (const auto& base : BWTA::getBaseLocations()) {
+						Position point1 = base->getPosition();
+						scoutLocations.push_back(point1);
 					}
 				}
 			} else {
