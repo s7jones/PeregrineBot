@@ -245,7 +245,6 @@ void ArmyManager::zerglingAttack(BWAPI::Unit unit)
 	const auto enemyRace               = InformationManager::Instance().enemyRace;
 	const auto unscoutedPositions      = InformationManager::Instance().unscoutedPositions;
 	const auto isEnemyBaseFromSpotting = InformationManager::Instance().isEnemyBaseFromSpotting;
-	const auto isEnemyBaseDeduced      = InformationManager::Instance().isEnemyBaseDeduced;
 	const auto isEnemyBaseReached      = InformationManager::Instance().isEnemyBaseReached;
 	const auto isEnemyBaseDestroyed    = InformationManager::Instance().isEnemyBaseDestroyed;
 	const auto enemyBaseSpottingGuess  = InformationManager::Instance().enemyBaseSpottingGuess;
@@ -461,7 +460,7 @@ void ArmyManager::zerglingScoutSpreadOut(BWAPI::Unit unit)
 	if (scoutLocationsZergling.empty()) {
 		auto enemyBuildingsAccessible = getZerglingAccessibleBuildings(unit);
 
-		for (auto building : enemyBuildingsAccessible) {
+		for (const auto& building : enemyBuildingsAccessible) {
 			Position buildingPos = building.getPosition();
 			scoutLocationsZergling.push_front(buildingPos);
 		}

@@ -3,6 +3,7 @@
 #include "GUIManager.h"
 #include "InformationManager.h"
 #include "OrderManager.h"
+#include "TacticsManager.h"
 #include "UnitInfo.h"
 
 using namespace BWAPI;
@@ -371,9 +372,16 @@ void UtilityManager::constructOptionsSquad()
 	const auto enemyRace = InformationManager::Instance().enemyRace;
 
 	if (enemyRace != Races::Unknown) {
+		// race agnostic options
+		auto reinforce = [& scores = scores](Squad squad) -> UtilResult {
+			if (false) {
+			}
+		};
+
+		// race specific options
 		switch (enemyRace) {
 		case Races::Enum::Protoss: {
-			auto genericInjr = [& scores = scores](Squad squad, UnitType enemyType, double scoreGiven) -> UtilResult {
+			auto genericInjr = [](Squad squad, UnitType enemyType, double scoreGiven) -> UtilResult {
 				auto weapon = (*squad.begin())->getType().groundWeapon(); // assume mono-unit squads
 				if (weapon.damageAmount() == 0) return std::make_pair(0, nullptr);
 				Unitset enemies;
@@ -408,6 +416,7 @@ void UtilityManager::constructOptionsSquad()
 						bestChoice = enemy;
 					}
 				}
+
 				auto p = std::make_pair(bestScore, bestChoice);
 				return p;
 			};

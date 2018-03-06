@@ -114,6 +114,7 @@
     <ClCompile Include="Source\PeregrineBot.cpp" />
     <ClCompile Include="Source\ProductionManager.cpp" />
     <ClCompile Include="Source\Squad.cpp" />
+    <ClCompile Include="Source\TacticsManager.cpp" />
     <ClCompile Include="Source\UnitInfo.cpp" />
     <ClCompile Include="Source\Utility.cpp" />
     <ClCompile Include="Source\UtilityManager.cpp" />
@@ -132,6 +133,7 @@
     <ClInclude Include="Source\PeregrineBot.h" />
     <ClInclude Include="Source\ProductionManager.h" />
     <ClInclude Include="Source\Squad.h" />
+    <ClInclude Include="Source\TacticsManager.h" />
     <ClInclude Include="Source\UnitInfo.h" />
     <ClInclude Include="Source\Utility.h" />
     <ClInclude Include="Source\UtilityManager.h" />
