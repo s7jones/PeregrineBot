@@ -7,5 +7,5 @@ AllowShortIfStatementsOnASingleLine: 'true'
 IndentWidth: '4'
 TabWidth: '4'
 UseTab: ForIndentation
-
+BreakBeforeBraces: Allman
 ...

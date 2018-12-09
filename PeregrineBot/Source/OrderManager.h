@@ -2,7 +2,8 @@
 #include "BWAPI.h"
 #include "UnitInfo.h"
 
-class OrderManager {
+class OrderManager
+{
 private:
 	OrderManager() = default;
 

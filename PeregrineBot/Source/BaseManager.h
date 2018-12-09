@@ -4,7 +4,8 @@
 
 class Base;
 
-class BaseManager {
+class BaseManager
+{
 private:
 	BaseManager() = default;
 
@@ -34,7 +35,8 @@ private:
 	std::set<BWAPI::Unit> workersTraining;
 };
 
-class Base {
+class Base
+{
 public:
 	Base(BWAPI::Unit u);
 	BWAPI::Unitset checkForInvaders() const;

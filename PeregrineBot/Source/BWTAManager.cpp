@@ -7,7 +7,8 @@ using namespace Filter;
 
 void BWTAManager::analyze()
 {
-	if (analysis) {
+	if (analysis)
+	{
 		DebugMessenger::Instance() << "Begin analyzing map." << std::endl;
 
 		//BWTA::readMap();

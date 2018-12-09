@@ -1,7 +1,8 @@
 #pragma once
 #include "BWAPI.h"
 
-class BuildOrderManager {
+class BuildOrderManager
+{
 private:
 	BuildOrderManager() = default;
 
@@ -18,7 +19,7 @@ public:
 	// To workaround Compiler Error C2797 in VS2013 had to do this
 	// https://msdn.microsoft.com/en-us/library/dn793970.aspx
 	// Seems to be Error C2664 in VS2017?
-	using Vector = std::vector<BWAPI::UnitType>;
+	using Vector    = std::vector<BWAPI::UnitType>;
 	const Vector bo = {
 		BWAPI::UnitTypes::Zerg_Drone,
 		BWAPI::UnitTypes::Zerg_Spawning_Pool,

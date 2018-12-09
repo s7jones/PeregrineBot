@@ -67,18 +67,21 @@ void PeregrineBot::onStart()
 	Broodwar->setCommandOptimizationLevel(1);
 
 	// Check if this is a replay
-	if (Broodwar->isReplay()) {
+	if (Broodwar->isReplay())
+	{
 		// Announce the players in the replay
 		Broodwar << "The following players are in this replay:" << std::endl;
 
 		// Iterate all the players in the game using a std:: iterator
 		Playerset players = Broodwar->getPlayers();
-		for (auto p : players) {
+		for (auto p : players)
+		{
 			// Only print the player if they are not an observer
 			if (!p->isObserver())
 				Broodwar << p->getName() << ", playing as " << p->getRace() << std::endl;
 		}
-	} else // if this is not a replay
+	}
+	else // if this is not a replay
 	{
 		// Make our bot run thousands of games as fast as possible!
 		Broodwar->setLocalSpeed(0);
@@ -93,7 +96,8 @@ void PeregrineBot::onStart()
 void PeregrineBot::onEnd(bool isWinner)
 {
 	// Called when the game ends
-	if (!Broodwar->isReplay()) {
+	if (!Broodwar->isReplay())
+	{
 		FileManager::Instance().writeStatisticsToFile(version, isWinner);
 
 		BWTA::cleanMemory();
@@ -120,7 +124,8 @@ void PeregrineBot::onFrame()
 	InformationManager::Instance().update();
 
 	// Iterate through all the units that we own
-	for (auto& u : Broodwar->self()->getUnits()) {
+	for (auto& u : Broodwar->self()->getUnits())
+	{
 		// Ignore the unit if it no longer exists
 		// Make sure to include this block when handling any Unit pointer!
 		if (!u->exists())
@@ -140,25 +145,30 @@ void PeregrineBot::onFrame()
 
 		if (u->getType() == UnitTypes::Zerg_Overlord
 		    || u->getType() == UnitTypes::Zerg_Zergling
-		    || u->getType().isBuilding()) {
+		    || u->getType().isBuilding())
+		{
 			InformationManager::Instance().spotting(u);
 		}
 
 		bool unitNeedsToWait = OrderManager::Instance().DoesUnitHasOrder(u);
-		if (unitNeedsToWait) {
+		if (unitNeedsToWait)
+		{
 			continue;
 		}
 
 		// Finally make the unit do some stuff!
 		// If the unit is a worker unit
-		if (u->getType().isWorker()) {
+		if (u->getType().isWorker())
+		{
 			BaseManager::Instance().DoAllWorkerTasks(u);
 			continue;
 		}
 
-		if (!BuildOrderManager::Instance().buildOrderComplete) {
+		if (!BuildOrderManager::Instance().buildOrderComplete)
+		{
 			if ((*BuildOrderManager::Instance().boIndex == UnitTypes::Zerg_Spawning_Pool)
-			    && (u->getType() == UnitTypes::Zerg_Spawning_Pool) && (u->isBeingConstructed())) {
+			    && (u->getType() == UnitTypes::Zerg_Spawning_Pool) && (u->isBeingConstructed()))
+			{
 				BuildOrderManager::Instance().incrementBuildOrder();
 				BuildOrderManager::Instance().pool = true;
 				DebugMessenger::Instance() << "pool isBeingConstructed: " << Broodwar->getFrameCount() << "F" << std::endl;
@@ -166,22 +176,26 @@ void PeregrineBot::onFrame()
 		}
 
 		if ((!BuildOrderManager::Instance().poolready)
-		    && (u->getType() == UnitTypes::Zerg_Spawning_Pool) && (u->isCompleted())) {
+		    && (u->getType() == UnitTypes::Zerg_Spawning_Pool) && (u->isCompleted()))
+		{
 			BuildOrderManager::Instance().poolready = true;
 			DebugMessenger::Instance() << "pool ready: " << Broodwar->getFrameCount() << "F" << std::endl;
 		}
 
-		if (u->getType().isResourceDepot()) {
+		if (u->getType().isResourceDepot())
+		{
 			BaseManager::Instance().ManageBases(u);
 			continue;
 		}
 
-		if (u->getType() == UnitTypes::Zerg_Overlord) {
+		if (u->getType() == UnitTypes::Zerg_Overlord)
+		{
 			InformationManager::Instance().overlordScouting(u);
 			continue;
 		}
 
-		if (u->getType() == UnitTypes::Zerg_Zergling) {
+		if (u->getType() == UnitTypes::Zerg_Zergling)
+		{
 			ArmyManager::Instance().ZerglingAttack(u);
 			continue;
 		}
@@ -217,11 +231,13 @@ void PeregrineBot::onNukeDetect(BWAPI::Position target)
 {
 
 	// Check if the target is a valid position
-	if (target) {
+	if (target)
+	{
 		// if so, print the location of the nuclear strike target
 		DebugMessenger::Instance() << "Nuclear Launch Detected at " << target << std::endl;
-
-	} else {
+	}
+	else
+	{
 		// Otherwise, ask other players where the nuke is!
 		Broodwar->sendText("Where's the nuke?");
 	}
@@ -251,9 +267,11 @@ void PeregrineBot::onUnitCreate(BWAPI::Unit unit)
 {
 	BaseManager::Instance().onUnitCreate(unit);
 
-	if (Broodwar->isReplay()) {
+	if (Broodwar->isReplay())
+	{
 		// if we are in a replay, then we will print out the build order of the structures
-		if (unit->getType().isBuilding() && !unit->getPlayer()->isNeutral()) {
+		if (unit->getType().isBuilding() && !unit->getPlayer()->isNeutral())
+		{
 			int seconds = Broodwar->getFrameCount() / 24;
 			int minutes = seconds / 60;
 			seconds %= 60;
@@ -283,9 +301,11 @@ void PeregrineBot::onUnitMorph(BWAPI::Unit unit)
 	InformationManager::Instance().onUnitMorph(unit);
 	BaseManager::Instance().onUnitMorph(unit);
 
-	if (Broodwar->isReplay()) {
+	if (Broodwar->isReplay())
+	{
 		// if we are in a replay, then we will print out the build order of the structures
-		if (unit->getType().isBuilding() && !unit->getPlayer()->isNeutral()) {
+		if (unit->getType().isBuilding() && !unit->getPlayer()->isNeutral())
+		{
 			int seconds = Broodwar->getFrameCount() / 24;
 			int minutes = seconds / 60;
 			seconds %= 60;

@@ -23,7 +23,8 @@ void GUIManager::drawLineOnScreen(BWAPI::Unit u, EnemyUnitInfo enemy, int frames
 
 void GUIManager::drawTextOnUnit(BWAPI::Unit u, std::string format)
 {
-	if (!u->exists()) {
+	if (!u->exists())
+	{
 		return;
 	}
 	Broodwar->drawTextMap(u->getPosition(), format.c_str());
@@ -40,13 +41,15 @@ void GUIManager::draw()
 	//	analyzing = true;
 	//}
 
-	if (BWTAManager::Instance().analyzed) {
+	if (BWTAManager::Instance().analyzed)
+	{
 		drawTerrainData();
 	}
 
 	drawTopLeftOverlay();
 
-	for (auto hatch : BaseManager::Instance().hatcheries) {
+	for (auto hatch : BaseManager::Instance().hatcheries)
+	{
 		std::stringstream ss;
 		ss << "border " << hatch.borderRadius;
 		GUIManager::Instance().drawTextOnScreen(hatch.base, ss.str());
@@ -60,7 +63,8 @@ void GUIManager::draw()
 	drawExtendedInterface();
 
 	// this seems redundant at the moment but is useful if threading is wanted later
-	if (BWTAManager::Instance().analysis_just_finished) {
+	if (BWTAManager::Instance().analysis_just_finished)
+	{
 		DebugMessenger::Instance() << "Finished analyzing map." << std::endl;
 		BWTAManager::Instance().analysis_just_finished = false;
 	}
@@ -69,17 +73,22 @@ void GUIManager::draw()
 void GUIManager::drawOnScreenLines()
 {
 	auto it = lineBuffer.begin();
-	while (it != lineBuffer.end()) {
-		if (it->second.frames > 0) {
+	while (it != lineBuffer.end())
+	{
+		if (it->second.frames > 0)
+		{
 			Broodwar->drawLineMap(it->first->getPosition(),
 			                      it->second.target.getPosition(), Colors::Orange);
 		}
 
 		it->second.frames--;
 
-		if (it->second.frames <= 0) {
+		if (it->second.frames <= 0)
+		{
 			it = lineBuffer.erase(it);
-		} else {
+		}
+		else
+		{
 			it++;
 		}
 	}
@@ -88,16 +97,21 @@ void GUIManager::drawOnScreenLines()
 void GUIManager::drawOnScreenMessages()
 {
 	auto it = messageBuffer.begin();
-	while (it != messageBuffer.end()) {
-		if (it->second.frames > 0) {
+	while (it != messageBuffer.end())
+	{
+		if (it->second.frames > 0)
+		{
 			drawTextOnUnit(it->first, it->second.format);
 		}
 
 		it->second.frames--;
 
-		if (it->second.frames <= 0) {
+		if (it->second.frames <= 0)
+		{
 			it = messageBuffer.erase(it);
-		} else {
+		}
+		else
+		{
 			it++;
 		}
 	}
@@ -126,7 +140,8 @@ void GUIManager::drawTopLeftOverlay()
 	int screenVPos = 20;
 	int count      = 1;
 
-	for (auto scoutingOption : InformationManager::Instance().scoutingOptions) {
+	for (auto scoutingOption : InformationManager::Instance().scoutingOptions)
+	{
 		Broodwar->drawTextScreen(100, screenVPos, "%i: %i,%i; %i,%iTP : %.1f +- %.1fF", count,
 		                         scoutingOption.startToP1ToP2[1].x, scoutingOption.startToP1ToP2[1].y,
 		                         scoutingOption.startToP1ToP2[2].x, scoutingOption.startToP1ToP2[2].y,
@@ -142,13 +157,17 @@ void GUIManager::drawTopLeftOverlay()
 
 void GUIManager::calculateAverageFrameTime()
 {
-	if (frameCount > 23) {
+	if (frameCount > 23)
+	{
 		std::chrono::steady_clock::time_point end       = std::chrono::steady_clock::now();
 		std::chrono::duration<double, std::milli> fp_ms = end - start;
 		duration                                        = fp_ms.count() / 24;
 		frameCount                                      = 1;
-	} else {
-		if (frameCount == 1) {
+	}
+	else
+	{
+		if (frameCount == 1)
+		{
 			start = std::chrono::steady_clock::now();
 		}
 		++frameCount;
@@ -159,9 +178,11 @@ void GUIManager::talk()
 {
 	int choice = -1;
 
-	if (Broodwar->getFrameCount() == 2300) {
+	if (Broodwar->getFrameCount() == 2300)
+	{
 		choice = rand() % 100;
-		switch (choice) {
+		switch (choice)
+		{
 		case 17:
 			Broodwar->sendText("Status: 0x00000011");
 			Broodwar->sendText("Info: Software faillllure. An errdsaor oc.....'''#cured transferring exec/1234/");
@@ -171,8 +192,10 @@ void GUIManager::talk()
 		}
 	}
 
-	if (Broodwar->getFrameCount() == 2300 + 480) {
-		if (choice == 17) {
+	if (Broodwar->getFrameCount() == 2300 + 480)
+	{
+		if (choice == 17)
+		{
 			Broodwar->sendText("Help! Is anyone there? Help! Help! Please! Help!");
 		}
 	}
@@ -181,7 +204,8 @@ void GUIManager::talk()
 void GUIManager::drawTerrainData()
 {
 	//we will iterate through all the base locations, and draw their outlines.
-	for (const auto& baseLocation : BWTA::getBaseLocations()) {
+	for (const auto& baseLocation : BWTA::getBaseLocations())
+	{
 		TilePosition p = baseLocation->getTilePosition();
 
 		//draw outline of center location
@@ -190,12 +214,14 @@ void GUIManager::drawTerrainData()
 		Broodwar->drawBoxMap(leftTop, rightBottom, Colors::Blue);
 
 		//draw a circle at each mineral patch
-		for (const auto& mineral : baseLocation->getStaticMinerals()) {
+		for (const auto& mineral : baseLocation->getStaticMinerals())
+		{
 			Broodwar->drawCircleMap(mineral->getInitialPosition(), 30, Colors::Cyan);
 		}
 
 		//draw the outlines of Vespene geysers
-		for (const auto& geyser : baseLocation->getGeysers()) {
+		for (const auto& geyser : baseLocation->getGeysers())
+		{
 			TilePosition p1 = geyser->getInitialTilePosition();
 			Position leftTop1(p1.x * TILE_SIZE, p1.y * TILE_SIZE);
 			Position rightBottom1(leftTop1.x + 4 * TILE_SIZE, leftTop1.y + 2 * TILE_SIZE);
@@ -203,22 +229,26 @@ void GUIManager::drawTerrainData()
 		}
 
 		//if this is an island expansion, draw a yellow circle around the base location
-		if (baseLocation->isIsland()) {
+		if (baseLocation->isIsland())
+		{
 			Broodwar->drawCircleMap(baseLocation->getPosition(), 80, Colors::Yellow);
 		}
 	}
 
 	//we will iterate through all the regions and ...
-	for (const auto& region : BWTA::getRegions()) {
+	for (const auto& region : BWTA::getRegions())
+	{
 		// draw the polygon outline of it in green
 		auto& p = region->getPolygon();
-		for (size_t j = 0; j < p.size(); ++j) {
+		for (size_t j = 0; j < p.size(); ++j)
+		{
 			Position point1 = p[j];
 			Position point2 = p[(j + 1) % p.size()];
 			Broodwar->drawLineMap(point1, point2, Colors::Green);
 		}
 		// visualize the chokepoints with red lines
-		for (auto const& chokepoint : region->getChokepoints()) {
+		for (auto const& chokepoint : region->getChokepoints())
+		{
 			Position point1 = chokepoint->getSides().first;
 			Position point2 = chokepoint->getSides().second;
 			Broodwar->drawLineMap(point1, point2, Colors::Red);
@@ -232,8 +262,10 @@ void GUIManager::drawExtendedInterface()
 
 	// draw enemy units
 	auto enemy = Broodwar->enemy();
-	if (enemy) {
-		for (auto& unit : enemy->getUnits()) {
+	if (enemy)
+	{
+		for (auto& unit : enemy->getUnits())
+		{
 			UnitType type = unit->getType();
 			if (type == UnitTypes::Unknown)
 				continue;
@@ -254,12 +286,14 @@ void GUIManager::drawExtendedInterface()
 			int hitPoints = unit->getHitPoints();
 			int shields   = unit->getShields();
 
-			if (!Broodwar->isVisible(TilePosition(pos))) {
+			if (!Broodwar->isVisible(TilePosition(pos)))
+			{
 				Broodwar->drawBoxMap(Position(left, top), Position(right, bottom), Colors::Grey, false);
 				Broodwar->drawTextMap(Position(left + 3, top + 4), "%s", type.getName().c_str());
 			}
 
-			if (!type.isResourceContainer() && type.maxHitPoints() > 0) {
+			if (!type.isResourceContainer() && type.maxHitPoints() > 0)
+			{
 				double hpRatio = (double)hitPoints / (double)type.maxHitPoints();
 
 				Color hpColor = Colors::Green;
@@ -276,12 +310,14 @@ void GUIManager::drawExtendedInterface()
 
 				int ticWidth = 3;
 
-				for (int i(left); i < right - 1; i += ticWidth) {
+				for (int i(left); i < right - 1; i += ticWidth)
+				{
 					Broodwar->drawLineMap(Position(i, hpTop), Position(i, hpBottom), Colors::Black);
 				}
 			}
 
-			if (!type.isResourceContainer() && type.maxShields() > 0) {
+			if (!type.isResourceContainer() && type.maxShields() > 0)
+			{
 				double shieldRatio = (double)shields / (double)type.maxShields();
 
 				int ratioRight = left + (int)((right - left) * shieldRatio);
@@ -294,7 +330,8 @@ void GUIManager::drawExtendedInterface()
 
 				int ticWidth = 3;
 
-				for (int i(left); i < right - 1; i += ticWidth) {
+				for (int i(left); i < right - 1; i += ticWidth)
+				{
 					Broodwar->drawLineMap(Position(i, hpTop), Position(i, hpBottom), Colors::Black);
 				}
 			}
@@ -302,8 +339,10 @@ void GUIManager::drawExtendedInterface()
 	}
 
 	// draw neutral units and our units
-	for (auto& unit : Broodwar->getAllUnits()) {
-		if (unit->getPlayer() == Broodwar->enemy()) {
+	for (auto& unit : Broodwar->getAllUnits())
+	{
+		if (unit->getPlayer() == Broodwar->enemy())
+		{
 			continue;
 		}
 
@@ -316,7 +355,8 @@ void GUIManager::drawExtendedInterface()
 
 		//Broodwar->drawBoxMap(Position(left, top), Position(right, bottom), Colors::Grey, false);
 
-		if (!unit->getType().isResourceContainer() && unit->getType().maxHitPoints() > 0) {
+		if (!unit->getType().isResourceContainer() && unit->getType().maxHitPoints() > 0)
+		{
 			double hpRatio = (double)unit->getHitPoints() / (double)unit->getType().maxHitPoints();
 
 			Color hpColor = Colors::Green;
@@ -333,12 +373,14 @@ void GUIManager::drawExtendedInterface()
 
 			int ticWidth = 3;
 
-			for (int i(left); i < right - 1; i += ticWidth) {
+			for (int i(left); i < right - 1; i += ticWidth)
+			{
 				Broodwar->drawLineMap(Position(i, hpTop), Position(i, hpBottom), Colors::Black);
 			}
 		}
 
-		if (!unit->getType().isResourceContainer() && unit->getType().maxShields() > 0) {
+		if (!unit->getType().isResourceContainer() && unit->getType().maxShields() > 0)
+		{
 			double shieldRatio = (double)unit->getShields() / (double)unit->getType().maxShields();
 
 			int ratioRight = left + (int)((right - left) * shieldRatio);
@@ -351,12 +393,14 @@ void GUIManager::drawExtendedInterface()
 
 			int ticWidth = 3;
 
-			for (int i(left); i < right - 1; i += ticWidth) {
+			for (int i(left); i < right - 1; i += ticWidth)
+			{
 				Broodwar->drawLineMap(Position(i, hpTop), Position(i, hpBottom), Colors::Black);
 			}
 		}
 
-		if (unit->getType().isResourceContainer() && unit->getInitialResources() > 0) {
+		if (unit->getType().isResourceContainer() && unit->getInitialResources() > 0)
+		{
 
 			double mineralRatio = (double)unit->getResources() / (double)unit->getInitialResources();
 
@@ -370,7 +414,8 @@ void GUIManager::drawExtendedInterface()
 
 			int ticWidth = 3;
 
-			for (int i(left); i < right - 1; i += ticWidth) {
+			for (int i(left); i < right - 1; i += ticWidth)
+			{
 				Broodwar->drawLineMap(Position(i, hpTop), Position(i, hpBottom), Colors::Black);
 			}
 		}

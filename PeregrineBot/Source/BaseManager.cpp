@@ -18,43 +18,59 @@ void BaseManager::ManageBases(BWAPI::Unit base)
 	//auto invaders = (*result.first).checkForInvaders();
 
 	auto it = workersTraining.begin();
-	while (it != workersTraining.end()) {
+	while (it != workersTraining.end())
+	{
 		auto trainee = *it;
 		bool erase   = false;
-		if (!trainee->exists()) {
-			if (!trainee->isMorphing()) {
-				if (trainee->getType() == UnitTypes::Zerg_Drone) {
+		if (!trainee->exists())
+		{
+			if (!trainee->isMorphing())
+			{
+				if (trainee->getType() == UnitTypes::Zerg_Drone)
+				{
 					erase = true;
 					workers.insert(trainee);
-				} else if (trainee->getType() == UnitTypes::Zerg_Larva) {
+				}
+				else if (trainee->getType() == UnitTypes::Zerg_Larva)
+				{
 					erase = true;
 					errorMessage("training worker is larva");
 				}
-			} else {
+			}
+			else
+			{
 				erase = true;
 				errorMessage("training worker isn't morphing");
 			}
 		}
 
-		if (erase) {
+		if (erase)
+		{
 			it = workersTraining.erase(it);
-		} else {
+		}
+		else
+		{
 			it++;
 		}
 	}
 
-	if (!BuildOrderManager::Instance().buildOrderComplete) {
+	if (!BuildOrderManager::Instance().buildOrderComplete)
+	{
 		if ((Broodwar->self()->minerals() >= UnitTypes::Zerg_Drone.mineralPrice())
-		    && (*BuildOrderManager::Instance().boIndex == UnitTypes::Zerg_Drone)) {
-			if (!base->getLarva().empty()) {
+		    && (*BuildOrderManager::Instance().boIndex == UnitTypes::Zerg_Drone))
+		{
+			if (!base->getLarva().empty())
+			{
 				base->train(UnitTypes::Zerg_Drone);
 				BuildOrderManager::Instance().incrementBuildOrder();
 			}
 		}
 
 		if ((Broodwar->self()->minerals() >= UnitTypes::Zerg_Overlord.mineralPrice())
-		    && (*BuildOrderManager::Instance().boIndex == UnitTypes::Zerg_Overlord)) {
-			if (!base->getLarva().empty()) {
+		    && (*BuildOrderManager::Instance().boIndex == UnitTypes::Zerg_Overlord))
+		{
+			if (!base->getLarva().empty())
+			{
 				base->train(UnitTypes::Zerg_Overlord);
 				BuildOrderManager::Instance().incrementBuildOrder();
 			}
@@ -67,17 +83,22 @@ void BaseManager::ManageBases(BWAPI::Unit base)
 
 		if (poolready && gotZergMoney
 		    && gotZergSupply
-		    && zergBO) {
-			if (!base->getLarva().empty()) {
+		    && zergBO)
+		{
+			if (!base->getLarva().empty())
+			{
 				base->train(UnitTypes::Zerg_Zergling);
 				BuildOrderManager::Instance().incrementBuildOrder();
 			}
 		}
-
-	} else {
+	}
+	else
+	{
 		if ((Broodwar->self()->minerals() >= UnitTypes::Zerg_Overlord.mineralPrice())
-		    && (Broodwar->self()->supplyTotal() - Broodwar->self()->supplyUsed() <= 1)) {
-			if (!base->getLarva().empty()) {
+		    && (Broodwar->self()->supplyTotal() - Broodwar->self()->supplyUsed() <= 1))
+		{
+			if (!base->getLarva().empty())
+			{
 				base->train(UnitTypes::Zerg_Overlord);
 			}
 		}
@@ -87,20 +108,25 @@ void BaseManager::ManageBases(BWAPI::Unit base)
 		auto gotZergSupply = Broodwar->self()->supplyTotal() - Broodwar->self()->supplyUsed() > 0;
 
 		if (poolready && gotZergMoney
-		    && gotZergSupply) {
-			if (!base->getLarva().empty()) {
+		    && gotZergSupply)
+		{
+			if (!base->getLarva().empty())
+			{
 				base->train(UnitTypes::Zerg_Zergling);
 			}
 		}
 	}
 
-	for (auto& unit : Broodwar->self()->getUnits()) {
+	for (auto& unit : Broodwar->self()->getUnits())
+	{
 		if ((IsWorker)(unit))
 			workers.insert(unit);
 	}
 
-	if ((workers.size() + workersTraining.size() < (hatcheries.size() * 3)) && (Broodwar->self()->minerals() >= UnitTypes::Zerg_Drone.mineralPrice())) {
-		if (!base->getLarva().empty()) {
+	if ((workers.size() + workersTraining.size() < (hatcheries.size() * 3)) && (Broodwar->self()->minerals() >= UnitTypes::Zerg_Drone.mineralPrice()))
+	{
+		if (!base->getLarva().empty())
+		{
 			base->train(UnitTypes::Zerg_Drone);
 			workersTraining.insert(base);
 			DebugMessenger::Instance() << "droning up from " << workers.size() + workersTraining.size() - 1 << " to " << (hatcheries.size() * 3) << std::endl;
@@ -122,21 +148,27 @@ void BaseManager::DoAllWorkerTasks(BWAPI::Unit u)
 	workers.insert(u);
 
 	// if a miner
-	if (miners.find(u) != miners.end()) {
+	if (miners.find(u) != miners.end())
+	{
 		auto invaders = hatcheries.begin()->checkForInvaders();
-		for (auto invader : invaders) {
+		for (auto invader : invaders)
+		{
 			std::pair<bool, invaderAndDefender> foundDefensePair
 			    = { false, { nullptr, nullptr } };
-			for (auto defencePair : targetsAndAssignedDefenders) {
-				if (invader == defencePair.first) {
+			for (auto defencePair : targetsAndAssignedDefenders)
+			{
+				if (invader == defencePair.first)
+				{
 					foundDefensePair = { true, defencePair };
 					break;
 				}
 			}
 			// invader not been assigned a defender
-			if (!foundDefensePair.first) {
+			if (!foundDefensePair.first)
+			{
 				// always keep 1 mining
-				if (miners.size() > 1) {
+				if (miners.size() > 1)
+				{
 					targetsAndAssignedDefenders.insert({ invader, u });
 					OrderManager::Instance().Attack(u, invader);
 					GUIManager::Instance().drawTextOnScreen(u, "this is SPARTA!");
@@ -144,13 +176,17 @@ void BaseManager::DoAllWorkerTasks(BWAPI::Unit u)
 					miners.erase(u);
 				}
 				return;
-			} else {
+			}
+			else
+			{
 				auto defencePair = foundDefensePair.second;
 				// assigneddefender is destroyed
-				if (!defencePair.second->exists()) {
+				if (!defencePair.second->exists())
+				{
 					defenders.erase(defencePair.second);
 					targetsAndAssignedDefenders.erase(defencePair);
-					if (miners.size() > 1) {
+					if (miners.size() > 1)
+					{
 						targetsAndAssignedDefenders.insert({ invader, u });
 						OrderManager::Instance().Attack(u, invader);
 						GUIManager::Instance().drawTextOnScreen(u, "prepare for glory (reinforce)");
@@ -163,13 +199,17 @@ void BaseManager::DoAllWorkerTasks(BWAPI::Unit u)
 		}
 	}
 
-	if (defenders.find(u) != defenders.end()) {
-		if (distanceAir(u->getPosition(), hatcheries.begin()->base->getPosition()) > hatcheries.begin()->borderRadius) {
+	if (defenders.find(u) != defenders.end())
+	{
+		if (distanceAir(u->getPosition(), hatcheries.begin()->base->getPosition()) > hatcheries.begin()->borderRadius)
+		{
 			OrderManager::Instance().Stop(u);
 			GUIManager::Instance().drawTextOnScreen(u, "don't chase");
 			defenders.erase(u);
-			for (auto defencePair : targetsAndAssignedDefenders) {
-				if (defencePair.second == u) {
+			for (auto defencePair : targetsAndAssignedDefenders)
+			{
+				if (defencePair.second == u)
+				{
 					targetsAndAssignedDefenders.erase(defencePair);
 				}
 			}
@@ -177,40 +217,49 @@ void BaseManager::DoAllWorkerTasks(BWAPI::Unit u)
 	}
 
 	// if our worker is idle
-	if (u->isIdle()) {
+	if (u->isIdle())
+	{
 		defenders.erase(u);
 
 		// Order workers carrying a resource to return them to the center,
 		// otherwise find a mineral patch to harvest.
-		if (u->isCarryingGas() || u->isCarryingMinerals()) {
+		if (u->isCarryingGas() || u->isCarryingMinerals())
+		{
 			u->returnCargo();
 			miners.insert(u);
 		}
 		// The worker cannot harvest anything if it
 		// is carrying a powerup such as a flag
-		else if (!u->getPowerUp()) {
+		else if (!u->getPowerUp())
+		{
 			// Harvest from the nearest mineral patch or gas refinery
 			auto success = u->gather(u->getClosestUnit(IsMineralField || IsRefinery));
-			if (!success) {
+			if (!success)
+			{
 				// If the call fails, then print the last error message
 				DebugMessenger::Instance() << Broodwar->getLastError() << std::endl;
 				DebugMessenger::Instance() << "Worker couldn't gather mineral or from refinery" << std::endl;
 				auto closestKnownMineral = InformationManager::Instance().getClosestMineral(u);
-				if (closestKnownMineral) {
+				if (closestKnownMineral)
+				{
 					OrderManager::Instance().Move(u, closestKnownMineral->getPosition());
 				}
-			} else {
+			}
+			else
+			{
 				miners.insert(u);
 			}
 
 		} // closure: has no powerup
-		else {
+		else
+		{
 			DebugMessenger::Instance() << "is idle and has power up?" << std::endl;
 		}
 	}
 
 	// if it isn't a defender
-	if (defenders.find(u) == defenders.end()) {
+	if (defenders.find(u) == defenders.end())
+	{
 		BuildingManager::Instance().isAnythingToBuild(u);
 	}
 }
@@ -218,7 +267,8 @@ void BaseManager::DoAllWorkerTasks(BWAPI::Unit u)
 void BaseManager::onUnitShow(BWAPI::Unit unit)
 {
 	// if something morphs into a worker, add it
-	if (unit->getType().isWorker() && unit->getPlayer() == Broodwar->self() && unit->getHitPoints() >= 0) {
+	if (unit->getType().isWorker() && unit->getPlayer() == Broodwar->self() && unit->getHitPoints() >= 0)
+	{
 		workers.insert(unit);
 	}
 }
@@ -226,21 +276,25 @@ void BaseManager::onUnitShow(BWAPI::Unit unit)
 void BaseManager::onUnitCreate(BWAPI::Unit unit)
 {
 	// if something morphs into a worker, add it
-	if (unit->getType().isWorker() && unit->getPlayer() == Broodwar->self() && unit->getHitPoints() >= 0) {
+	if (unit->getType().isWorker() && unit->getPlayer() == Broodwar->self() && unit->getHitPoints() >= 0)
+	{
 		workers.insert(unit);
 	}
 }
 
 void BaseManager::onUnitDestroy(BWAPI::Unit unit)
 {
-	if (unit->getType().isResourceDepot() && unit->getPlayer() == Broodwar->self()) {
+	if (unit->getType().isResourceDepot() && unit->getPlayer() == Broodwar->self())
+	{
 		auto it = hatcheries.find(unit);
-		if (it != hatcheries.end()) {
+		if (it != hatcheries.end())
+		{
 			it = hatcheries.erase(it);
 		}
 	}
 
-	if (unit->getType().isWorker() && unit->getPlayer() == Broodwar->self()) {
+	if (unit->getType().isWorker() && unit->getPlayer() == Broodwar->self())
+	{
 		workers.erase(unit);
 		miners.erase(unit);
 		defenders.erase(unit);
@@ -250,12 +304,14 @@ void BaseManager::onUnitDestroy(BWAPI::Unit unit)
 void BaseManager::onUnitMorph(BWAPI::Unit unit)
 {
 	// if something morphs into a worker, add it
-	if (unit->getType().isWorker() && unit->getPlayer() == Broodwar->self() && unit->getHitPoints() >= 0) {
+	if (unit->getType().isWorker() && unit->getPlayer() == Broodwar->self() && unit->getHitPoints() >= 0)
+	{
 		workers.insert(unit);
 	}
 
 	// if something morphs into a building, it was a worker?
-	if (unit->getType().isBuilding() && unit->getPlayer() == Broodwar->self() && unit->getPlayer()->getRace() == Races::Zerg) {
+	if (unit->getType().isBuilding() && unit->getPlayer() == Broodwar->self() && unit->getPlayer()->getRace() == Races::Zerg)
+	{
 		workers.erase(unit);
 		miners.erase(unit);
 		defenders.erase(unit);
@@ -264,7 +320,8 @@ void BaseManager::onUnitMorph(BWAPI::Unit unit)
 
 void BaseManager::onUnitRenegade(BWAPI::Unit unit)
 {
-	if (unit->getType().isWorker() && unit->getPlayer() == Broodwar->self()) {
+	if (unit->getType().isWorker() && unit->getPlayer() == Broodwar->self())
+	{
 		workers.erase(unit);
 		miners.erase(unit);
 		defenders.erase(unit);
@@ -279,14 +336,19 @@ Base::Base(BWAPI::Unit u)
 BWAPI::Unitset Base::checkForInvaders() const
 {
 	auto units = Unitset::none;
-	if (base) {
+	if (base)
+	{
 		units   = base->getUnitsInRadius((int)floor(borderRadius), IsEnemy && !IsFlying);
 		auto it = units.begin();
-		while (it != units.end()) {
+		while (it != units.end())
+		{
 			auto unit = *it;
-			if (BWTA::getRegion(unit->getPosition()) != BWTA::getRegion(base->getPosition())) {
+			if (BWTA::getRegion(unit->getPosition()) != BWTA::getRegion(base->getPosition()))
+			{
 				it = units.erase(it);
-			} else {
+			}
+			else
+			{
 				it++;
 			}
 		}
@@ -302,9 +364,11 @@ void Base::calculateBorder() const
 	region->getChokepoints();
 
 	double maxDist = 0;
-	for (auto p : poly) {
+	for (auto p : poly)
+	{
 		auto dist = distanceAir(base->getPosition(), p);
-		if (maxDist < dist) {
+		if (maxDist < dist)
+		{
 			maxDist = dist;
 		}
 	}

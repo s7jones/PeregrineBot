@@ -19,11 +19,14 @@ bool FileManager::readJsonConfig()
 
 	bool debug_flag_toml = false;
 
-	try {
+	try
+	{
 		auto config = cpptoml::parse_file(toml_config_path.string());
 
 		debug_flag_toml = config->get_as<bool>("debug_msgs_enabled").value_or(false); // val is bool value in toml or false
-	} catch (const cpptoml::parse_exception& e) {
+	}
+	catch (const cpptoml::parse_exception& e)
+	{
 		BWAPI::Broodwar << "Config file not read, " << e.what() << std::endl;
 	}
 
@@ -36,7 +39,8 @@ bool FileManager::readJsonConfig()
 	const wchar_t* mode = L"rb";
 	errno_t err         = _wfopen_s(&fp, json_config_path.c_str(), mode);
 
-	if (!err) {
+	if (!err)
+	{
 
 		char readBuffer[65536];
 		FileReadStream is(fp, readBuffer, sizeof(readBuffer));
@@ -46,8 +50,10 @@ bool FileManager::readJsonConfig()
 
 		fclose(fp);
 
-		if (d.HasMember("debug_msgs_enabled")) {
-			if (d["debug_msgs_enabled"].IsBool()) {
+		if (d.HasMember("debug_msgs_enabled"))
+		{
+			if (d["debug_msgs_enabled"].IsBool())
+			{
 				debug_flag_json = d["debug_msgs_enabled"].GetBool();
 			}
 		}
@@ -58,7 +64,8 @@ bool FileManager::readJsonConfig()
 
 void FileManager::writeStatisticsToFile(std::string botVersion, bool isWinner)
 {
-	struct Scores {
+	struct Scores
+	{
 		std::string name;
 		int matches;
 		int score;
@@ -80,17 +87,22 @@ void FileManager::writeStatisticsToFile(std::string botVersion, bool isWinner)
 
 	boost::filesystem::ifstream input(pathIn, std::ios::in);
 
-	if (input.fail()) {
+	if (input.fail())
+	{
 		score[0].name = "z";
 		score[1].name = "t";
 		score[2].name = "p";
-		for (int i = 0; i < 3; i++) {
+		for (int i = 0; i < 3; i++)
+		{
 			score[i].matches = 0;
 			score[i].score   = 0;
 			score[i].percent = 0;
 		}
-	} else if (input.is_open()) {
-		for (int i = 0; i < 3; i++) {
+	}
+	else if (input.is_open())
+	{
+		for (int i = 0; i < 3; i++)
+		{
 			input >> score[i].name >> score[i].matches >> score[i].score >> score[i].percent;
 		}
 	}
@@ -103,7 +115,8 @@ void FileManager::writeStatisticsToFile(std::string botVersion, bool isWinner)
 	if (enemyRace == Races::Terran) score[1].matches++;
 	if (enemyRace == Races::Protoss) score[2].matches++;
 
-	if (isWinner) {
+	if (isWinner)
+	{
 		if (enemyRace == Races::Zerg) score[0].score++;
 		if (enemyRace == Races::Terran) score[1].score++;
 		if (enemyRace == Races::Protoss) score[2].score++;
@@ -115,7 +128,8 @@ void FileManager::writeStatisticsToFile(std::string botVersion, bool isWinner)
 
 	boost::filesystem::ofstream output(pathOut, std::ios::trunc);
 
-	for (int i = 0; i < 3; i++) {
+	for (int i = 0; i < 3; i++)
+	{
 		output << score[i].name << "\t" << score[i].matches << "\t" << score[i].score << "\t" << score[i].percent << "\n";
 	}
 

@@ -1,7 +1,8 @@
 #pragma once
 #include "BWAPI.h"
 
-class ProductionManager {
+class ProductionManager
+{
 private:
 	ProductionManager() = default;
 

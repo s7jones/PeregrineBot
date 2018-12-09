@@ -7,9 +7,11 @@ using namespace Filter;
 
 void BuildOrderManager::setup()
 {
-	for (auto ut : bo) {
+	for (auto ut : bo)
+	{
 		auto result = boMap.insert({ ut, 1 });
-		if (!result.second) {
+		if (!result.second)
+		{
 			result.first->second++;
 		}
 	}
@@ -17,17 +19,20 @@ void BuildOrderManager::setup()
 
 BWAPI::UnitType BuildOrderManager::rebuildBuilding()
 {
-	for (auto ut : boMap) {
+	for (auto ut : boMap)
+	{
 		if (!ut.first.isBuilding()) continue;
 		auto utBoPassedCount = std::count(bo.begin(), boIndex, ut.first);
 
 		int count = 0;
-		for (auto unit : Broodwar->self()->getUnits()) {
+		for (auto unit : Broodwar->self()->getUnits())
+		{
 			if ((!IsBuilding)(unit)) continue;
 			if (unit->getType() == ut.first) count++;
 			if (count >= utBoPassedCount) break;
 		}
-		if (count < utBoPassedCount) {
+		if (count < utBoPassedCount)
+		{
 			// shouldn't get here without needing to rebuild
 			DebugMessenger::Instance() << "rebuilding " << ut.first << std::endl;
 			return ut.first;
@@ -40,7 +45,8 @@ BWAPI::UnitType BuildOrderManager::rebuildBuilding()
 void BuildOrderManager::incrementBuildOrder()
 {
 	boIndex++;
-	if (boIndex == bo.end()) {
+	if (boIndex == bo.end())
+	{
 		buildOrderComplete = true;
 	}
 }

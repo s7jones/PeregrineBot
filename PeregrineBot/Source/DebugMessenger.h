@@ -3,7 +3,8 @@
 #include "BWAPI/Game.h"
 #include <boost/filesystem.hpp>
 
-class DebugMessenger {
+class DebugMessenger
+{
 	//https://stackoverflow.com/a/1008289/5791272
 private:
 	DebugMessenger() = default;

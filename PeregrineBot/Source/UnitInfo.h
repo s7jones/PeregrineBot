@@ -1,10 +1,11 @@
 #pragma once
 #include "BWAPI.h"
 
-class UnitInfo {
+class UnitInfo
+{
 public:
 	UnitInfo(BWAPI::Unit unitToWrap)
-	    : u(unitToWrap){};
+	    : u(unitToWrap) {};
 	virtual void update() const;
 	bool exists() const;
 	BWAPI::Position getPosition() const { return pos; }
@@ -36,7 +37,8 @@ private:
 	mutable BWAPI::UnitType type = BWAPI::UnitTypes::Unknown;
 };
 
-class FriendlyUnitInfo : public UnitInfo {
+class FriendlyUnitInfo : public UnitInfo
+{
 public:
 	using UnitInfo::UnitInfo;
 	void update() const override;
@@ -45,7 +47,8 @@ private:
 	mutable int lastFrameAttacking = 0;
 };
 
-class EnemyUnitInfo : public UnitInfo {
+class EnemyUnitInfo : public UnitInfo
+{
 public:
 	using UnitInfo::UnitInfo;
 	void update() const override;
@@ -57,7 +60,8 @@ private:
 	mutable std::pair<double, double> velocity;
 };
 
-class ResourceUnitInfo : public UnitInfo {
+class ResourceUnitInfo : public UnitInfo
+{
 public:
 	using UnitInfo::UnitInfo;
 	void update() const override;

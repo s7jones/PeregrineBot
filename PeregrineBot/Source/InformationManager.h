@@ -6,7 +6,8 @@
 #include <memory>
 
 // I couldn't put forward declarations of these above InformationManager
-struct ScoutingOptionFor4 {
+struct ScoutingOptionFor4
+{
 	std::array<BWAPI::TilePosition, 3> startToP1ToP2;
 	BWAPI::TilePosition POther;
 	std::array<double, 2> groundTimeFromStartToP1ToP2;
@@ -16,19 +17,22 @@ struct ScoutingOptionFor4 {
 	double stdDev;
 };
 
-struct sortByMeanTime {
+struct sortByMeanTime
+{
 	bool operator()(const ScoutingOptionFor4& lhs, const ScoutingOptionFor4& rhs)
 	{
 		return (lhs.meanTime < rhs.meanTime);
 	}
 };
 
-struct distAndTime {
+struct distAndTime
+{
 	double distance;
 	double time;
 };
 
-class InformationManager {
+class InformationManager
+{
 private:
 	InformationManager() = default;
 
@@ -90,7 +94,8 @@ private:
 	void spotUnits(BWAPI::Unit spotter);
 	void spotCreep(BWAPI::Unit spotter);
 
-	struct {
+	struct
+	{
 		double ground;
 		double air;
 	} maxBaseToBaseDistance;

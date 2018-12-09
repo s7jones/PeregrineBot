@@ -92,7 +92,8 @@ double timeAir(const BWAPI::TilePosition start, const BWAPI::TilePosition end)
 
 bool isReachable(BWTA::Region* region1, BWTA::Region* region2)
 {
-	if (region1 == nullptr || region2 == nullptr) {
+	if (region1 == nullptr || region2 == nullptr)
+	{
 		return false;
 	}
 	return region1->isReachable(region2);

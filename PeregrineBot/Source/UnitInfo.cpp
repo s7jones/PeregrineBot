@@ -7,20 +7,25 @@ using namespace Filter;
 
 void UnitInfo::update() const
 {
-	if (u) {
-		if (exists()) {
+	if (u)
+	{
+		if (exists())
+		{
 			lastFrameSeen = Broodwar->getFrameCount();
 			pos           = u->getPosition();
 			type          = u->getType();
 		}
-	} else {
+	}
+	else
+	{
 		errorMessage("unit null 2");
 	}
 }
 
 bool UnitInfo::exists() const
 {
-	if (!u) {
+	if (!u)
+	{
 		errorMessage("unit null 3");
 		return false;
 	}
@@ -31,8 +36,10 @@ bool UnitInfo::exists() const
 void EnemyUnitInfo::update() const
 {
 	UnitInfo::update();
-	if (u) {
-		if (exists()) {
+	if (u)
+	{
+		if (exists())
+		{
 			shields  = u->getShields();
 			hp       = u->getHitPoints();
 			energy   = u->getEnergy();
@@ -44,8 +51,10 @@ void EnemyUnitInfo::update() const
 void ResourceUnitInfo::update() const
 {
 	UnitInfo::update();
-	if (u) {
-		if (exists()) {
+	if (u)
+	{
+		if (exists())
+		{
 			resources = u->getResources();
 		}
 	}
@@ -59,9 +68,12 @@ int ResourceUnitInfo::getResources() const
 void FriendlyUnitInfo::update() const
 {
 	UnitInfo::update();
-	if (u) {
-		if (exists()) {
-			if (u->isAttackFrame()) {
+	if (u)
+	{
+		if (exists())
+		{
+			if (u->isAttackFrame())
+			{
 				lastFrameAttacking = Broodwar->getFrameCount();
 			}
 		}

@@ -12,11 +12,15 @@ void OrderManager::update()
 void OrderManager::UpdateUnitsWaitingSinceLastOrder()
 {
 	auto it = unitsToWaitAfterOrder.begin();
-	while (it != unitsToWaitAfterOrder.end()) {
+	while (it != unitsToWaitAfterOrder.end())
+	{
 		++(it->second); // increment counter
-		if (it->second >= 8) {
+		if (it->second >= 8)
+		{
 			it = unitsToWaitAfterOrder.erase(it);
-		} else {
+		}
+		else
+		{
 			++it;
 		}
 	}
@@ -42,13 +46,19 @@ void OrderManager::Attack(BWAPI::Unit attacker, BWAPI::Unit u)
 
 void OrderManager::Attack(BWAPI::Unit attacker, EnemyUnitInfo enemy)
 {
-	if (Broodwar->isVisible((TilePosition)enemy.getPosition())) {
-		if (enemy.u) {
+	if (Broodwar->isVisible((TilePosition)enemy.getPosition()))
+	{
+		if (enemy.u)
+		{
 			Attack(attacker, enemy.u);
-		} else {
+		}
+		else
+		{
 			Attack(attacker, enemy.getPosition());
 		}
-	} else {
+	}
+	else
+	{
 		Move(attacker, enemy.getPosition());
 	}
 }

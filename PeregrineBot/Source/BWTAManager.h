@@ -2,7 +2,8 @@
 #include "BWAPI.h"
 #include "BWTA.h"
 
-class BWTAManager {
+class BWTAManager
+{
 private:
 	BWTAManager() = default;
 

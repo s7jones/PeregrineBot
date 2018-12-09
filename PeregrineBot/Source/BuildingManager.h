@@ -1,7 +1,8 @@
 #pragma once
 #include "BWAPI.h"
 
-class BuildingManager {
+class BuildingManager
+{
 private:
 	BuildingManager() = default;
 

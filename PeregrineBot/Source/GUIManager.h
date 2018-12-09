@@ -3,7 +3,8 @@
 #include "UnitInfo.h"
 #include <chrono>
 
-class GUIManager {
+class GUIManager
+{
 private:
 	GUIManager() = default;
 
@@ -31,12 +32,14 @@ private:
 	std::chrono::steady_clock::time_point start;
 	int frameCount = 0;
 
-	struct MessageAndFrames {
+	struct MessageAndFrames
+	{
 		std::string format;
 		int frames;
 	};
 
-	struct TargetAndFrames {
+	struct TargetAndFrames
+	{
 		EnemyUnitInfo target;
 		int frames;
 	};

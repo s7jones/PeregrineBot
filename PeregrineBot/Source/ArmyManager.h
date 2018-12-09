@@ -4,7 +4,8 @@
 #include <deque>
 #include <set>
 
-class ArmyManager {
+class ArmyManager
+{
 private:
 	ArmyManager() = default;
 

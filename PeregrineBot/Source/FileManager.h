@@ -1,7 +1,8 @@
 #pragma once
 #include "BWAPI.h"
 
-class FileManager {
+class FileManager
+{
 private:
 	FileManager() = default;
 
