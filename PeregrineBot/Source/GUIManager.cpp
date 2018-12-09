@@ -51,9 +51,9 @@ void GUIManager::draw()
 	for (auto hatch : BaseManager::Instance().hatcheries)
 	{
 		std::stringstream ss;
-		ss << "border " << hatch.borderRadius;
+		ss << "border " << hatch.m_borderRadius;
 		GUIManager::Instance().drawTextOnScreen(hatch.base, ss.str());
-		Broodwar->drawCircleMap(hatch.base->getPosition(), hatch.borderRadius, Colors::White);
+		Broodwar->drawCircleMap(hatch.base->getPosition(), hatch.m_borderRadius, Colors::White);
 	}
 
 	drawOnScreenMessages();
@@ -236,8 +236,13 @@ void GUIManager::drawTerrainData()
 	}
 
 	//we will iterate through all the regions and ...
-	for (const auto& region : BWTA::getRegions())
+	for (auto region : BWTA::getRegions())
 	{
+		if (region == nullptr)
+		{
+			continue;
+		}
+
 		// draw the polygon outline of it in green
 		auto& p = region->getPolygon();
 		for (size_t j = 0; j < p.size(); ++j)
@@ -247,8 +252,12 @@ void GUIManager::drawTerrainData()
 			Broodwar->drawLineMap(point1, point2, Colors::Green);
 		}
 		// visualize the chokepoints with red lines
-		for (auto const& chokepoint : region->getChokepoints())
+		for (auto chokepoint : region->getChokepoints())
 		{
+			if (chokepoint == nullptr)
+			{
+				continue;
+			}
 			Position point1 = chokepoint->getSides().first;
 			Position point2 = chokepoint->getSides().second;
 			Broodwar->drawLineMap(point1, point2, Colors::Red);

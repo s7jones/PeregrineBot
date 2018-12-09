@@ -201,7 +201,7 @@ void BaseManager::DoAllWorkerTasks(BWAPI::Unit u)
 
 	if (defenders.find(u) != defenders.end())
 	{
-		if (distanceAir(u->getPosition(), hatcheries.begin()->base->getPosition()) > hatcheries.begin()->borderRadius)
+		if (distanceAir(u->getPosition(), hatcheries.begin()->base->getPosition()) > hatcheries.begin()->m_borderRadius)
 		{
 			OrderManager::Instance().Stop(u);
 			GUIManager::Instance().drawTextOnScreen(u, "don't chase");
@@ -338,7 +338,7 @@ BWAPI::Unitset Base::checkForInvaders() const
 	auto units = Unitset::none;
 	if (base)
 	{
-		units   = base->getUnitsInRadius((int)floor(borderRadius), IsEnemy && !IsFlying);
+		units   = base->getUnitsInRadius((int)floor(m_borderRadius), IsEnemy && !IsFlying);
 		auto it = units.begin();
 		while (it != units.end())
 		{
@@ -349,19 +349,22 @@ BWAPI::Unitset Base::checkForInvaders() const
 			}
 			else
 			{
-				it++;
+				++it;
 			}
 		}
 	}
 	return units;
 }
 
-void Base::calculateBorder() const
+void Base::calculateBorder()
 {
 	auto region = BWTA::getRegion(base->getPosition());
-	auto& poly  = region->getPolygon();
+	if (region == nullptr)
+	{
+		return;
+	}
 
-	region->getChokepoints();
+	auto& poly = region->getPolygon();
 
 	double maxDist = 0;
 	for (auto p : poly)
@@ -373,5 +376,5 @@ void Base::calculateBorder() const
 		}
 	}
 
-	borderRadius = maxDist;
+	m_borderRadius = maxDist;
 }

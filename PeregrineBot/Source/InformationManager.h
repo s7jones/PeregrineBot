@@ -61,7 +61,7 @@ public:
 	bool isIslandsOnMap       = false;
 
 	std::set<BWAPI::TilePosition> allStarts;
-	std::set<BWAPI::TilePosition> otherStarts; // would be a good idea to make this const
+	std::set<BWAPI::TilePosition> m_otherStarts; // would be a good idea to make this const
 	std::set<BWAPI::Position> unscoutedPositions;
 	std::set<BWAPI::Position> scoutedPositions;
 	std::set<ScoutingOptionFor4, sortByMeanTime> scoutingOptions;
@@ -74,7 +74,7 @@ public:
 
 	std::set<EnemyUnitInfo> enemyBuildings;
 	std::set<EnemyUnitInfo> enemyArmy;
-	EnemyUnitInfo enemyMain = { nullptr };
+	EnemyUnitInfo m_enemyMain = { nullptr };
 
 	std::set<ResourceUnitInfo> minerals;
 	std::set<ResourceUnitInfo> geysers;

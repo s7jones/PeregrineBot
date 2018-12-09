@@ -15,9 +15,10 @@ bool UtilityManager::getBestActionForZergling(BWAPI::Unit zergling)
 		constructOptions();
 	}
 	bool flag      = false;
-	auto enemyMain = InformationManager::Instance().enemyMain;
-	if (enemyMain.u)
+	auto enemyMain = InformationManager::Instance().m_enemyMain;
+	if (enemyMain.m_unit)
 	{
+
 		if (BWTA::getRegion(enemyMain.getPosition()) == BWTA::getRegion(zergling->getPosition()))
 		{
 			flag = performBestActionForZerglingInEnemyBase(zergling);
@@ -338,13 +339,13 @@ void UtilityManager::constructOptions()
 			options.push_back(enemyAtAll);
 
 			auto utilityEnemyBase = [& scores = scores](Unit u) -> UtilResult {
-				auto enemyMain = InformationManager::Instance().enemyMain;
+				auto enemyMain = InformationManager::Instance().m_enemyMain;
 				double score   = scores.t.enemyBase;
 				UtilResult p   = std::make_pair(0, nullptr);
-				if (!enemyMain.u)
+				if (!enemyMain.m_unit)
 				{
 					score = 0;
-					p     = std::make_pair(score, enemyMain.u);
+					p     = std::make_pair(score, enemyMain.m_unit);
 				}
 				else
 				{
@@ -386,7 +387,7 @@ bool UtilityManager::performBestActionForZerglingInEnemyBase(
 		}
 	}
 
-	if (bestOptionResult.first != 0 && bestOptionResult.second.u != nullptr)
+	if (bestOptionResult.first != 0 && bestOptionResult.second.m_unit != nullptr)
 	{
 		OrderManager::Instance().Attack(zergling, bestOptionResult.second);
 		GUIManager::Instance().drawTextOnScreen(zergling, bestOptionDescription, 48);

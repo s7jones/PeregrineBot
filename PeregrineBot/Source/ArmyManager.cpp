@@ -12,25 +12,30 @@ using namespace Filter;
 
 void ArmyManager::ZerglingAttack(BWAPI::Unit u)
 {
-	const auto enemyMain               = InformationManager::Instance().enemyMain;
-	const auto enemyRace               = InformationManager::Instance().enemyRace;
-	const auto unscoutedPositions      = InformationManager::Instance().unscoutedPositions;
-	const auto isEnemyBaseFromSpotting = InformationManager::Instance().isEnemyBaseFromSpotting;
-	const auto isEnemyBaseDeduced      = InformationManager::Instance().isEnemyBaseDeduced;
-	const auto isEnemyBaseReached      = InformationManager::Instance().isEnemyBaseReached;
-	const auto isEnemyBaseDestroyed    = InformationManager::Instance().isEnemyBaseDestroyed;
-	const auto enemyBaseSpottingGuess  = InformationManager::Instance().enemyBaseSpottingGuess;
-	const auto enemyBuildings          = InformationManager::Instance().enemyBuildings;
-	const auto enemyArmy               = InformationManager::Instance().enemyArmy;
+	const auto& enemyMain              = InformationManager::Instance().m_enemyMain;
+	const auto& enemyRace              = InformationManager::Instance().enemyRace;
+	const auto& unscoutedPositions     = InformationManager::Instance().unscoutedPositions;
+	bool isEnemyBaseFromSpotting       = InformationManager::Instance().isEnemyBaseFromSpotting;
+	bool isEnemyBaseDeduced            = InformationManager::Instance().isEnemyBaseDeduced;
+	bool isEnemyBaseReached            = InformationManager::Instance().isEnemyBaseReached;
+	bool isEnemyBaseDestroyed          = InformationManager::Instance().isEnemyBaseDestroyed;
+	const auto& enemyBaseSpottingGuess = InformationManager::Instance().enemyBaseSpottingGuess;
+	const auto& enemyBuildings         = InformationManager::Instance().enemyBuildings;
+	const auto& enemyArmy              = InformationManager::Instance().enemyArmy;
 
-	if (enemyMain.u)
+	if (enemyMain.m_unit)
 	{
-		if ((!isEnemyBaseReached) && (BWTA::getRegion(u->getPosition()) == BWTA::getRegion(enemyMain.getPosition())))
+		if (!isEnemyBaseReached)
 		{
-			InformationManager::Instance().isEnemyBaseReached = true;
-			DebugMessenger::Instance()
-			    << "reach enemy base: " << Broodwar->getFrameCount() << "F"
-			    << std::endl;
+			auto region = BWTA::getRegion(u->getPosition());
+			if (region)
+			{
+				if (region == BWTA::getRegion(enemyMain.getPosition()))
+				{
+					InformationManager::Instance().isEnemyBaseReached = true;
+					DebugMessenger::Instance() << "reach enemy base: " << Broodwar->getFrameCount() << "F" << std::endl;
+				}
+			}
 		}
 	}
 
@@ -65,7 +70,7 @@ void ArmyManager::ZerglingAttack(BWAPI::Unit u)
 		}
 		else
 		{
-			if (enemyMain.u)
+			if (enemyMain.m_unit)
 			{
 				if (!isEnemyBaseDestroyed)
 				{
@@ -122,7 +127,7 @@ void ArmyManager::ZerglingAttack(BWAPI::Unit u)
 		if (lastCmd.getType() == UnitCommandTypes::Move)
 		{
 			Position targetPos = lastCmd.getTargetPosition();
-			if (!enemyMain.u)
+			if (!enemyMain.m_unit)
 			{
 				if (isEnemyBaseFromSpotting
 				    && enemyBaseSpottingGuess != targetPos)
@@ -140,11 +145,10 @@ void ArmyManager::ZerglingAttack(BWAPI::Unit u)
 						GUIManager::Instance().drawTextOnScreen(u, "recalculate scouting 1", 480);
 					}
 					// if moving to somewhere not in zergScoutLocations and there are places to go
-					else if ((std::find(scoutLocationsZergling.begin(), scoutLocationsZergling.end(), targetPos)
-					          == scoutLocationsZergling.end())
-					         && !scoutLocationsZergling.empty())
+					else if ((std::find(m_scoutLocationsZergling.begin(), m_scoutLocationsZergling.end(), targetPos) == m_scoutLocationsZergling.end())
+					         && !m_scoutLocationsZergling.empty())
 					{
-						auto p = *scoutLocationIndex;
+						auto p = *m_scoutLocationIndex;
 						OrderManager::Instance().Move(u, p);
 						GUIManager::Instance().drawTextOnScreen(u, "recalculate scouting 2", 480);
 						incrementScoutLocationZerglingIndex();
@@ -158,7 +162,7 @@ void ArmyManager::ZerglingAttack(BWAPI::Unit u)
 			auto lastCommandUnitInContainer = [lastCmd](EnemyContainer container) -> bool {
 				auto it = std::find_if(container.begin(), container.end(),
 				                       [lastCmd](const EnemyUnitInfo& enemy) -> bool {
-					                       return lastCmd.getUnit() == enemy.u;
+					                       return lastCmd.getUnit() == enemy.m_unit;
 				                       });
 				return it != container.end();
 			};
@@ -173,18 +177,29 @@ void ArmyManager::ZerglingAttack(BWAPI::Unit u)
 	}
 }
 
-std::set<EnemyUnitInfo> ArmyManager::GetZerglingAccessibleBuildings(BWAPI::Unit u)
+std::set<EnemyUnitInfo> ArmyManager::GetZerglingAccessibleBuildings(BWAPI::Unit zergling)
 {
 	auto enemyBuildings = InformationManager::Instance().enemyBuildings;
 	std::set<EnemyUnitInfo> enemyBuildingsAccessible;
-	for (auto iter = enemyBuildings.begin(); iter != enemyBuildings.end(); iter++)
-	{
-		auto building    = *iter;
-		auto buildingPos = building.getPosition();
-		auto zerglingPos = u->getPosition();
 
-		auto zerglingRegion = BWTA::getRegion(zerglingPos);
+	auto zerglingPos    = zergling->getPosition();
+	auto zerglingRegion = BWTA::getRegion(zerglingPos);
+
+	if (zerglingRegion == nullptr)
+	{
+		// TODO: warning
+		return enemyBuildingsAccessible;
+	}
+
+	for (auto building : enemyBuildings)
+	{
+		auto buildingPos    = building.getPosition();
 		auto buildingRegion = BWTA::getRegion(buildingPos);
+
+		if (buildingRegion == nullptr)
+		{
+			continue;
+		}
 
 		// if building isn't reachable then skip
 		if (!isReachable(zerglingRegion, buildingRegion))
@@ -282,73 +297,92 @@ void ArmyManager::ZerglingScoutingBeforeBaseFound(BWAPI::Unit u)
 
 void ArmyManager::ZerglingScoutSpreadOut(BWAPI::Unit u)
 {
-	auto enemyBuildings     = InformationManager::Instance().enemyBuildings;
-	auto unscoutedPositions = InformationManager::Instance().unscoutedPositions;
-	if (scoutLocationsZergling.empty())
+	auto enemyBuildings = InformationManager::Instance().enemyBuildings;
+	if (m_scoutLocationsZergling.empty())
 	{
-		auto enemyBuildingsAccessible = GetZerglingAccessibleBuildings(u);
-
-		for (auto building : enemyBuildingsAccessible)
-		{
-			Position buildingPos = building.getPosition();
-			scoutLocationsZergling.push_front(buildingPos);
-		}
-
-		for (const auto& unscoutedLocation : unscoutedPositions)
-		{
-			scoutLocationsZergling.push_back(unscoutedLocation);
-		}
-
-		auto zerglingRegion = BWTA::getRegion(u->getPosition());
-		// TODO: don't add duplicate cases
-		for (const auto& base : BWTA::getBaseLocations())
-		{
-			auto region = base->getRegion();
-			if (!isReachable(zerglingRegion, region))
-			{
-				continue;
-			}
-			scoutLocationsZergling.push_back(base->getPosition());
-		}
-
-		for (const auto& region : BWTA::getRegions())
-		{
-			if (!isReachable(zerglingRegion, region))
-			{
-				continue;
-			}
-			auto& poly = region->getPolygon();
-			for (size_t j = 0; j < poly.size(); ++j)
-			{
-				Position point1 = poly[j];
-				if (region == BWTA::getRegion(u->getPosition()))
-				{
-					scoutLocationsZergling.push_front(point1);
-				}
-				else
-				{
-					scoutLocationsZergling.push_back(point1);
-				}
-			}
-		}
+		GenerateZergScoutPositions(u);
 
 		// deque iterators NOT valid after insertion
-		scoutLocationIndex = scoutLocationsZergling.begin();
+		m_scoutLocationIndex = m_scoutLocationsZergling.begin();
 	}
 	else
 	{
 		GUIManager::Instance().drawTextOnScreen(u, "Zergling Scouting!", 48);
-		Position p = *scoutLocationIndex;
+		Position p = *m_scoutLocationIndex;
 		OrderManager::Instance().Move(u, p);
 		incrementScoutLocationZerglingIndex();
 	}
 }
 
+void ArmyManager::GenerateZergScoutPositions(BWAPI::Unit u)
+{
+	auto unscoutedPositions = InformationManager::Instance().unscoutedPositions;
+
+	auto enemyBuildingsAccessible = GetZerglingAccessibleBuildings(u);
+
+	for (auto building : enemyBuildingsAccessible)
+	{
+		Position buildingPos = building.getPosition();
+		m_scoutLocationsZergling.push_front(buildingPos);
+	}
+
+	for (const auto& unscoutedLocation : unscoutedPositions)
+	{
+		m_scoutLocationsZergling.push_back(unscoutedLocation);
+	}
+
+	auto zerglingRegion = BWTA::getRegion(u->getPosition());
+	if (zerglingRegion == nullptr)
+	{
+		return;
+	}
+
+	// TODO: don't add duplicate cases
+	for (auto base : BWTA::getBaseLocations())
+	{
+		auto baseRegion = base->getRegion();
+		if (baseRegion == nullptr)
+		{
+			continue;
+		}
+		if (!isReachable(zerglingRegion, baseRegion))
+		{
+			continue;
+		}
+		m_scoutLocationsZergling.push_back(base->getPosition());
+	}
+
+	for (auto region : BWTA::getRegions())
+	{
+		if (region == nullptr)
+		{
+			continue;
+		}
+		if (!isReachable(zerglingRegion, region))
+		{
+			continue;
+		}
+		auto& poly = region->getPolygon();
+		for (size_t j = 0; j < poly.size(); ++j)
+		{
+			Position point1 = poly[j];
+			if (region == BWTA::getRegion(u->getPosition()))
+			{
+				m_scoutLocationsZergling.push_front(point1);
+			}
+			else
+			{
+				m_scoutLocationsZergling.push_back(point1);
+			}
+		}
+	}
+}
+
 void ArmyManager::incrementScoutLocationZerglingIndex()
 {
-	scoutLocationIndex++;
-	if (scoutLocationIndex == scoutLocationsZergling.end())
+	++m_scoutLocationIndex;
+	if (m_scoutLocationIndex == m_scoutLocationsZergling.end())
 	{
-		scoutLocationIndex = scoutLocationsZergling.begin();
+		m_scoutLocationIndex = m_scoutLocationsZergling.begin();
 	}
 }

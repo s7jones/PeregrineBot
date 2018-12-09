@@ -48,9 +48,9 @@ void OrderManager::Attack(BWAPI::Unit attacker, EnemyUnitInfo enemy)
 {
 	if (Broodwar->isVisible((TilePosition)enemy.getPosition()))
 	{
-		if (enemy.u)
+		if (enemy.m_unit)
 		{
-			Attack(attacker, enemy.u);
+			Attack(attacker, enemy.m_unit);
 		}
 		else
 		{

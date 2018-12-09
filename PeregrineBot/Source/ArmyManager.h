@@ -22,8 +22,9 @@ public:
 	void ZerglingScoutSpreadOut(BWAPI::Unit u);
 
 private:
+	void GenerateZergScoutPositions(BWAPI::Unit u);
 	void incrementScoutLocationZerglingIndex();
 
-	std::deque<BWAPI::Position> scoutLocationsZergling;
-	std::deque<BWAPI::Position>::iterator scoutLocationIndex;
+	std::deque<BWAPI::Position> m_scoutLocationsZergling;
+	std::deque<BWAPI::Position>::iterator m_scoutLocationIndex;
 };

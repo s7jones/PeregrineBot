@@ -40,7 +40,7 @@ class Base
 public:
 	Base(BWAPI::Unit u);
 	BWAPI::Unitset checkForInvaders() const;
-	void calculateBorder() const;
+	void calculateBorder();
 	bool operator<(const Base& other) const
 	{
 		return base < other.base;
@@ -55,7 +55,7 @@ public:
 	}
 	using is_transparent = void;
 
-	mutable double borderRadius = 256;
+	double m_borderRadius = 256;
 	BWAPI::Unit base;
 
 private:

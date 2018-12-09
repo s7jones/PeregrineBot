@@ -161,35 +161,35 @@ void InformationManager::setupScouting()
 	auto allStartsList = Broodwar->getStartLocations();
 	//allStarts(allStartsList.begin(), allStartsList.end());
 	std::copy(allStartsList.begin(), allStartsList.end(), std::inserter(allStarts, allStarts.end()));
-	//otherStarts(allStarts);
-	std::copy(allStarts.begin(), allStarts.end(), std::inserter(otherStarts, otherStarts.end()));
-	otherStarts.erase(Broodwar->self()->getStartLocation());
-	//unscoutedPositions(otherStarts);
-	//std::copy(otherStarts.begin(), otherStarts.end(), std::inserter(unscoutedPositions, unscoutedPositions.end()));
-	for (auto otherStart : otherStarts)
+	//m_otherStarts(allStarts);
+	std::copy(allStarts.begin(), allStarts.end(), std::inserter(m_otherStarts, m_otherStarts.end()));
+	m_otherStarts.erase(Broodwar->self()->getStartLocation());
+	//unscoutedPositions(m_otherStarts);
+	//std::copy(m_otherStarts.begin(), m_otherStarts.end(), std::inserter(unscoutedPositions, unscoutedPositions.end()));
+	for (auto otherStart : m_otherStarts)
 	{
 		unscoutedPositions.insert(getBasePos(otherStart));
 	}
 
-	DebugMessenger::Instance() << allStarts.size() << " starts / " << otherStarts.size() << " otherstarts" << std::endl;
+	DebugMessenger::Instance() << allStarts.size() << " starts / " << m_otherStarts.size() << " otherstarts" << std::endl;
 	if (Broodwar->getStartLocations().size() < 4)
 		DebugMessenger::Instance() << "less than 4 start positions" << std::endl;
 
-	for (TilePosition tp1 : otherStarts)
+	for (TilePosition tp1 : m_otherStarts)
 	{
 		std::set<TilePosition> startToP1 = { Broodwar->self()->getStartLocation(), tp1 };
 		DebugMessenger::Instance() << "ad" << overlordNetwork.find(startToP1)->second.distance << "P,   at" << overlordNetwork.find(startToP1)->second.time << "F" << std::endl;
 
 		if (Broodwar->getStartLocations().size() == 4)
 		{
-			for (TilePosition tp2 : otherStarts)
+			for (TilePosition tp2 : m_otherStarts)
 			{
 				if (tp2 == tp1)
 					continue;
 				// tp1 is any position that is not my start position,
 				// tp2 is any position that is not start position or tp1
 
-				std::set<TilePosition> remainingPlaces(otherStarts);
+				std::set<TilePosition> remainingPlaces(m_otherStarts);
 				remainingPlaces.erase(tp1);
 				remainingPlaces.erase(tp2);
 				if (remainingPlaces.size() != 1)
@@ -270,17 +270,17 @@ void InformationManager::updateScouting()
 		{
 			scoutedPositions.insert(p);
 			it = unscoutedPositions.erase(it);
-			if (!enemyMain.u)
+			if (!m_enemyMain.m_unit)
 			{
 				// replace IsBuilding by IsResourceDepot?
 				auto unitsOnBaseTile = Broodwar->getUnitsOnTile(TilePosition(p),
 				                                                IsEnemy && IsVisible && Exists && IsResourceDepot && !IsLifted);
 				if (unitsOnBaseTile.size() > 0)
 				{
-					enemyMain          = { *unitsOnBaseTile.begin() };
+					m_enemyMain        = { *unitsOnBaseTile.begin() };
 					isEnemyBaseDeduced = true;
 					DebugMessenger::Instance() << "Found enemy base at: " << Broodwar->getFrameCount() << "F" << std::endl;
-					if ((enemyMain.x() == 0) && (enemyMain.y() == 0))
+					if ((m_enemyMain.x() == 0) && (m_enemyMain.y() == 0))
 					{
 						errorMessage("Found enemy base at 0,0P");
 					}
@@ -296,7 +296,7 @@ void InformationManager::updateScouting()
 	// add logic here for "not" finding base even after scouting everything
 	// probably only applicable to Terran weird lifting stuff
 
-	if (!(isEnemyBaseDeduced || enemyMain.u) && unscoutedPositions.size() == 1)
+	if (!(isEnemyBaseDeduced || m_enemyMain.m_unit) && unscoutedPositions.size() == 1)
 	{
 		isEnemyBaseDeduced   = true;
 		BWAPI::Position base = (*unscoutedPositions.begin());
@@ -319,7 +319,7 @@ void InformationManager::updateScouting()
 		}
 	}
 
-	if (enemyMain.u || isEnemyBaseFromSpotting)
+	if (m_enemyMain.m_unit || isEnemyBaseFromSpotting)
 	{
 		if (isSpottingUnitsTime) isSpottingUnitsTime = false;
 		if (isSpottingCreepTime) isSpottingCreepTime = false;
@@ -334,7 +334,7 @@ void InformationManager::overlordScouting(BWAPI::Unit overlord)
 		return;
 	}
 
-	if (!enemyMain.u)
+	if (!m_enemyMain.m_unit)
 	{
 		overlordScoutingAtGameStart(overlord);
 	}
@@ -427,7 +427,7 @@ void InformationManager::spotUnits(BWAPI::Unit spotter)
 					searchDistance += 128 * 1.5; // add a bit to account for overlord/workers spawning in a different place from base
 
 					std::set<Position> potentialStartsFromSpotting;
-					for (auto tp : otherStarts)
+					for (auto tp : m_otherStarts)
 					{
 						auto pB          = getBasePos(tp);
 						auto distToStart = ut.isFlyer() ? distanceAir(pB, pO) : distanceGround(pB, pO);
@@ -452,45 +452,69 @@ void InformationManager::spotUnits(BWAPI::Unit spotter)
 
 void InformationManager::spotCreep(BWAPI::Unit spotter)
 {
-	if ((enemyRace == Races::Zerg) || (enemyRace == Races::Unknown))
+	if (!(enemyRace == Races::Zerg) || (enemyRace == Races::Unknown))
 	{
-		auto regionUnit  = BWTA::getRegion(spotter->getPosition());
-		auto regionStart = BWTA::getRegion(Broodwar->self()->getStartLocation());
-		if ((regionUnit != regionStart) && (regionUnit != nullptr))
-		{
-			const int radiusTPSpotter = (spotter->getType().sightRange() + 32)
-			    / BWAPI::TILEPOSITION_SCALE;
-			auto tp = spotter->getTilePosition();
-			for (auto i = -radiusTPSpotter; i < radiusTPSpotter + 1; i++)
-			{
-				auto x = tp.x + i;
-				if (x < 0 || x >= Broodwar->mapWidth()) continue;
-				for (auto j = -radiusTPSpotter; j < radiusTPSpotter + 1; j++)
-				{
-					auto y = tp.y + j;
-					if (y < 0 || y >= Broodwar->mapHeight()) continue;
-					TilePosition tpRelative = { x, y };
-					auto creep              = Broodwar->hasCreep(tpRelative);
+		return;
+	}
 
-					if (creep)
-					{
-						auto regionRelative = BWTA::getRegion(tpRelative);
-						if (regionRelative)
-						{
-							for (auto start : otherStarts)
-							{
-								auto regionStart = BWTA::getRegion(start);
-								if (regionStart == regionRelative)
-								{
-									isEnemyBaseFromSpotting = true;
-									isSpottingCreepTime     = false;
-									enemyBaseSpottingGuess  = getBasePos(start);
-									Broodwar << "Spotted creep and determined base at: " << enemyBaseSpottingGuess << "P" << std::endl;
-									return;
-								}
-							}
-						}
-					}
+	auto regionUnit = BWTA::getRegion(spotter->getPosition());
+	if (regionUnit == nullptr)
+	{
+		return;
+	}
+
+	auto regionStart = BWTA::getRegion(Broodwar->self()->getStartLocation());
+	if (regionStart == nullptr)
+	{
+		return;
+	}
+
+	// don't spot for creep inside my own base.
+	// not future proof.
+	if (regionUnit == regionStart)
+	{
+		return;
+	}
+
+	const int radiusTPSpotter = (spotter->getType().sightRange() + 32) / BWAPI::TILEPOSITION_SCALE;
+	auto tp                   = spotter->getTilePosition();
+	for (auto i = -radiusTPSpotter; i < radiusTPSpotter + 1; i++)
+	{
+		auto x = tp.x + i;
+		if (x < 0 || x >= Broodwar->mapWidth()) continue;
+		for (auto j = -radiusTPSpotter; j < radiusTPSpotter + 1; j++)
+		{
+			auto y = tp.y + j;
+			if (y < 0 || y >= Broodwar->mapHeight()) continue;
+			TilePosition tpRelative = { x, y };
+
+			bool hasCreep = Broodwar->hasCreep(tpRelative);
+			if (!hasCreep)
+			{
+				return;
+			}
+
+			auto regionRelative = BWTA::getRegion(tpRelative);
+			if (regionRelative == nullptr)
+			{
+				return;
+			}
+
+			for (auto otherStart : m_otherStarts)
+			{
+				auto regionOtherStart = BWTA::getRegion(otherStart);
+				if (regionOtherStart == nullptr)
+				{
+					continue;
+				}
+
+				if (regionOtherStart == regionRelative)
+				{
+					isEnemyBaseFromSpotting = true;
+					isSpottingCreepTime     = false;
+					enemyBaseSpottingGuess  = getBasePos(otherStart);
+					Broodwar << "Spotted creep and determined base at: " << enemyBaseSpottingGuess << "P" << std::endl;
+					return;
 				}
 			}
 		}
@@ -499,45 +523,55 @@ void InformationManager::spotCreep(BWAPI::Unit spotter)
 
 void InformationManager::overlordScoutingAfterBaseFound(BWAPI::Unit overlord)
 {
-	if (overlord->isIdle())
+	if (!overlord->isIdle())
 	{
-		if (enemyRace != Races::Terran)
+		return;
+	}
+
+	if (enemyRace != Races::Terran)
+	{
+		// Overlord scouting perimeter of all regions
+		// Might be more useful to have this as a text hovering over overlord.
+		//DebugMessenger::Instance() << "Overlord Scouting!" << std::endl;
+		static std::deque<Position> scoutLocations;
+		if (scoutLocations.empty())
 		{
-			// Overlord scouting perimeter of all regions
-			// Might be more useful to have this as a text hovering over overlord.
-			//DebugMessenger::Instance() << "Overlord Scouting!" << std::endl;
-			static std::deque<Position> scoutLocations;
-			if (scoutLocations.empty())
+			auto enemyRegion = BWTA::getRegion(m_enemyMain.getPosition());
+			if (enemyRegion == nullptr)
 			{
-				auto enemyRegion = BWTA::getRegion(enemyMain.getPosition());
-				auto& poly       = enemyRegion->getPolygon();
-				for (size_t j = 0; j < poly.size(); ++j)
-				{
-					// The points in Polygon appear to be all along the perimeter.
-					Position point1 = poly[j];
-					scoutLocations.push_back(point1);
-				}
-				for (const auto& region : BWTA::getRegions())
-				{
-					for (const auto& base : region->getBaseLocations())
-					{
-						Position point1 = base->getPosition();
-						scoutLocations.push_back(point1);
-					}
-				}
+				return;
 			}
-			else
+
+			auto& poly = enemyRegion->getPolygon();
+			for (size_t j = 0; j < poly.size(); ++j)
 			{
-				auto it              = scoutLocations.begin();
-				Position baseToScout = (*it);
-				OrderManager::Instance().Move(overlord, baseToScout);
-				scoutLocations.erase(it);
+				// The points in Polygon appear to be all along the perimeter.
+				Position point1 = poly[j];
+				scoutLocations.push_back(point1);
+			}
+
+			for (auto base : BWTA::getBaseLocations())
+			{
+				if (base == nullptr)
+				{
+					continue;
+				}
+
+				Position point1 = base->getPosition();
+				scoutLocations.push_back(point1);
 			}
 		}
 		else
-		{ // enemy race is terran, move back to our own base
-			overlordRetreatToHome(overlord);
+		{
+			auto it              = scoutLocations.begin();
+			Position baseToScout = (*it);
+			OrderManager::Instance().Move(overlord, baseToScout);
+			scoutLocations.erase(it);
 		}
+	}
+	else
+	{ // enemy race is terran, move back to our own base
+		overlordRetreatToHome(overlord);
 	}
 }
 
@@ -607,9 +641,9 @@ void InformationManager::onUnitDestroy(BWAPI::Unit unit)
 		if ((IsBuilding)(unit))
 		{
 			enemyBuildings.erase(unit);
-			if (enemyMain.u)
+			if (m_enemyMain.m_unit)
 			{
-				if (((IsResourceDepot)(unit) == true) && (unit->getPosition() == enemyMain.getPosition()))
+				if (((IsResourceDepot)(unit) == true) && (unit->getPosition() == m_enemyMain.getPosition()))
 				{
 					isEnemyBaseDestroyed = true;
 					DebugMessenger::Instance() << "destroyed enemy base: " << Broodwar->getFrameCount() << std::endl;
@@ -673,7 +707,7 @@ void InformationManager::validateEnemyUnits()
 			bool erase = false;
 			if (it->exists())
 			{
-				if ((!IsBuilding || !IsEnemy)(it->u))
+				if ((!IsBuilding || !IsEnemy)(it->m_unit))
 				{
 					erase = true;
 					DebugMessenger::Instance() << "remove enemy building on validation" << std::endl;
@@ -698,7 +732,7 @@ void InformationManager::validateEnemyUnits()
 			bool erase = false;
 			if (it->exists())
 			{
-				if ((IsBuilding || !IsEnemy)(it->u))
+				if ((IsBuilding || !IsEnemy)(it->m_unit))
 				{
 					erase = true;
 					DebugMessenger::Instance() << "remove enemy army on validation" << std::endl;
