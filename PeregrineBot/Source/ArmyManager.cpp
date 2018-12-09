@@ -21,6 +21,7 @@ void ArmyManager::ZerglingAttack(BWAPI::Unit u)
 	const auto isEnemyBaseDestroyed    = InformationManager::Instance().isEnemyBaseDestroyed;
 	const auto enemyBaseSpottingGuess  = InformationManager::Instance().enemyBaseSpottingGuess;
 	const auto enemyBuildings          = InformationManager::Instance().enemyBuildings;
+	const auto enemyArmy               = InformationManager::Instance().enemyArmy;
 
 	if (enemyMain.u) {
 		if ((!isEnemyBaseReached) && (BWTA::getRegion(u->getPosition()) == BWTA::getRegion(enemyMain.getPosition()))) {
@@ -114,6 +115,21 @@ void ArmyManager::ZerglingAttack(BWAPI::Unit u)
 						incrementScoutLocationZerglingIndex();
 					}
 				}
+			}
+		} else if (lastCmd.getType() == UnitCommandTypes::Attack_Unit) {
+			using EnemyContainer            = std::set<EnemyUnitInfo>;
+			auto lastCommandUnitInContainer = [lastCmd](EnemyContainer container) -> bool {
+				auto it = std::find_if(container.begin(), container.end(),
+				                       [lastCmd](const EnemyUnitInfo& enemy) -> bool {
+					                       return lastCmd.getUnit() == enemy.u;
+				                       });
+				return it != container.end();
+			};
+
+			if (!lastCommandUnitInContainer(enemyBuildings)
+			    && !lastCommandUnitInContainer(enemyArmy)) {
+				errorMessage("unit not in enemy containers, stopping.");
+				OrderManager::Instance().Stop(u);
 			}
 		}
 	}

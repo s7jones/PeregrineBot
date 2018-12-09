@@ -5,14 +5,6 @@
 using namespace BWAPI;
 using namespace Filter;
 
-UnitInfo::UnitInfo(BWAPI::Unit unitToWrap)
-{
-	if (unitToWrap) {
-		u = unitToWrap;
-		update();
-	}
-}
-
 void UnitInfo::update() const
 {
 	if (u) {
