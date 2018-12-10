@@ -17,21 +17,24 @@ public:
 	}
 	void ManageBases(BWAPI::Unit base);
 	void DoAllWorkerTasks(BWAPI::Unit u);
+
 	void onUnitShow(BWAPI::Unit unit);
 	void onUnitCreate(BWAPI::Unit unit);
 	void onUnitDestroy(BWAPI::Unit unit);
 	void onUnitMorph(BWAPI::Unit unit);
 	void onUnitRenegade(BWAPI::Unit unit);
 
-	std::set<Base> hatcheries;
-	std::set<BWAPI::Unit> workers;
-	std::set<BWAPI::Unit> miners;
-	std::set<BWAPI::Unit> defenders;
+	std::set<Base> m_hatcheries;
+	std::set<BWAPI::Unit> m_workers;
+	std::set<BWAPI::Unit> m_miners;
+	std::set<BWAPI::Unit> m_defenders;
 
 	using invaderAndDefender = std::pair<BWAPI::Unit, BWAPI::Unit>;
-	std::set<invaderAndDefender> targetsAndAssignedDefenders;
+	std::set<invaderAndDefender> m_targetsAndAssignedDefenders;
 
 private:
+	void DefendWithMiner(BWAPI::Unit u);
+
 	std::set<BWAPI::Unit> workersTraining;
 };
 

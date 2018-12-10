@@ -13,7 +13,7 @@ using namespace Filter;
 
 void BaseManager::ManageBases(BWAPI::Unit base)
 {
-	auto result = hatcheries.emplace(base);
+	auto result = m_hatcheries.emplace(base);
 
 	//auto invaders = (*result.first).checkForInvaders();
 
@@ -29,7 +29,7 @@ void BaseManager::ManageBases(BWAPI::Unit base)
 				if (trainee->getType() == UnitTypes::Zerg_Drone)
 				{
 					erase = true;
-					workers.insert(trainee);
+					m_workers.insert(trainee);
 				}
 				else if (trainee->getType() == UnitTypes::Zerg_Larva)
 				{
@@ -120,16 +120,16 @@ void BaseManager::ManageBases(BWAPI::Unit base)
 	for (auto& unit : Broodwar->self()->getUnits())
 	{
 		if ((IsWorker)(unit))
-			workers.insert(unit);
+			m_workers.insert(unit);
 	}
 
-	if ((workers.size() + workersTraining.size() < (hatcheries.size() * 3)) && (Broodwar->self()->minerals() >= UnitTypes::Zerg_Drone.mineralPrice()))
+	if ((m_workers.size() + workersTraining.size() < (m_hatcheries.size() * 3)) && (Broodwar->self()->minerals() >= UnitTypes::Zerg_Drone.mineralPrice()))
 	{
 		if (!base->getLarva().empty())
 		{
 			base->train(UnitTypes::Zerg_Drone);
 			workersTraining.insert(base);
-			DebugMessenger::Instance() << "droning up from " << workers.size() + workersTraining.size() - 1 << " to " << (hatcheries.size() * 3) << std::endl;
+			DebugMessenger::Instance() << "droning up from " << m_workers.size() + workersTraining.size() - 1 << " to " << (m_hatcheries.size() * 3) << std::endl;
 		}
 	}
 }
@@ -145,72 +145,22 @@ void BaseManager::ManageBases(BWAPI::Unit base)
 
 void BaseManager::DoAllWorkerTasks(BWAPI::Unit u)
 {
-	workers.insert(u);
+	m_workers.insert(u);
 
-	// if a miner
-	if (miners.find(u) != miners.end())
-	{
-		auto invaders = hatcheries.begin()->checkForInvaders();
-		for (auto invader : invaders)
-		{
-			std::pair<bool, invaderAndDefender> foundDefensePair
-			    = { false, { nullptr, nullptr } };
-			for (auto defencePair : targetsAndAssignedDefenders)
-			{
-				if (invader == defencePair.first)
-				{
-					foundDefensePair = { true, defencePair };
-					break;
-				}
-			}
-			// invader not been assigned a defender
-			if (!foundDefensePair.first)
-			{
-				// always keep 1 mining
-				if (miners.size() > 1)
-				{
-					targetsAndAssignedDefenders.insert({ invader, u });
-					OrderManager::Instance().Attack(u, invader);
-					GUIManager::Instance().drawTextOnScreen(u, "this is SPARTA!");
-					defenders.insert(u);
-					miners.erase(u);
-				}
-				return;
-			}
-			else
-			{
-				auto defencePair = foundDefensePair.second;
-				// assigneddefender is destroyed
-				if (!defencePair.second->exists())
-				{
-					defenders.erase(defencePair.second);
-					targetsAndAssignedDefenders.erase(defencePair);
-					if (miners.size() > 1)
-					{
-						targetsAndAssignedDefenders.insert({ invader, u });
-						OrderManager::Instance().Attack(u, invader);
-						GUIManager::Instance().drawTextOnScreen(u, "prepare for glory (reinforce)");
-						defenders.insert(u);
-						miners.erase(u);
-					}
-					return;
-				}
-			}
-		}
-	}
+	DefendWithMiner(u);
 
-	if (defenders.find(u) != defenders.end())
+	if (m_defenders.find(u) != m_defenders.end())
 	{
-		if (distanceAir(u->getPosition(), hatcheries.begin()->base->getPosition()) > hatcheries.begin()->m_borderRadius)
+		if (distanceAir(u->getPosition(), m_hatcheries.begin()->base->getPosition()) > m_hatcheries.begin()->m_borderRadius)
 		{
 			OrderManager::Instance().Stop(u);
 			GUIManager::Instance().drawTextOnScreen(u, "don't chase");
-			defenders.erase(u);
-			for (auto defencePair : targetsAndAssignedDefenders)
+			m_defenders.erase(u);
+			for (auto defencePair : m_targetsAndAssignedDefenders)
 			{
 				if (defencePair.second == u)
 				{
-					targetsAndAssignedDefenders.erase(defencePair);
+					m_targetsAndAssignedDefenders.erase(defencePair);
 				}
 			}
 		}
@@ -219,14 +169,14 @@ void BaseManager::DoAllWorkerTasks(BWAPI::Unit u)
 	// if our worker is idle
 	if (u->isIdle())
 	{
-		defenders.erase(u);
+		m_defenders.erase(u);
 
 		// Order workers carrying a resource to return them to the center,
 		// otherwise find a mineral patch to harvest.
 		if (u->isCarryingGas() || u->isCarryingMinerals())
 		{
 			u->returnCargo();
-			miners.insert(u);
+			m_miners.insert(u);
 		}
 		// The worker cannot harvest anything if it
 		// is carrying a powerup such as a flag
@@ -247,7 +197,7 @@ void BaseManager::DoAllWorkerTasks(BWAPI::Unit u)
 			}
 			else
 			{
-				miners.insert(u);
+				m_miners.insert(u);
 			}
 
 		} // closure: has no powerup
@@ -258,9 +208,78 @@ void BaseManager::DoAllWorkerTasks(BWAPI::Unit u)
 	}
 
 	// if it isn't a defender
-	if (defenders.find(u) == defenders.end())
+	if (m_defenders.find(u) == m_defenders.end())
 	{
 		BuildingManager::Instance().isAnythingToBuild(u);
+	}
+}
+
+void BaseManager::DefendWithMiner(BWAPI::Unit u)
+{
+	// if a miner
+	if (m_miners.find(u) == m_miners.end())
+	{
+		return;
+	}
+
+	if (m_hatcheries.size() == 0)
+	{
+		return;
+	}
+
+	auto invaders = m_hatcheries.begin()->checkForInvaders();
+	for (auto invader : invaders)
+	{
+		std::pair<bool, invaderAndDefender> foundDefensePair
+		    = { false, { nullptr, nullptr } };
+		for (auto defencePair : m_targetsAndAssignedDefenders)
+		{
+			if (invader == defencePair.first)
+			{
+				foundDefensePair = { true, defencePair };
+				break;
+			}
+		}
+
+		// invader not been assigned a defender
+		if (!foundDefensePair.first)
+		{
+			// always keep 1 mining
+			if (m_miners.size() == 1)
+			{
+				return;
+			}
+			m_targetsAndAssignedDefenders.insert({ invader, u });
+			OrderManager::Instance().Attack(u, invader);
+			GUIManager::Instance().drawTextOnScreen(u, "this is SPARTA!");
+			m_defenders.insert(u);
+			m_miners.erase(u);
+		}
+		else
+		{
+			auto defencePair = foundDefensePair.second;
+
+			if (defencePair.second->exists())
+			{
+				return;
+			}
+
+			// assigneddefender is destroyed
+			m_defenders.erase(defencePair.second);
+			m_targetsAndAssignedDefenders.erase(defencePair);
+
+			// always keep 1 mining
+			if (m_miners.size() == 1)
+			{
+				return;
+			}
+
+			m_targetsAndAssignedDefenders.insert({ invader, u });
+			OrderManager::Instance().Attack(u, invader);
+			GUIManager::Instance().drawTextOnScreen(u, "prepare for glory (reinforce)");
+			m_defenders.insert(u);
+			m_miners.erase(u);
+		}
 	}
 }
 
@@ -269,7 +288,7 @@ void BaseManager::onUnitShow(BWAPI::Unit unit)
 	// if something morphs into a worker, add it
 	if (unit->getType().isWorker() && unit->getPlayer() == Broodwar->self() && unit->getHitPoints() >= 0)
 	{
-		workers.insert(unit);
+		m_workers.insert(unit);
 	}
 }
 
@@ -278,7 +297,7 @@ void BaseManager::onUnitCreate(BWAPI::Unit unit)
 	// if something morphs into a worker, add it
 	if (unit->getType().isWorker() && unit->getPlayer() == Broodwar->self() && unit->getHitPoints() >= 0)
 	{
-		workers.insert(unit);
+		m_workers.insert(unit);
 	}
 }
 
@@ -286,18 +305,18 @@ void BaseManager::onUnitDestroy(BWAPI::Unit unit)
 {
 	if (unit->getType().isResourceDepot() && unit->getPlayer() == Broodwar->self())
 	{
-		auto it = hatcheries.find(unit);
-		if (it != hatcheries.end())
+		auto it = m_hatcheries.find(unit);
+		if (it != m_hatcheries.end())
 		{
-			it = hatcheries.erase(it);
+			it = m_hatcheries.erase(it);
 		}
 	}
 
 	if (unit->getType().isWorker() && unit->getPlayer() == Broodwar->self())
 	{
-		workers.erase(unit);
-		miners.erase(unit);
-		defenders.erase(unit);
+		m_workers.erase(unit);
+		m_miners.erase(unit);
+		m_defenders.erase(unit);
 	}
 }
 
@@ -306,15 +325,15 @@ void BaseManager::onUnitMorph(BWAPI::Unit unit)
 	// if something morphs into a worker, add it
 	if (unit->getType().isWorker() && unit->getPlayer() == Broodwar->self() && unit->getHitPoints() >= 0)
 	{
-		workers.insert(unit);
+		m_workers.insert(unit);
 	}
 
 	// if something morphs into a building, it was a worker?
 	if (unit->getType().isBuilding() && unit->getPlayer() == Broodwar->self() && unit->getPlayer()->getRace() == Races::Zerg)
 	{
-		workers.erase(unit);
-		miners.erase(unit);
-		defenders.erase(unit);
+		m_workers.erase(unit);
+		m_miners.erase(unit);
+		m_defenders.erase(unit);
 	}
 }
 
@@ -322,9 +341,9 @@ void BaseManager::onUnitRenegade(BWAPI::Unit unit)
 {
 	if (unit->getType().isWorker() && unit->getPlayer() == Broodwar->self())
 	{
-		workers.erase(unit);
-		miners.erase(unit);
-		defenders.erase(unit);
+		m_workers.erase(unit);
+		m_miners.erase(unit);
+		m_defenders.erase(unit);
 	}
 }
 

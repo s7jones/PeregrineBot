@@ -48,7 +48,7 @@ void GUIManager::draw()
 
 	drawTopLeftOverlay();
 
-	for (auto hatch : BaseManager::Instance().hatcheries)
+	for (auto hatch : BaseManager::Instance().m_hatcheries)
 	{
 		std::stringstream ss;
 		ss << "border " << hatch.m_borderRadius;
@@ -127,13 +127,13 @@ void GUIManager::drawTopLeftOverlay()
 	Broodwar->drawTextScreen(1, 20, "Last Error: %i", Broodwar->getLastError());
 	Broodwar->drawTextScreen(1, 30, "Enemy Buildings: %i", InformationManager::Instance().enemyBuildings.size());
 	Broodwar->drawTextScreen(1, 40, "Enemy Army: %i", InformationManager::Instance().enemyArmy.size());
-	Broodwar->drawTextScreen(1, 50, "Htchrs/Wrkrs: %i/%i", BaseManager::Instance().hatcheries.size(), BaseManager::Instance().workers.size());
+	Broodwar->drawTextScreen(1, 50, "Htchrs/Wrkrs: %i/%i", BaseManager::Instance().m_hatcheries.size(), BaseManager::Instance().m_workers.size());
 	Broodwar->drawTextScreen(1, 60, "Frame Time: %.1fms", duration);
 	Broodwar->drawTextScreen(1, 70, "APM: %i", Broodwar->getAPM());
 
-	int invaders = (!BaseManager::Instance().hatcheries.empty()) ? BaseManager::Instance().hatcheries.begin()->checkForInvaders().size() : 0;
+	int invaders = (!BaseManager::Instance().m_hatcheries.empty()) ? BaseManager::Instance().m_hatcheries.begin()->checkForInvaders().size() : 0;
 	Broodwar->drawTextScreen(1, 80, "Invaders: %i", invaders);
-	Broodwar->drawTextScreen(1, 90, "Mnrs/Dfndrs: %i/%i", BaseManager::Instance().miners.size(), BaseManager::Instance().defenders.size());
+	Broodwar->drawTextScreen(1, 90, "Mnrs/Dfndrs: %i/%i", BaseManager::Instance().m_miners.size(), BaseManager::Instance().m_defenders.size());
 
 	Broodwar->drawTextScreen(100, 0, "BO index: %i", std::distance(BuildOrderManager::Instance().bo.cbegin(), BuildOrderManager::Instance().boIndex));
 	Broodwar->drawTextScreen(100, 10, "Pool: %i", BuildOrderManager::Instance().pool);
