@@ -1,6 +1,35 @@
 #include "Utility.h"
 
+#include "gitparams.h"
+
 using namespace BWAPI;
+
+#define ADD_QUOTES_HELPER(s) #s
+#define ADD_QUOTES(s) ADD_QUOTES_HELPER(s)
+
+std::string getGitCommit()
+{
+#ifdef GIT_CURR_COMMIT
+	return ADD_QUOTES(GIT_CURR_COMMIT);
+#endif
+	return "unavailable";
+}
+
+std::string getGitBranch()
+{
+#ifdef GIT_BRANCH
+	return ADD_QUOTES(GIT_BRANCH);
+#endif
+	return "unavailable";
+}
+
+std::string getGitDescribe()
+{
+#ifdef GIT_DESCRIBE
+	return ADD_QUOTES(GIT_DESCRIBE);
+#endif
+	return "unavailable";
+}
 
 double distanceAir(const BWAPI::Position p1, const BWAPI::Position p2)
 {

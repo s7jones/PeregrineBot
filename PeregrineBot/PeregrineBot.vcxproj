@@ -98,6 +98,16 @@
     <PostBuildEvent>
       <Message>Zip up source files</Message>
     </PostBuildEvent>
+    <PreBuildEvent>
+      <Command>echo | set /p dummyName=#define GIT_CUR_COMMIT &gt;  Source/gitparams.h
+git rev-parse --verify HEAD &gt;&gt;  Source/gitparams.h
+
+echo | set /p dummyName=#define GIT_BRANCH &gt;&gt;  Source/gitparams.h
+git rev-parse --abbrev-ref HEAD &gt;&gt;  Source/gitparams.h
+
+echo | set /p dummyName=#define GIT_DESCRIBE &gt;&gt; Source/gitparams.h
+git describe --tags --always HEAD &gt;&gt; Source/gitparams.h</Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Source\ArmyManager.cpp" />
@@ -125,6 +135,7 @@
     <ClInclude Include="Source\BWTAManager.h" />
     <ClInclude Include="Source\DebugMessenger.h" />
     <ClInclude Include="Source\FileManager.h" />
+    <ClInclude Include="Source\gitparams.h" />
     <ClInclude Include="Source\GUIManager.h" />
     <ClInclude Include="Source\InformationManager.h" />
     <ClInclude Include="Source\OrderManager.h" />

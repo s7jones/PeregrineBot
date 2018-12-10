@@ -5,6 +5,7 @@
 #include "BuildOrderManager.h"
 #include "DebugMessenger.h"
 #include "InformationManager.h"
+#include "Utility.h"
 
 using namespace BWAPI;
 using namespace Filter;
@@ -134,6 +135,8 @@ void GUIManager::drawTopLeftOverlay()
 	int invaders = (!BaseManager::Instance().m_hatcheries.empty()) ? BaseManager::Instance().m_hatcheries.begin()->checkForInvaders().size() : 0;
 	Broodwar->drawTextScreen(1, 80, "Invaders: %i", invaders);
 	Broodwar->drawTextScreen(1, 90, "Mnrs/Dfndrs: %i/%i", BaseManager::Instance().m_miners.size(), BaseManager::Instance().m_defenders.size());
+
+	Broodwar->drawTextScreen(1, 200, "%s", getGitDescribe().c_str());
 
 	Broodwar->drawTextScreen(100, 0, "BO index: %i", std::distance(BuildOrderManager::Instance().bo.cbegin(), BuildOrderManager::Instance().boIndex));
 	Broodwar->drawTextScreen(100, 10, "Pool: %i", BuildOrderManager::Instance().pool);

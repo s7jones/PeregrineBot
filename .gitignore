@@ -1,4 +1,5 @@
 *.zip
+**/gitparams.h
 test/PeregrineBot-cppcheck-build-dir
 
 ## Ignore Visual Studio temporary files, build results, and

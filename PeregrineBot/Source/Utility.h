@@ -2,6 +2,10 @@
 #include "BWAPI.h"
 #include "BWTA.h"
 
+std::string getGitCommit();
+std::string getGitBranch();
+std::string getGitDescribe();
+
 double distanceAir(const BWAPI::Position p1, const BWAPI::Position p2);
 double distanceAir(const BWAPI::TilePosition start, const BWAPI::TilePosition end);
 BWAPI::Position getPos(const BWAPI::TilePosition tp, const BWAPI::UnitType ut);
