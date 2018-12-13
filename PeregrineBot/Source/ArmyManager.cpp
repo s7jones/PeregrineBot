@@ -20,8 +20,8 @@ void ArmyManager::ZerglingAttack(BWAPI::Unit u)
 	bool isEnemyBaseReached            = InformationManager::Instance().isEnemyBaseReached;
 	bool isEnemyBaseDestroyed          = InformationManager::Instance().isEnemyBaseDestroyed;
 	const auto& enemyBaseSpottingGuess = InformationManager::Instance().enemyBaseSpottingGuess;
-	const auto& enemyBuildings         = InformationManager::Instance().enemyBuildings;
-	const auto& enemyArmy              = InformationManager::Instance().enemyArmy;
+	const auto& enemyBuildings         = InformationManager::Instance().m_enemyBuildings;
+	const auto& enemyArmy              = InformationManager::Instance().m_enemyArmy;
 
 	if (enemyMain.m_unit)
 	{
@@ -158,7 +158,7 @@ void ArmyManager::ZerglingAttack(BWAPI::Unit u)
 		}
 		else if (lastCmd.getType() == UnitCommandTypes::Attack_Unit)
 		{
-			using EnemyContainer            = std::set<EnemyUnitInfo>;
+			using EnemyContainer            = decltype(enemyArmy);
 			auto lastCommandUnitInContainer = [lastCmd](EnemyContainer container) -> bool {
 				auto it = std::find_if(container.begin(), container.end(),
 				                       [lastCmd](const EnemyUnitInfo& enemy) -> bool {
@@ -179,7 +179,7 @@ void ArmyManager::ZerglingAttack(BWAPI::Unit u)
 
 std::set<EnemyUnitInfo> ArmyManager::GetZerglingAccessibleBuildings(BWAPI::Unit zergling)
 {
-	auto enemyBuildings = InformationManager::Instance().enemyBuildings;
+	auto enemyBuildings = InformationManager::Instance().m_enemyBuildings;
 	std::set<EnemyUnitInfo> enemyBuildingsAccessible;
 
 	auto zerglingPos    = zergling->getPosition();
@@ -297,7 +297,7 @@ void ArmyManager::ZerglingScoutingBeforeBaseFound(BWAPI::Unit u)
 
 void ArmyManager::ZerglingScoutSpreadOut(BWAPI::Unit u)
 {
-	auto enemyBuildings = InformationManager::Instance().enemyBuildings;
+	auto enemyBuildings = InformationManager::Instance().m_enemyBuildings;
 	if (m_scoutLocationsZergling.empty())
 	{
 		GenerateZergScoutPositions(u);
@@ -340,6 +340,11 @@ void ArmyManager::GenerateZergScoutPositions(BWAPI::Unit u)
 	// TODO: don't add duplicate cases
 	for (auto base : BWTA::getBaseLocations())
 	{
+		if (base == nullptr)
+		{
+			continue;
+		}
+
 		auto baseRegion = base->getRegion();
 		if (baseRegion == nullptr)
 		{

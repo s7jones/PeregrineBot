@@ -111,7 +111,7 @@ void UtilityManager::constructOptions()
 			options.push_back(enemyClosest);
 
 			auto utilityArtosis = [& scores = scores](Unit u) -> UtilResult {
-				const auto enemyBuildings = InformationManager::Instance().enemyBuildings;
+				const auto enemyBuildings = InformationManager::Instance().m_enemyBuildings;
 				std::set<EnemyUnitInfo> pylons;
 				for (const auto enemyBuilding : enemyBuildings)
 				{

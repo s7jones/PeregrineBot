@@ -5,6 +5,8 @@ class UnitInfo
 {
 public:
 	UnitInfo(BWAPI::Unit unitToWrap);
+	virtual ~UnitInfo() {};
+
 	virtual void update() const;
 	bool exists() const;
 	BWAPI::Position getPosition() const { return pos; }
@@ -24,9 +26,6 @@ public:
 	{
 		return lhs < rhs.m_unit;
 	}
-	// transparent comparators
-	// https://www.youtube.com/watch?v=BBUacofxOP8
-	using is_transparent = void;
 
 	BWAPI::Unit m_unit = nullptr;
 

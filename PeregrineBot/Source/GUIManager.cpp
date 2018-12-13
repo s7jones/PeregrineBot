@@ -126,8 +126,8 @@ void GUIManager::drawTopLeftOverlay()
 	Broodwar->drawTextScreen(1, 0, "Supply: %i/%i", Broodwar->self()->supplyUsed(), Broodwar->self()->supplyTotal());
 	Broodwar->drawTextScreen(1, 10, "Frame Count: %iF", Broodwar->getFrameCount());
 	Broodwar->drawTextScreen(1, 20, "Last Error: %i", Broodwar->getLastError());
-	Broodwar->drawTextScreen(1, 30, "Enemy Buildings: %i", InformationManager::Instance().enemyBuildings.size());
-	Broodwar->drawTextScreen(1, 40, "Enemy Army: %i", InformationManager::Instance().enemyArmy.size());
+	Broodwar->drawTextScreen(1, 30, "Enemy Buildings: %i", InformationManager::Instance().m_enemyBuildings.size());
+	Broodwar->drawTextScreen(1, 40, "Enemy Army: %i", InformationManager::Instance().m_enemyArmy.size());
 	Broodwar->drawTextScreen(1, 50, "Htchrs/Wrkrs: %i/%i", BaseManager::Instance().m_hatcheries.size(), BaseManager::Instance().m_workers.size());
 	Broodwar->drawTextScreen(1, 60, "Frame Time: %.1fms", duration);
 	Broodwar->drawTextScreen(1, 70, "APM: %i", Broodwar->getAPM());
@@ -207,9 +207,14 @@ void GUIManager::talk()
 void GUIManager::drawTerrainData()
 {
 	//we will iterate through all the base locations, and draw their outlines.
-	for (const auto& baseLocation : BWTA::getBaseLocations())
+	for (auto base : BWTA::getBaseLocations())
 	{
-		TilePosition p = baseLocation->getTilePosition();
+		if (base == nullptr)
+		{
+			continue;
+		}
+
+		TilePosition p = base->getTilePosition();
 
 		//draw outline of center location
 		Position leftTop(p.x * TILE_SIZE, p.y * TILE_SIZE);
@@ -217,13 +222,13 @@ void GUIManager::drawTerrainData()
 		Broodwar->drawBoxMap(leftTop, rightBottom, Colors::Blue);
 
 		//draw a circle at each mineral patch
-		for (const auto& mineral : baseLocation->getStaticMinerals())
+		for (const auto& mineral : base->getStaticMinerals())
 		{
 			Broodwar->drawCircleMap(mineral->getInitialPosition(), 30, Colors::Cyan);
 		}
 
 		//draw the outlines of Vespene geysers
-		for (const auto& geyser : baseLocation->getGeysers())
+		for (const auto& geyser : base->getGeysers())
 		{
 			TilePosition p1 = geyser->getInitialTilePosition();
 			Position leftTop1(p1.x * TILE_SIZE, p1.y * TILE_SIZE);
@@ -232,9 +237,9 @@ void GUIManager::drawTerrainData()
 		}
 
 		//if this is an island expansion, draw a yellow circle around the base location
-		if (baseLocation->isIsland())
+		if (base->isIsland())
 		{
-			Broodwar->drawCircleMap(baseLocation->getPosition(), 80, Colors::Yellow);
+			Broodwar->drawCircleMap(base->getPosition(), 80, Colors::Yellow);
 		}
 	}
 

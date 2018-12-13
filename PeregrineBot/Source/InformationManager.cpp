@@ -30,9 +30,14 @@ void InformationManager::setup()
 		errorMessage("no enemy");
 	}
 
-	for (auto bl : BWTA::getBaseLocations())
+	for (auto base : BWTA::getBaseLocations())
 	{
-		if (bl->isIsland())
+		if (base == nullptr)
+		{
+			continue;
+		}
+
+		if (base->isIsland())
 		{
 			isIslandsOnMap = true;
 			DebugMessenger::Instance() << "Islands on map!" << std::endl;
@@ -640,7 +645,8 @@ void InformationManager::onUnitDestroy(BWAPI::Unit unit)
 	{
 		if ((IsBuilding)(unit))
 		{
-			enemyBuildings.erase(unit);
+			auto it = m_enemyBuildings.find(unit);
+			m_enemyBuildings.erase(it);
 			if (m_enemyMain.m_unit)
 			{
 				if (((IsResourceDepot)(unit) == true) && (unit->getPosition() == m_enemyMain.getPosition()))
@@ -652,7 +658,8 @@ void InformationManager::onUnitDestroy(BWAPI::Unit unit)
 		}
 		else
 		{
-			enemyArmy.erase(unit);
+			auto it = m_enemyArmy.find(unit);
+			m_enemyArmy.erase(it);
 		}
 	}
 }
@@ -664,19 +671,21 @@ void InformationManager::onUnitMorph(BWAPI::Unit unit)
 		if ((IsBuilding)(unit))
 		{
 			addToEnemyBuildings(unit);
-			enemyArmy.erase(unit);
+			auto it = m_enemyArmy.find(unit);
+			m_enemyArmy.erase(it);
 		}
 		else
 		{
 			addToEnemyArmy(unit);
-			enemyBuildings.erase(unit);
+			auto it = m_enemyBuildings.find(unit);
+			m_enemyBuildings.erase(it);
 		}
 	}
 }
 
 void InformationManager::addToEnemyBuildings(BWAPI::Unit unit)
 {
-	auto iterAndBool = enemyBuildings.emplace(unit);
+	auto iterAndBool = m_enemyBuildings.emplace(unit);
 
 	// if unit already exists in enemyBuildings
 	if (!iterAndBool.second)
@@ -687,7 +696,7 @@ void InformationManager::addToEnemyBuildings(BWAPI::Unit unit)
 
 void InformationManager::addToEnemyArmy(BWAPI::Unit unit)
 {
-	auto iterAndBool = enemyArmy.emplace(unit);
+	auto iterAndBool = m_enemyArmy.emplace(unit);
 
 	// if unit already exists in enemyArmy
 	if (!iterAndBool.second)
@@ -701,8 +710,8 @@ void InformationManager::validateEnemyUnits()
 	// be careful about removing while iterating sets
 	// https://stackoverflow.com/a/2874533/5791272
 	{
-		auto it = enemyBuildings.begin();
-		while (it != enemyBuildings.end())
+		auto it = m_enemyBuildings.begin();
+		while (it != m_enemyBuildings.end())
 		{
 			bool erase = false;
 			if (it->exists())
@@ -716,7 +725,7 @@ void InformationManager::validateEnemyUnits()
 
 			if (erase)
 			{
-				it = enemyBuildings.erase(it);
+				it = m_enemyBuildings.erase(it);
 			}
 			else
 			{
@@ -726,8 +735,8 @@ void InformationManager::validateEnemyUnits()
 	}
 
 	{
-		auto it = enemyArmy.begin();
-		while (it != enemyArmy.end())
+		auto it = m_enemyArmy.begin();
+		while (it != m_enemyArmy.end())
 		{
 			bool erase = false;
 			if (it->exists())
@@ -741,7 +750,7 @@ void InformationManager::validateEnemyUnits()
 
 			if (erase)
 			{
-				it = enemyArmy.erase(it);
+				it = m_enemyArmy.erase(it);
 			}
 			else
 			{

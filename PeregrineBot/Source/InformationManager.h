@@ -3,6 +3,7 @@
 #include "UnitInfo.h"
 #include "Utility.h"
 #include <array>
+#include <functional>
 #include <memory>
 
 // I couldn't put forward declarations of these above InformationManager
@@ -72,8 +73,8 @@ public:
 
 	std::set<FriendlyUnitInfo> friendlyUnits;
 
-	std::set<EnemyUnitInfo> enemyBuildings;
-	std::set<EnemyUnitInfo> enemyArmy;
+	std::set<EnemyUnitInfo, std::less<>> m_enemyBuildings;
+	std::set<EnemyUnitInfo, std::less<>> m_enemyArmy;
 	EnemyUnitInfo m_enemyMain = { nullptr };
 
 	std::set<ResourceUnitInfo> minerals;
