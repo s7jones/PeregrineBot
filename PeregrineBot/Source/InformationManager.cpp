@@ -646,7 +646,10 @@ void InformationManager::onUnitDestroy(BWAPI::Unit unit)
 		if ((IsBuilding)(unit))
 		{
 			auto it = m_enemyBuildings.find(unit);
-			m_enemyBuildings.erase(it);
+			if (it != m_enemyBuildings.end())
+			{
+				m_enemyBuildings.erase(it);
+			}
 			if (m_enemyMain.m_unit)
 			{
 				if (((IsResourceDepot)(unit) == true) && (unit->getPosition() == m_enemyMain.getPosition()))
@@ -659,7 +662,10 @@ void InformationManager::onUnitDestroy(BWAPI::Unit unit)
 		else
 		{
 			auto it = m_enemyArmy.find(unit);
-			m_enemyArmy.erase(it);
+			if (it != m_enemyArmy.end())
+			{
+				m_enemyArmy.erase(it);
+			}
 		}
 	}
 }
@@ -672,13 +678,19 @@ void InformationManager::onUnitMorph(BWAPI::Unit unit)
 		{
 			addToEnemyBuildings(unit);
 			auto it = m_enemyArmy.find(unit);
-			m_enemyArmy.erase(it);
+			if (it != m_enemyArmy.end())
+			{
+				m_enemyArmy.erase(it);
+			}
 		}
 		else
 		{
 			addToEnemyArmy(unit);
 			auto it = m_enemyBuildings.find(unit);
-			m_enemyBuildings.erase(it);
+			if (it != m_enemyBuildings.end())
+			{
+				m_enemyBuildings.erase(it);
+			}
 		}
 	}
 }
