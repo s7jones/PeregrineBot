@@ -9,8 +9,8 @@ using namespace BWAPI;
 
 std::string getGitCommit()
 {
-#ifdef GIT_CURR_COMMIT
-	return ADD_QUOTES(GIT_CURR_COMMIT);
+#ifdef GIT_CUR_COMMIT
+	return ADD_QUOTES(GIT_CUR_COMMIT);
 #endif
 	return "unavailable";
 }
