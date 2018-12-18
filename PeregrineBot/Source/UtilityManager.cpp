@@ -38,7 +38,7 @@ bool UtilityManager::getBestActionForZergling(BWAPI::Unit zergling)
 
 void UtilityManager::constructOptions()
 {
-	auto enemyRace = InformationManager::Instance().enemyRace;
+	const auto enemyRace = InformationManager::Instance().m_enemyRace;
 
 	if (enemyRace != Races::Unknown)
 	{

@@ -189,7 +189,7 @@ void BaseManager::DoAllWorkerTasks(BWAPI::Unit u)
 				// If the call fails, then print the last error message
 				DebugMessenger::Instance() << Broodwar->getLastError() << std::endl;
 				DebugMessenger::Instance() << "Worker couldn't gather mineral or from refinery" << std::endl;
-				auto closestKnownMineral = InformationManager::Instance().getClosestMineral(u);
+				const auto closestKnownMineral = InformationManager::Instance().getClosestMineral(u);
 				if (closestKnownMineral)
 				{
 					OrderManager::Instance().Move(u, closestKnownMineral->getPosition());

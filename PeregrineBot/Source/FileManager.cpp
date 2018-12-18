@@ -109,7 +109,7 @@ void FileManager::writeStatisticsToFile(std::string botVersion, bool isWinner)
 
 	input.close();
 
-	auto enemyRace = InformationManager::Instance().enemyRace;
+	const auto enemyRace = InformationManager::Instance().m_enemyRace;
 
 	if (enemyRace == Races::Zerg) score[0].matches++;
 	if (enemyRace == Races::Terran) score[1].matches++;

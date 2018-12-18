@@ -20,7 +20,7 @@ void InformationManager::setup()
 		}
 		else
 		{
-			enemyRace = race;
+			m_enemyRace = race;
 		}
 	}
 	else
@@ -73,8 +73,8 @@ void InformationManager::setup()
 	// maybe make 128 * 1.5 a const "smudge factor" variable
 	auto addToSpottingMap = [this](UnitType ut, double smudgeFactor) {
 		auto maxDist = ut.isFlyer() ? maxBaseToBaseDistance.air : maxBaseToBaseDistance.ground;
-		spottingTimes.insert({ ut,
-		                       (maxDist + smudgeFactor) / ut.topSpeed() });
+		m_spottingTimes.insert({ ut,
+		                         (maxDist + smudgeFactor) / ut.topSpeed() });
 	};
 
 	addToSpottingMap(UnitTypes::Zerg_Overlord, 128 * 1.5);
@@ -83,14 +83,14 @@ void InformationManager::setup()
 		addToSpottingMap(ut, 128 * 0.5);
 	}
 
-	using pair_type = decltype(spottingTimes)::value_type;
+	using pair_type = decltype(m_spottingTimes)::value_type;
 	auto ptr        = std::max_element(
-        std::begin(spottingTimes), std::end(spottingTimes),
+        std::begin(m_spottingTimes), std::end(m_spottingTimes),
         [](const pair_type& p1, const pair_type& p2) {
             return p1.second < p2.second;
         });
 
-	spottingTime = ptr->second;
+	m_spottingTime = ptr->second;
 }
 
 void InformationManager::setupScouting()
@@ -233,7 +233,7 @@ void InformationManager::setupScouting()
 
 void InformationManager::update()
 {
-	if (enemyRace == Races::Unknown)
+	if (m_enemyRace == Races::Unknown)
 	{
 		auto enemy = Broodwar->enemy();
 		if (enemy)
@@ -241,8 +241,8 @@ void InformationManager::update()
 			auto race = enemy->getRace();
 			if ((race == Races::Terran) || (race == Races::Zerg) || (race == Races::Protoss))
 			{
-				enemyRace = race;
-				DebugMessenger::Instance() << "Enemy is " << enemyRace.c_str() << std::endl;
+				m_enemyRace = race;
+				DebugMessenger::Instance() << "Enemy is " << m_enemyRace.c_str() << std::endl;
 			}
 		}
 	}
@@ -282,8 +282,8 @@ void InformationManager::updateScouting()
 				                                                IsEnemy && IsVisible && Exists && IsResourceDepot && !IsLifted);
 				if (unitsOnBaseTile.size() > 0)
 				{
-					m_enemyMain        = { *unitsOnBaseTile.begin() };
-					isEnemyBaseDeduced = true;
+					m_enemyMain          = { *unitsOnBaseTile.begin() };
+					m_isEnemyBaseDeduced = true;
 					DebugMessenger::Instance() << "Found enemy base at: " << Broodwar->getFrameCount() << "F" << std::endl;
 					if ((m_enemyMain.x() == 0) && (m_enemyMain.y() == 0))
 					{
@@ -301,9 +301,9 @@ void InformationManager::updateScouting()
 	// add logic here for "not" finding base even after scouting everything
 	// probably only applicable to Terran weird lifting stuff
 
-	if (!(isEnemyBaseDeduced || m_enemyMain.m_unit) && unscoutedPositions.size() == 1)
+	if (!(m_isEnemyBaseDeduced || m_enemyMain.m_unit) && unscoutedPositions.size() == 1)
 	{
-		isEnemyBaseDeduced   = true;
+		m_isEnemyBaseDeduced = true;
 		BWAPI::Position base = (*unscoutedPositions.begin());
 		DebugMessenger::Instance() << "Enemy base deduced to be at: " << base.x << ", " << base.y << "P" << std::endl;
 	}
@@ -317,17 +317,23 @@ void InformationManager::updateScouting()
 
 		if (singleUnitWithPotentialBases.second.size() == 1)
 		{
-			isEnemyBaseFromSpotting = true;
-			enemyBaseSpottingGuess  = *singleUnitWithPotentialBases.second.begin();
+			m_isEnemyBaseFromSpotting = true;
+			enemyBaseSpottingGuess    = *singleUnitWithPotentialBases.second.begin();
 			Broodwar << "Spotted guess by removal and determined base at: " << enemyBaseSpottingGuess << "P" << std::endl;
 			return;
 		}
 	}
 
-	if (m_enemyMain.m_unit || isEnemyBaseFromSpotting)
+	if (m_enemyMain.m_unit || m_isEnemyBaseFromSpotting)
 	{
-		if (isSpottingUnitsTime) isSpottingUnitsTime = false;
-		if (isSpottingCreepTime) isSpottingCreepTime = false;
+		if (m_isSpottingUnitsTime)
+		{
+			m_isSpottingUnitsTime = false;
+		}
+		if (m_isSpottingCreepTime)
+		{
+			m_isSpottingCreepTime = false;
+		}
 	}
 }
 
@@ -386,12 +392,12 @@ void InformationManager::spotting(BWAPI::Unit spotter)
 {
 
 	// creep spotting
-	if (isSpottingCreepTime)
+	if (m_isSpottingCreepTime && (!IsBuilding)(spotter))
 	{
 		spotCreep(spotter);
 	}
 
-	if (isSpottingUnitsTime)
+	if (m_isSpottingUnitsTime)
 	{
 		spotUnits(spotter);
 	}
@@ -399,14 +405,14 @@ void InformationManager::spotting(BWAPI::Unit spotter)
 
 void InformationManager::spotUnits(BWAPI::Unit spotter)
 {
-	if (Broodwar->getFrameCount() > spottingTime)
+	if (Broodwar->getFrameCount() > m_spottingTime)
 	{
-		isSpottingUnitsTime = false;
+		m_isSpottingUnitsTime = false;
 		DebugMessenger::Instance() << "Past spotting time" << std::endl;
 	}
 	else
 	{
-		if (!isEnemyBaseFromSpotting)
+		if (!m_isEnemyBaseFromSpotting)
 		{
 			const auto largestZergSightRange = UnitTypes::Zerg_Hive.sightRange();
 			// ADDING 32 incase there is funkiness with getUnitsInRange
@@ -421,8 +427,8 @@ void InformationManager::spotUnits(BWAPI::Unit spotter)
 				if (it != spottedUnitsAndPotentialBases.end())
 				{
 					auto ut = target->getType();
-					auto it = spottingTimes.find(ut);
-					if (it == spottingTimes.end())
+					auto it = m_spottingTimes.find(ut);
+					if (it == m_spottingTimes.end())
 					{
 						continue;
 					}
@@ -444,8 +450,8 @@ void InformationManager::spotUnits(BWAPI::Unit spotter)
 					spottedUnitsAndPotentialBases.insert({ target, potentialStartsFromSpotting });
 					if (potentialStartsFromSpotting.size() == 1)
 					{
-						isEnemyBaseFromSpotting = true;
-						enemyBaseSpottingGuess  = *potentialStartsFromSpotting.begin();
+						m_isEnemyBaseFromSpotting = true;
+						enemyBaseSpottingGuess    = *potentialStartsFromSpotting.begin();
 						Broodwar << spotter->getType() << " spotted " << ut << " and determined base at: " << enemyBaseSpottingGuess << "P" << std::endl;
 						return;
 					}
@@ -457,7 +463,7 @@ void InformationManager::spotUnits(BWAPI::Unit spotter)
 
 void InformationManager::spotCreep(BWAPI::Unit spotter)
 {
-	if (!(enemyRace == Races::Zerg) || (enemyRace == Races::Unknown))
+	if (!((m_enemyRace == Races::Zerg) || (m_enemyRace == Races::Unknown)))
 	{
 		return;
 	}
@@ -486,23 +492,31 @@ void InformationManager::spotCreep(BWAPI::Unit spotter)
 	for (auto i = -radiusTPSpotter; i < radiusTPSpotter + 1; i++)
 	{
 		auto x = tp.x + i;
-		if (x < 0 || x >= Broodwar->mapWidth()) continue;
+		if (x < 0 || x >= Broodwar->mapWidth())
+		{
+			continue;
+		}
+
 		for (auto j = -radiusTPSpotter; j < radiusTPSpotter + 1; j++)
 		{
 			auto y = tp.y + j;
-			if (y < 0 || y >= Broodwar->mapHeight()) continue;
+			if (y < 0 || y >= Broodwar->mapHeight())
+			{
+				continue;
+			}
+
 			TilePosition tpRelative = { x, y };
 
 			bool hasCreep = Broodwar->hasCreep(tpRelative);
 			if (!hasCreep)
 			{
-				return;
+				continue;
 			}
 
 			auto regionRelative = BWTA::getRegion(tpRelative);
 			if (regionRelative == nullptr)
 			{
-				return;
+				continue;
 			}
 
 			for (auto otherStart : m_otherStarts)
@@ -515,9 +529,9 @@ void InformationManager::spotCreep(BWAPI::Unit spotter)
 
 				if (regionOtherStart == regionRelative)
 				{
-					isEnemyBaseFromSpotting = true;
-					isSpottingCreepTime     = false;
-					enemyBaseSpottingGuess  = getBasePos(otherStart);
+					m_isEnemyBaseFromSpotting = true;
+					m_isSpottingCreepTime     = false;
+					enemyBaseSpottingGuess    = getBasePos(otherStart);
 					Broodwar << "Spotted creep and determined base at: " << enemyBaseSpottingGuess << "P" << std::endl;
 					return;
 				}
@@ -533,7 +547,7 @@ void InformationManager::overlordScoutingAfterBaseFound(BWAPI::Unit overlord)
 		return;
 	}
 
-	if (enemyRace != Races::Terran)
+	if (m_enemyRace != Races::Terran)
 	{
 		// Overlord scouting perimeter of all regions
 		// Might be more useful to have this as a text hovering over overlord.

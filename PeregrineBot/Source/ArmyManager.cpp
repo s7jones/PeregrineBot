@@ -13,12 +13,12 @@ using namespace Filter;
 void ArmyManager::ZerglingAttack(BWAPI::Unit u)
 {
 	const auto& enemyMain              = InformationManager::Instance().m_enemyMain;
-	const auto& enemyRace              = InformationManager::Instance().enemyRace;
+	const auto& enemyRace              = InformationManager::Instance().m_enemyRace;
 	const auto& unscoutedPositions     = InformationManager::Instance().unscoutedPositions;
-	bool isEnemyBaseFromSpotting       = InformationManager::Instance().isEnemyBaseFromSpotting;
-	bool isEnemyBaseDeduced            = InformationManager::Instance().isEnemyBaseDeduced;
-	bool isEnemyBaseReached            = InformationManager::Instance().isEnemyBaseReached;
-	bool isEnemyBaseDestroyed          = InformationManager::Instance().isEnemyBaseDestroyed;
+	const bool isEnemyBaseFromSpotting = InformationManager::Instance().m_isEnemyBaseFromSpotting;
+	const bool isEnemyBaseDeduced      = InformationManager::Instance().m_isEnemyBaseDeduced;
+	const bool isEnemyBaseReached      = InformationManager::Instance().isEnemyBaseReached;
+	const bool isEnemyBaseDestroyed    = InformationManager::Instance().isEnemyBaseDestroyed;
 	const auto& enemyBaseSpottingGuess = InformationManager::Instance().enemyBaseSpottingGuess;
 	const auto& enemyBuildings         = InformationManager::Instance().m_enemyBuildings;
 	const auto& enemyArmy              = InformationManager::Instance().m_enemyArmy;

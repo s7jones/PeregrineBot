@@ -43,6 +43,7 @@ public:
 		static InformationManager instance;
 		return instance;
 	}
+
 	void onUnitShow(BWAPI::Unit unit);
 	void onUnitDestroy(BWAPI::Unit unit);
 	void onUnitMorph(BWAPI::Unit unit);
@@ -54,10 +55,10 @@ public:
 
 	std::unique_ptr<ResourceUnitInfo> getClosestMineral(BWAPI::Unit u);
 
-	bool isEnemyBaseDeduced   = false;
+	bool m_isEnemyBaseDeduced = false;
 	bool isEnemyBaseReached   = false;
 	bool isEnemyBaseDestroyed = false;
-	BWAPI::Race enemyRace     = BWAPI::Races::Unknown;
+	BWAPI::Race m_enemyRace   = BWAPI::Races::Unknown;
 	bool isEnemyRaceRandom    = false;
 	bool isIslandsOnMap       = false;
 
@@ -68,7 +69,7 @@ public:
 	std::set<ScoutingOptionFor4, sortByMeanTime> scoutingOptions;
 	std::map<std::set<BWAPI::TilePosition>, distAndTime> zerglingNetwork;
 	std::map<std::set<BWAPI::TilePosition>, distAndTime> overlordNetwork;
-	bool isEnemyBaseFromSpotting           = false;
+	bool m_isEnemyBaseFromSpotting         = false;
 	BWAPI::Position enemyBaseSpottingGuess = { 0, 0 };
 
 	std::set<FriendlyUnitInfo> friendlyUnits;
@@ -100,10 +101,10 @@ private:
 		double ground;
 		double air;
 	} maxBaseToBaseDistance;
-	std::map<BWAPI::UnitType, double> spottingTimes;
-	double spottingTime         = 0;
-	bool isSpottingCreepTime    = true;
-	bool isSpottingUnitsTime    = true;
+	std::map<BWAPI::UnitType, double> m_spottingTimes;
+	double m_spottingTime       = 0;
+	bool m_isSpottingCreepTime  = true;
+	bool m_isSpottingUnitsTime  = true;
 	using unitAndPotentialBases = std::pair<BWAPI::Unit, std::set<BWAPI::Position>>;
 	std::set<unitAndPotentialBases> spottedUnitsAndPotentialBases;
 };
