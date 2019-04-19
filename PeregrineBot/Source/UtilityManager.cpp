@@ -62,7 +62,7 @@ void UtilityManager::constructOptions()
 					int effectiveDamage = weapon.damageAmount() - enemy->getType().armor();
 					int hp              = enemy->getHitPoints();
 					int shields         = enemy->getShields();
-					int hits            = ceil(hp / effectiveDamage + shields / weapon.damageAmount());
+					int hits            = lround(ceil(hp / effectiveDamage + shields / weapon.damageAmount()));
 					if (hits < bestHits)
 					{
 						bestHits = hits;
@@ -71,8 +71,8 @@ void UtilityManager::constructOptions()
 					{
 						worstHits = hits;
 					}
-					int maxHits  = ceil(enemyType.maxHitPoints() / effectiveDamage
-                                       + enemyType.maxShields() / weapon.damageAmount());
+					int maxHits  = lround(ceil(enemyType.maxHitPoints() / effectiveDamage
+                                              + enemyType.maxShields() / weapon.damageAmount()));
 					double score = scoreGiven
 					    + (maxHits - hits) / maxHits;
 					if (bestScore < score)
@@ -225,7 +225,7 @@ void UtilityManager::constructOptions()
 				{
 					int effectiveDamage = weapon.damageAmount() - enemy->getType().armor();
 					int hp              = enemy->getHitPoints();
-					int hits            = ceil(hp / effectiveDamage);
+					int hits            = lround(ceil(hp / effectiveDamage));
 					if (hits < bestHits)
 					{
 						bestHits = hits;
@@ -234,7 +234,7 @@ void UtilityManager::constructOptions()
 					{
 						worstHits = hits;
 					}
-					int maxHits  = ceil(UnitTypes::Zerg_Zergling.maxHitPoints() / effectiveDamage);
+					int maxHits  = lround(ceil(UnitTypes::Zerg_Zergling.maxHitPoints() / effectiveDamage));
 					double score = scores.z.injrZerg + (maxHits - hits) / maxHits;
 					if (bestScore < score)
 					{

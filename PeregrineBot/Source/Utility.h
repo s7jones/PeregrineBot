@@ -17,4 +17,4 @@ double timeAir(const BWAPI::TilePosition start, const BWAPI::TilePosition end);
 bool isReachable(BWTA::Region* region1, BWTA::Region* region2);
 bool isInPylonRange(int relx, int rely);
 
-void errorMessage(std::string message);
+void errorMessage(const std::string& message);

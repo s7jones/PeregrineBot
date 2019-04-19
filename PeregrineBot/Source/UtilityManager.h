@@ -25,9 +25,9 @@ private:
 
 	std::vector<Option> options;
 
-	const struct utilities
+	struct utilities
 	{
-		const struct putilities
+		struct putilities
 		{
 			double injrZeal        = 5;
 			double injrWork        = 4;
@@ -41,7 +41,7 @@ private:
 			double addArtosisCann = 0.5;
 			double addArtosisAll  = 0.01;
 		} p;
-		const struct tutilities
+		struct tutilities
 		{
 			double closestMrneFireBunkWork = 1;
 			double closestWork             = 0.9;
@@ -49,7 +49,7 @@ private:
 			double enemyBase               = 0.7;
 			double closestAll              = 0.6;
 		} t;
-		const struct zutilities
+		struct zutilities
 		{
 			double injrZerg             = 2;
 			double closestLingSunkWork  = 1;
@@ -59,7 +59,7 @@ private:
 		} z;
 	};
 
-	utilities scores;
+	const utilities scores;
 };
 
 class Option
@@ -68,8 +68,8 @@ public:
 	using funcUtil = std::function<UtilResult(BWAPI::Unit)>;
 
 	Option(funcUtil util, std::string description)
-	    : util(util)
-	    , description(description)
+	    : util(std::move(util))
+	    , description(std::move(description))
 	{
 	}
 

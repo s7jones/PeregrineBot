@@ -10,19 +10,19 @@
 using namespace BWAPI;
 using namespace Filter;
 
-void GUIManager::drawTextOnScreen(BWAPI::Unit u, std::string format, int frames)
+void GUIManager::drawTextOnScreen(BWAPI::Unit u, const std::string& format, int frames)
 {
 	MessageAndFrames mnf = { format, frames };
 	messageBuffer.insert_or_assign(u, mnf);
 }
 
-void GUIManager::drawLineOnScreen(BWAPI::Unit u, EnemyUnitInfo enemy, int frames)
+void GUIManager::drawLineOnScreen(BWAPI::Unit u, const EnemyUnitInfo& enemy, int frames)
 {
 	TargetAndFrames tnf = { enemy, frames };
 	lineBuffer.insert_or_assign(u, tnf);
 }
 
-void GUIManager::drawTextOnUnit(BWAPI::Unit u, std::string format)
+void GUIManager::drawTextOnUnit(BWAPI::Unit u, const std::string& format)
 {
 	if (!u->exists())
 	{

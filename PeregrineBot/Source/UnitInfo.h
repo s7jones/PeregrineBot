@@ -5,7 +5,7 @@ class UnitInfo
 {
 public:
 	UnitInfo(BWAPI::Unit unitToWrap);
-	virtual ~UnitInfo() {};
+	virtual ~UnitInfo() = default;
 
 	virtual void update() const;
 	bool exists() const;
