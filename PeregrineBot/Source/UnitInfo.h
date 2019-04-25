@@ -7,6 +7,8 @@ public:
 	UnitInfo(BWAPI::Unit unitToWrap);
 	virtual ~UnitInfo() = default;
 
+	// #TODO: copy,move ctors
+
 	virtual void update() const;
 	bool exists() const;
 	BWAPI::Position getPosition() const { return pos; }
@@ -66,5 +68,5 @@ public:
 	int getResources() const;
 
 private:
-	mutable int resources;
+	mutable int resources = 0;
 };

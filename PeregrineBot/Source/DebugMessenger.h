@@ -29,6 +29,6 @@ public:
 	void flush(BWAPI::GameWrapper::ostream_manipulator fn);
 
 private:
-	bool debug_enabled;
+	bool debug_enabled = false;
 	std::ostringstream ss;
 };

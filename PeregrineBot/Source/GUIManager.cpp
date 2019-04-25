@@ -54,7 +54,7 @@ void GUIManager::draw()
 		std::stringstream ss;
 		ss << "border " << hatch.m_borderRadius;
 		GUIManager::Instance().drawTextOnScreen(hatch.base, ss.str());
-		Broodwar->drawCircleMap(hatch.base->getPosition(), hatch.m_borderRadius, Colors::White);
+		Broodwar->drawCircleMap(hatch.base->getPosition(), lround(hatch.m_borderRadius), Colors::White);
 	}
 
 	drawOnScreenMessages();

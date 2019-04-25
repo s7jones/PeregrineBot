@@ -191,7 +191,7 @@ std::set<EnemyUnitInfo> ArmyManager::GetZerglingAccessibleBuildings(BWAPI::Unit 
 		return enemyBuildingsAccessible;
 	}
 
-	for (auto building : enemyBuildings)
+	for (const auto& building : enemyBuildings)
 	{
 		auto buildingPos    = building.getPosition();
 		auto buildingRegion = BWTA::getRegion(buildingPos);
@@ -230,7 +230,7 @@ void ArmyManager::ZerglingAttackKnownBuildings(BWAPI::Unit u)
 		double distanceEnemyBuildingAccessible = std::numeric_limits<double>::infinity();
 		Position buildingAccessiblePos;
 
-		for (auto building : enemyBuildingsAccessible)
+		for (const auto& building : enemyBuildingsAccessible)
 		{
 			Position buildingPos    = building.getPosition();
 			double distanceBuilding = distanceAir(u->getPosition(), buildingPos);
@@ -320,7 +320,7 @@ void ArmyManager::GenerateZergScoutPositions(BWAPI::Unit u)
 
 	auto enemyBuildingsAccessible = GetZerglingAccessibleBuildings(u);
 
-	for (auto building : enemyBuildingsAccessible)
+	for (const auto& building : enemyBuildingsAccessible)
 	{
 		Position buildingPos = building.getPosition();
 		m_scoutLocationsZergling.push_front(buildingPos);

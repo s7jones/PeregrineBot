@@ -44,7 +44,7 @@ void OrderManager::Attack(BWAPI::Unit attacker, BWAPI::Unit u)
 	attacker->attack(u);
 }
 
-void OrderManager::Attack(BWAPI::Unit attacker, EnemyUnitInfo enemy)
+void OrderManager::Attack(BWAPI::Unit attacker, const EnemyUnitInfo& enemy)
 {
 	if (Broodwar->isVisible((TilePosition)enemy.getPosition()))
 	{
@@ -69,7 +69,7 @@ void OrderManager::Move(BWAPI::Unit mover, BWAPI::Position p, bool shiftClick)
 	mover->move(p, shiftClick);
 }
 
-void OrderManager::Move(BWAPI::Unit mover, EnemyUnitInfo u, bool shiftClick)
+void OrderManager::Move(BWAPI::Unit mover, const EnemyUnitInfo& u, bool shiftClick)
 {
 	Move(mover, u.getPosition(), shiftClick);
 }

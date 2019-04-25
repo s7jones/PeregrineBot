@@ -74,7 +74,7 @@ void UtilityManager::constructOptions()
 					int maxHits  = lround(ceil(enemyType.maxHitPoints() / effectiveDamage
                                               + enemyType.maxShields() / weapon.damageAmount()));
 					double score = scoreGiven
-					    + (maxHits - hits) / maxHits;
+					    + (maxHits - hits) / (double)maxHits;
 					if (bestScore < score)
 					{
 						bestScore  = score;
@@ -113,7 +113,7 @@ void UtilityManager::constructOptions()
 			auto utilityArtosis = [& scores = scores](Unit u) -> UtilResult {
 				const auto enemyBuildings = InformationManager::Instance().m_enemyBuildings;
 				std::set<EnemyUnitInfo> pylons;
-				for (const auto enemyBuilding : enemyBuildings)
+				for (const auto& enemyBuilding : enemyBuildings)
 				{
 					if (enemyBuilding.getType() == UnitTypes::Protoss_Pylon)
 					{
@@ -121,7 +121,7 @@ void UtilityManager::constructOptions()
 					}
 				}
 				std::map<EnemyUnitInfo, std::vector<EnemyUnitInfo>> artosisPylonsAndBuildings;
-				for (auto enemyBuilding : enemyBuildings)
+				for (const auto& enemyBuilding : enemyBuildings)
 				{
 					if ((enemyBuilding.getType() == UnitTypes::Protoss_Pylon)
 					    || (enemyBuilding.getType() == UnitTypes::Protoss_Nexus)
@@ -130,7 +130,7 @@ void UtilityManager::constructOptions()
 						continue;
 					}
 					std::set<EnemyUnitInfo> suppliers;
-					for (const auto pylon : pylons)
+					for (const auto& pylon : pylons)
 					{
 						auto rel = pylon.getPosition() - enemyBuilding.getPosition();
 						if (isInPylonRange(rel.x, rel.y))
@@ -156,10 +156,10 @@ void UtilityManager::constructOptions()
 
 				double bestScore    = 0;
 				EnemyUnitInfo pylon = { nullptr };
-				for (auto artosisPylonBuildings : artosisPylonsAndBuildings)
+				for (const auto& artosisPylonBuildings : artosisPylonsAndBuildings)
 				{
 					double score = scores.p.artosisPyln;
-					for (auto building : artosisPylonBuildings.second)
+					for (const auto& building : artosisPylonBuildings.second)
 					{
 						score += unitTypeScoreLambda(building.getType());
 					}
@@ -235,7 +235,7 @@ void UtilityManager::constructOptions()
 						worstHits = hits;
 					}
 					int maxHits  = lround(ceil(UnitTypes::Zerg_Zergling.maxHitPoints() / effectiveDamage));
-					double score = scores.z.injrZerg + (maxHits - hits) / maxHits;
+					double score = scores.z.injrZerg + (maxHits - hits) / (double)maxHits;
 					if (bestScore < score)
 					{
 						bestScore  = score;
@@ -377,7 +377,7 @@ bool UtilityManager::performBestActionForZerglingInEnemyBase(
 {
 	std::string bestOptionDescription;
 	UtilResult bestOptionResult = { 0, nullptr };
-	for (auto option : options)
+	for (const auto& option : options)
 	{
 		auto result = option.util(zergling);
 		if (result.first > bestOptionResult.first)

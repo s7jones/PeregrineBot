@@ -27,8 +27,10 @@ private:
 
 	struct utilities
 	{
+		utilities() {} // NOLINT
 		struct putilities
 		{
+			putilities() {} // NOLINT
 			double injrZeal        = 5;
 			double injrWork        = 4;
 			double closestZealCann = 1.1;
@@ -43,6 +45,7 @@ private:
 		} p;
 		struct tutilities
 		{
+			tutilities() {} // NOLINT
 			double closestMrneFireBunkWork = 1;
 			double closestWork             = 0.9;
 			double closestSdpt             = 0.8;
@@ -51,6 +54,7 @@ private:
 		} t;
 		struct zutilities
 		{
+			zutilities() {} // NOLINT
 			double injrZerg             = 2;
 			double closestLingSunkWork  = 1;
 			double closestWork          = 0.9;

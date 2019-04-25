@@ -615,7 +615,7 @@ std::unique_ptr<ResourceUnitInfo> InformationManager::getClosestMineral(BWAPI::U
 {
 	double closestDist                              = std::numeric_limits<double>::infinity();
 	std::unique_ptr<ResourceUnitInfo> chosenMineral = nullptr;
-	for (auto mineral : minerals)
+	for (const auto& mineral : minerals)
 	{
 		auto dist = distanceGround(u->getPosition(), mineral.getPosition());
 		if (closestDist > dist)
